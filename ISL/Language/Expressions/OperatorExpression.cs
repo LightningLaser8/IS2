@@ -1,4 +1,5 @@
-﻿using ISL.Language.Operations;
+﻿using ISL.Compiler;
+using ISL.Language.Operations;
 using ISL.Language.Types;
 
 namespace ISL.Language.Expressions
@@ -7,7 +8,7 @@ namespace ISL.Language.Expressions
     {
         public IslIdentifier value = "";
         public Operator? Operation { get; set; }
-        public override IslValue Eval()
+        public override IslValue Eval(IslProgram program)
         {
             return Operation?.Operate.Invoke() ?? IslValue.Null;
         }

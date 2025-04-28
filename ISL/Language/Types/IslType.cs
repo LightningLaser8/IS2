@@ -14,7 +14,7 @@ namespace ISL.Language.Types
     public abstract class IslValue : ITypedObject
     {
         public static IslNull Null { get; } = new IslNull();
-        public virtual IslType Type => IslType.Null;
+        public virtual IslType Type { get; protected set; } = IslType.Null;
 
         public abstract string Stringify();
 
@@ -49,6 +49,6 @@ namespace ISL.Language.Types
         Object,
         Class,
         Identifier,
-        Token
+        Token,
     }
 }

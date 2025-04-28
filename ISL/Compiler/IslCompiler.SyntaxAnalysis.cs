@@ -8,6 +8,7 @@ using ISL.Language.Expressions;
 using ISL.Language.Expressions.Combined;
 using ISL.Language.Keywords;
 using ISL.Language.Operations;
+using ISL.Language.Variables;
 using ISL.Runtime.Errors;
 
 namespace ISL.Compiler
@@ -165,7 +166,7 @@ namespace ISL.Compiler
 
         private void MakeKeywordsGrabExpressions(List<Expression> expressions)
         {
-            Debug($" Final Loop:");
+            Debug($" Keyword Loop:");
             int currentIndex = -1;
             while (true)
             {
@@ -179,7 +180,6 @@ namespace ISL.Compiler
                 else Debug($"  next expression at {currentIndex}");
                 var expr = expressions[currentIndex];
                 Debug($"  index {currentIndex} is {expr}");
-
 
                 if (expr is KeywordExpression kwe)
                 {

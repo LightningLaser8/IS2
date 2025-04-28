@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using ISL.Compiler;
 using ISL.Language.Types;
 using ISL.Runtime.Errors;
 
@@ -16,7 +17,7 @@ namespace ISL.Language.Expressions.Combined
     internal class BracketExpression : Expression
     {
         public required BracketType bracket;
-        public override IslValue Eval()
+        public override IslValue Eval(IslProgram program)
         {
             throw new SyntaxError("Unresolved bracket expression!");
         }

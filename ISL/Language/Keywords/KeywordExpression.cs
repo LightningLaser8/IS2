@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ISL.Compiler;
 using ISL.Language.Expressions;
 using ISL.Language.Types;
 using ISL.Runtime.Errors;
@@ -11,13 +12,13 @@ namespace ISL.Language.Keywords
 {
     internal class KeywordExpression : Expression
     {
-        public Keyword Keyword { get; set; } = Keyword.Nothing;
+        public virtual Keyword Keyword { get; set; } = Keyword.Nothing;
         public List<string> Labels { get; set; } = [];
         public List<Expression> Expressions { get; set; } = [];
-        public override IslValue Eval()
+        public override IslValue Eval(IslProgram program)
         {
-            Keyword.Action.Invoke([.. Labels], [.. Expressions]);
-            return IslValue.Null;
+            if (Keyword is not ReturningKeyword) Keyword.Action.Invoke([.. Labels], [.. Expressions], program);
+            return Keyword is ReturningKeyword rkw ? rkw.Action.Invoke([.. Labels], [.. Expressions], program) : IslValue.Null;
         }
 
         public override Expression Simplify()

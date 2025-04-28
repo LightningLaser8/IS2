@@ -8,6 +8,7 @@ using ISL.Language.Operations;
 using ISL.Language.Types;
 using ISL.Compiler;
 using ISL.Language.Keywords;
+using ISL.Language.Variables;
 
 namespace ISL.Language.Expressions
 {
@@ -23,6 +24,7 @@ namespace ISL.Language.Expressions
                 }
             }
 
+            if (IslCompiler.Regexes.getters.IsMatch(token)) return new VariableExpression() { variable = token[1..^1] };
             if (IslCompiler.Regexes.strings.IsMatch(token)) return new StringExpression() { value = IslString.FromString(token) };
             if (IslCompiler.Regexes.complex.IsMatch(token)) return new ComplexExpression() { value = IslComplex.FromString(token) };
             if (IslCompiler.Regexes.floats.IsMatch(token)) return new FloatExpression() { value = IslFloat.FromString(token) };
@@ -62,7 +64,7 @@ namespace ISL.Language.Expressions
             return new IdentifierExpression() { value = IslIdentifier.FromString(token) };
         }
         public static NullExpression Null = new();
-        public abstract IslValue Eval();
+        public abstract IslValue Eval(IslProgram program);
         public abstract Expression Simplify();
         public virtual void Validate() { }
     }

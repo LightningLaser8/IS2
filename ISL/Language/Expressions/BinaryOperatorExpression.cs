@@ -1,4 +1,5 @@
-﻿using ISL.Language.Operations;
+﻿using ISL.Compiler;
+using ISL.Language.Operations;
 using ISL.Language.Types;
 using ISL.Runtime.Errors;
 
@@ -9,9 +10,11 @@ namespace ISL.Language.Expressions
         public new required BinaryOperator Operation { get; set; }
         public Expression? affectedL;
         public Expression? affectedR;
-        public override IslValue Eval()
+        public override IslValue Eval(IslProgram program)
         {
-            return Operation.Operate.Invoke(affectedL?.Eval() ?? IslValue.Null, affectedR?.Eval() ?? IslValue.Null);
+            if (Operation is ProgramAccessingBinaryOperator pao)
+                return pao.Operate.Invoke(affectedL?.Eval(program) ?? IslValue.Null, affectedR?.Eval(program) ?? IslValue.Null, program);
+            return Operation.Operate.Invoke(affectedL?.Eval(program) ?? IslValue.Null, affectedR?.Eval(program) ?? IslValue.Null);
         }
         public override string ToString()
         {
@@ -21,9 +24,9 @@ namespace ISL.Language.Expressions
         {
             affectedL = affectedL?.Simplify();
             affectedR = affectedR?.Simplify();
-            if (affectedL is ConstantExpression && affectedR is ConstantExpression)
+            if (affectedL is ConstantExpression al && affectedR is ConstantExpression ar && Operation is not ProgramAccessingBinaryOperator)
             {
-                return ConstantExpression.For(Operation.Operate.Invoke(affectedL.Eval(), affectedR.Eval()));
+                return ConstantExpression.For(Operation.Operate.Invoke(al.Eval(), ar.Eval()));
             }
             return this;
         }

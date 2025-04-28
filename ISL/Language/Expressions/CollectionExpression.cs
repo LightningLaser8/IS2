@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ISL.Compiler;
 using ISL.Language.Types;
 using ISL.Language.Types.Collections;
 using ISL.Runtime.Errors;
@@ -12,9 +13,9 @@ namespace ISL.Language.Expressions
     internal class CollectionExpression : Expression
     {
         public List<Expression> expressions = [];
-        public override IslValue Eval()
+        public override IslValue Eval(IslProgram program)
         {
-            return new IslGroup() { Value = [.. expressions.Select((expr) => expr.Eval())] };
+            return new IslGroup() { Value = [.. expressions.Select((expr) => expr.Eval(program))] };
         }
 
         public override Expression Simplify()

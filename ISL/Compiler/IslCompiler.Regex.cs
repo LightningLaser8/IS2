@@ -57,6 +57,14 @@ namespace ISL.Compiler
             internal static readonly Regex strings = CreateStringRegex();
 
 
+            [GeneratedRegex(@"^\\.*\\$", RegexOptions.ExplicitCapture)]
+            private static partial Regex CreateGetterRegex();
+            /// <summary>
+            /// Regex to match block comments in the source code.
+            /// </summary>
+            internal static readonly Regex getters = CreateGetterRegex();
+
+
             [GeneratedRegex(@"^\[[^,\n]+\]$", RegexOptions.Multiline)]
             private static partial Regex CreateMetadataRegex();
             /// <summary>

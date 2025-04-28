@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ISL.Compiler;
 using ISL.Language.Types;
 
 namespace ISL.Language.Expressions.Combined
@@ -13,9 +14,9 @@ namespace ISL.Language.Expressions.Combined
     internal class PackagedExpression : Expression
     {
         public required Expression expression;
-        public override IslValue Eval()
+        public override IslValue Eval(IslProgram program)
         {
-            return expression.Eval();
+            return expression.Eval(program);
         }
 
         public override Expression Simplify()

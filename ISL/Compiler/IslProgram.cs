@@ -1,6 +1,7 @@
 ﻿using ISL.Runtime.Errors;
 using ISL.Language.Expressions;
 using ISL.Language.Types;
+using ISL.Language.Variables;
 
 namespace ISL.Compiler
 {
@@ -20,7 +21,8 @@ namespace ISL.Compiler
         /// </summary>
         /// <param name="key"></param>
         /// <returns>The value of the metadata tag, or an empty string if the tag was not present.</returns>
-        public string GetMeta(string key) {
+        public string GetMeta(string key)
+        {
             try
             {
                 return meta[key];
@@ -57,7 +59,7 @@ namespace ISL.Compiler
         {
             foreach (var point in codePoints)
             {
-                result = point.Eval();
+                result = point.Eval(this);
             }
             return result;
         }
@@ -77,6 +79,43 @@ namespace ISL.Compiler
                 result = IslErrorMessage.FromString(e.GetType().Name + ": " + e.Message);
                 return result;
             }
+        }
+
+        internal Dictionary<string, IslVariable> Vars { get; } = [];
+        public IslVariable CreateVariable(string name, IslType type, IslValue value)
+        {
+            IslVariable vari = new(name, type)
+            {
+                Value = value
+            };
+            Vars.Add(name, vari);
+            return vari;
+        }
+        public IslVariable CreateVariable(string name, IslType type)
+        {
+            IslVariable vari = new(name, type);
+            Vars.Add(name, vari);
+            return vari;
+        }
+        public IslValue SetVariable(string name, IslValue value)
+        {
+            var vari = GetVariable(name) ?? throw new InvalidReferenceError($"Variable '{name}' doesn't exist.");
+            vari.Value = value;
+            return value;
+        }
+        public void DeleteVariable(string name)
+        {
+            Vars.Remove(name);
+        }
+        public IslVariable? GetVariable(string name)
+        {
+            Vars.TryGetValue(name, out var islVariable);
+            return islVariable;
+        }
+        public IslVariable GetVariableImperative(string name)
+        {
+            if(!Vars.TryGetValue(name, out var islVariable)) throw new InvalidReferenceError($"Variable '{name}' doesn't exist.");
+            return islVariable;
         }
     }
 }

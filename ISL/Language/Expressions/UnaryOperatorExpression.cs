@@ -1,4 +1,5 @@
-﻿using ISL.Language.Operations;
+﻿using ISL.Compiler;
+using ISL.Language.Operations;
 using ISL.Language.Types;
 using ISL.Runtime.Errors;
 
@@ -8,9 +9,11 @@ namespace ISL.Language.Expressions
     {
         public new required UnaryOperator Operation { get; set; }
         public Expression? affected;
-        public override IslValue Eval()
+        public override IslValue Eval(IslProgram program)
         {
-            return Operation.Operate.Invoke(affected?.Eval() ?? IslValue.Null);
+            if (Operation is ProgramAccessingUnaryOperator pao)
+                return pao.Operate.Invoke(affected?.Eval(program) ?? IslValue.Null, program);
+            return Operation.Operate.Invoke(affected?.Eval(program) ?? IslValue.Null);
         }
         public override string ToString()
         {
@@ -19,9 +22,9 @@ namespace ISL.Language.Expressions
         public override Expression Simplify()
         {
             affected = affected?.Simplify();
-            if (affected is ConstantExpression)
+            if (affected is ConstantExpression a && Operation is not ProgramAccessingUnaryOperator)
             {
-                return ConstantExpression.For(Operation.Operate.Invoke(affected.Eval()));
+                return ConstantExpression.For(Operation.Operate.Invoke(a.Eval()));
             }
             return this;
         }

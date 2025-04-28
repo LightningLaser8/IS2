@@ -8,6 +8,7 @@ using ISL.Language.Expressions;
 using ISL.Language.Types;
 using ISL.Runtime.Errors;
 using ISL.Compiler;
+using ISL.Language.Variables;
 
 namespace ISL.Compiler
 {

@@ -7,15 +7,20 @@ using ISL.Language.Types;
 
 namespace ISL.Language.Variables
 {
-    internal class IslVariable(string name, IslType type)
+    public class IslVariable(string name, IslType type) : IslValue
     {
+        public bool InferType { get; set; } = false;
         public string Name { get; } = name;
-        public IslValue Value { get; set; } = IslValue.DefaultForType(type);
-        public IslType Type { get; } = type;
+        public IslValue Value { get; set; } = DefaultForType(type);
+        public override IslType Type { get; protected set; } = type;
 
-        public override string ToString()
+        public override string Stringify()
         {
-            return "(Local) " + Name + ": " + Value.Stringify();
+            return $"[Local] {Name}: ({Type}) {Value.Stringify()}";
+        }
+        internal void ChangeType(IslType type)
+        {
+            if(InferType) Type = type;
         }
     }
 }

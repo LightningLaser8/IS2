@@ -10,6 +10,7 @@ namespace ISL.Language.Types
 {
     internal class IslBool : IslValue, ITypedObject<IslBool, bool>, IIslInvertable
     {
+        public override IslType Type => IslType.Bool;
         public bool Value { get; } = false;
         public IslBool() { }
         public IslBool(bool val)
