@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ISL.Language.Types;
 using ISL.Language.Types.Collections;
+using ISL.Runtime.Errors;
 
 namespace ISL.Language.Expressions
 {
@@ -24,6 +25,28 @@ namespace ISL.Language.Expressions
         public override string ToString()
         {
             return $"(Generic Collection) {{{(expressions.Count > 0 ? expressions.Aggregate("", (prev, curr) => $"{prev}, {curr}")[2..] : "")}}}";
+        }
+        public override void Validate()
+        {
+            int index = 0;
+            bool wasAComma = true;
+            for (int i = 0; i < expressions.Count; i++)
+            {
+                if(expressions[i] is TokenExpression tk && tk.value == ",")
+                {
+                    if (wasAComma) throw new SyntaxError("Unexpected double comma at index #"+index);
+                    wasAComma = true;
+                    index++;
+                    expressions.RemoveAt(i);
+                    i--;
+                }
+                else
+                {
+                    if(!wasAComma) throw new SyntaxError("Expected comma after value #"+index);
+                    wasAComma = false;
+                }
+            }
+            expressions.ForEach(x => x.Validate());
         }
     }
 }

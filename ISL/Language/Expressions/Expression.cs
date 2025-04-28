@@ -13,14 +13,22 @@ namespace ISL.Language.Expressions
 {
     internal abstract class Expression
     {
-        public static Expression From(string token, IslCompiler engine)
+        public static Expression From(string token, IslCompiler compiler)
         {
+            foreach(var tok in compiler.Tokens)
+            {
+                if (tok == token)
+                {
+                    return new TokenExpression() { value = token };
+                }
+            }
+
             if (IslCompiler.Regexes.strings.IsMatch(token)) return new StringExpression() { value = IslString.FromString(token) };
             if (IslCompiler.Regexes.complex.IsMatch(token)) return new ComplexExpression() { value = IslComplex.FromString(token) };
             if (IslCompiler.Regexes.floats.IsMatch(token)) return new FloatExpression() { value = IslFloat.FromString(token) };
             if (IslCompiler.Regexes.ints.IsMatch(token)) return new IntExpression() { value = IslInt.FromString(token) };
 
-            foreach (var kw in engine.Keywords)
+            foreach (var kw in compiler.Keywords)
             {
                 if (kw.identifier == token)
                 {
@@ -28,7 +36,7 @@ namespace ISL.Language.Expressions
                 }
             }
 
-            foreach (var op in engine.Operators)
+            foreach (var op in compiler.Operators)
             {
                 if (op.predicate(token))
                 {
@@ -38,7 +46,7 @@ namespace ISL.Language.Expressions
                 }
             }
 
-            foreach (var bracket in engine.Brackets)
+            foreach (var bracket in compiler.Brackets)
             {
                 if (new string(bracket.Open, 1) == token)
                 {
@@ -49,12 +57,13 @@ namespace ISL.Language.Expressions
                 }
             }
 
-            if (token == "null") return Expression.Null;
+            if (token == "null") return Null;
 
             return new IdentifierExpression() { value = IslIdentifier.FromString(token) };
         }
         public static NullExpression Null = new();
         public abstract IslValue Eval();
         public abstract Expression Simplify();
+        public virtual void Validate() { }
     }
 }

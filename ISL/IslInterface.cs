@@ -66,7 +66,7 @@ namespace ISL
                 errored = false;
                 return result;
             }
-            catch (Exception e)
+            catch (IslError e)
             {
                 result = IslErrorMessage.FromString(e.GetType().Name + ": " + e.Message);
                 output = compiler.output + "Error encountered!\n";

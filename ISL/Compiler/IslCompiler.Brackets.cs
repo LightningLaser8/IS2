@@ -13,7 +13,7 @@ namespace ISL.Compiler
 {
     internal partial class IslCompiler
     {
-        public List<BracketType> Brackets = [];
+        public BracketType[] Brackets = [];
         public bool HasBracket(char brkt)
         {
             foreach (var bracket in Brackets)

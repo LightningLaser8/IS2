@@ -25,6 +25,9 @@ namespace ISL.Compiler
             Bracketise(expressions);
 
             Treeify(expressions);
+            Debug(" Validate Expression Syntax:");
+            expressions.ForEach(ex => { Debug($" validating {ex}"); ex.Validate(); });
+            Debug("Syntax Analysis / Code Gen Finished!");
         }
 
         private void Treeify(List<Expression> expressions)
@@ -60,7 +63,6 @@ namespace ISL.Compiler
             {
                 Debug("  No operators present.");
                 Debug("  No tree creation required.");
-                MakeKeywordsGrabExpressions(expressions);
             }
             else
             {
@@ -69,9 +71,9 @@ namespace ISL.Compiler
                 Debug("Create Expression Tree:");
                 for (int precedence = highestPrecedence; precedence >= lowestPrecedence; precedence--)
                     CreateTreeLevel(precedence, expressions);
-                MakeKeywordsGrabExpressions(expressions);
                 Debug("  Tree Created.");
             }
+            MakeKeywordsGrabExpressions(expressions);
         }
 
         private void Bracketise(List<Expression> expressions, int level = 0)
@@ -163,7 +165,7 @@ namespace ISL.Compiler
 
         private void MakeKeywordsGrabExpressions(List<Expression> expressions)
         {
-            Debug($"Final Loop:");
+            Debug($" Final Loop:");
             int currentIndex = -1;
             while (true)
             {
@@ -181,16 +183,17 @@ namespace ISL.Compiler
 
                 if (expr is KeywordExpression kwe)
                 {
-                    for(byte i = 0; i < kwe.Keyword.ArgumentCount; i++)
+                    Debug($" > found keyword {expr}");
+                    for (byte i = 0; i < kwe.Keyword.ArgumentCount; i++)
                     {
                         int searchIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
                         if (searchIndex == -1)
                         {
                             Debug("  oh no, keyword doesn't have enough expressions, let's error!");
-                            throw new SyntaxError($"Keyword {kwe.Keyword.identifier} requires {kwe.Keyword.ArgumentCount} arguments, got {i}");
+                            throw new SyntaxError($"Unexpected end of input!");
                         }
                         else Debug($"  next argument at {searchIndex}");
-                        kwe.Expressions.Add(expressions[searchIndex]); 
+                        kwe.Expressions.Add(expressions[searchIndex]);
                         Debug($"  keyword ate {expressions[searchIndex]}");
                         expressions[searchIndex] = Expression.Null;
                     }
@@ -216,7 +219,7 @@ namespace ISL.Compiler
                         continue;
                     }
                 }
-                if (expr is IdentifierExpression ide)
+                if (expr is TokenExpression ide)
                 {
                     if (ide.value == new string(closingToken, 1))
                     {

@@ -26,5 +26,9 @@ namespace ISL.Language.Expressions.Combined
         {
             return $"(( {expression} ))";
         }
+        public override void Validate()
+        {
+            expression.Validate();
+        }
     }
 }

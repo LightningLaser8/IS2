@@ -1,5 +1,6 @@
 ﻿using ISL.Language.Operations;
 using ISL.Language.Types;
+using ISL.Runtime.Errors;
 
 namespace ISL.Language.Expressions
 {
@@ -29,6 +30,13 @@ namespace ISL.Language.Expressions
         public override Operator? GetOp()
         {
             return this.Operation;
+        }
+        public override void Validate()
+        {
+            affectedL?.Validate();
+            affectedR?.Validate();
+            if (affectedL is null) throw new SyntaxError($"Binary operator {value.Stringify()} requires 2 inputs, left operand is missing!");
+            if (affectedR is null) throw new SyntaxError($"Binary operator {value.Stringify()} requires 2 inputs, right operand is missing!");
         }
     }
 }

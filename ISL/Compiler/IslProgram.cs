@@ -72,7 +72,7 @@ namespace ISL.Compiler
                 result = this.Execute();
                 return result;
             }
-            catch (Exception e)
+            catch (IslError e)
             {
                 result = IslErrorMessage.FromString(e.GetType().Name + ": " + e.Message);
                 return result;

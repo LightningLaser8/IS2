@@ -1,5 +1,6 @@
 ﻿using ISL.Language.Operations;
 using ISL.Language.Types;
+using ISL.Runtime.Errors;
 
 namespace ISL.Language.Expressions
 {
@@ -28,6 +29,11 @@ namespace ISL.Language.Expressions
         public override Operator? GetOp()
         {
             return this.Operation;
+        }
+        public override void Validate()
+        {
+            affected?.Validate();
+            if (affected is null) throw new SyntaxError($"Unary operator {value.Stringify()} requires an input, operand is missing!");
         }
     }
 }
