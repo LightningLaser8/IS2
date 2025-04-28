@@ -23,7 +23,7 @@ namespace ISL.Language.Expressions
 
         public override string ToString()
         {
-            return $"(Collection) {{{expressions.Aggregate("", (prev, curr) => $"{prev} {curr}")} }}";
+            return $"(Generic Collection) {{{(expressions.Count > 0 ? expressions.Aggregate("", (prev, curr) => $"{prev}, {curr}")[2..] : "")}}}";
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ISL.Language.Expressions;
 using ISL.Language.Expressions.Combined;
+using ISL.Language.Keywords;
 using ISL.Language.Operations;
 using ISL.Runtime.Errors;
 
@@ -59,6 +60,7 @@ namespace ISL.Compiler
             {
                 Debug("  No operators present.");
                 Debug("  No tree creation required.");
+                MakeKeywordsGrabExpressions(expressions);
             }
             else
             {
@@ -67,6 +69,7 @@ namespace ISL.Compiler
                 Debug("Create Expression Tree:");
                 for (int precedence = highestPrecedence; precedence >= lowestPrecedence; precedence--)
                     CreateTreeLevel(precedence, expressions);
+                MakeKeywordsGrabExpressions(expressions);
                 Debug("  Tree Created.");
             }
         }
@@ -153,6 +156,44 @@ namespace ISL.Compiler
                         }
                     }
                     else Debug($" > skipped (precedence {boe.Operation.Precedence} does not match target {precedence})");
+                }
+            }
+            expressions.RemoveAll((expr) => expr == Expression.Null);
+        }
+
+        private void MakeKeywordsGrabExpressions(List<Expression> expressions)
+        {
+            Debug($"Final Loop:");
+            int currentIndex = -1;
+            while (true)
+            {
+                Debug($"  index from {(currentIndex == -1 ? "start" : currentIndex)}");
+                currentIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
+                if (currentIndex == -1)
+                {
+                    Debug("  program ended");
+                    break; //Stop if program done
+                }
+                else Debug($"  next expression at {currentIndex}");
+                var expr = expressions[currentIndex];
+                Debug($"  index {currentIndex} is {expr}");
+
+
+                if (expr is KeywordExpression kwe)
+                {
+                    for(byte i = 0; i < kwe.Keyword.ArgumentCount; i++)
+                    {
+                        int searchIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
+                        if (searchIndex == -1)
+                        {
+                            Debug("  oh no, keyword doesn't have enough expressions, let's error!");
+                            throw new SyntaxError($"Keyword {kwe.Keyword.identifier} requires {kwe.Keyword.ArgumentCount} arguments, got {i}");
+                        }
+                        else Debug($"  next argument at {searchIndex}");
+                        kwe.Expressions.Add(expressions[searchIndex]); 
+                        Debug($"  keyword ate {expressions[searchIndex]}");
+                        expressions[searchIndex] = Expression.Null;
+                    }
                 }
             }
             expressions.RemoveAll((expr) => expr == Expression.Null);

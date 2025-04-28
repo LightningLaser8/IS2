@@ -16,6 +16,7 @@ namespace ISL.Compiler
         public IslCompiler()
         {
             InitOperators();
+            InitKeywords();
             InitBrackets();
         }
 

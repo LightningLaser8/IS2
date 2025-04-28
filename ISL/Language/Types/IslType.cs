@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ISL.Language.Operations;
+using ISL.Language.Types.Collections;
 
 namespace ISL.Language.Types
 {
@@ -16,6 +17,25 @@ namespace ISL.Language.Types
         public virtual IslType Type => IslType.Null;
 
         public abstract string Stringify();
+
+        public static IslValue DefaultForType(IslType type)
+        {
+            return type switch
+            {
+                IslType.Null => Null,
+                IslType.Int => new IslInt(0),
+                IslType.Float => new IslFloat(0),
+                IslType.Complex => new IslComplex(0),
+                IslType.String => new IslString(""),
+                IslType.Bool => IslBool.False,
+                IslType.Group => new IslGroup(),
+                IslType.Object => throw new NotImplementedException(),
+                IslType.Class => throw new NotImplementedException(),
+                IslType.Identifier => new IslIdentifier(),
+                IslType.Token => throw new NotImplementedException(),
+                _ => throw new NotImplementedException(),
+            };
+        }
     }
     public enum IslType
     {
@@ -26,7 +46,7 @@ namespace ISL.Language.Types
         String,
         Bool,
         Group,
-        Object, 
+        Object,
         Class,
         Identifier,
         Token

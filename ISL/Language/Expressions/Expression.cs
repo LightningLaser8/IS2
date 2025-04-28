@@ -7,6 +7,7 @@ using ISL.Language.Expressions.Combined;
 using ISL.Language.Operations;
 using ISL.Language.Types;
 using ISL.Compiler;
+using ISL.Language.Keywords;
 
 namespace ISL.Language.Expressions
 {
@@ -18,6 +19,14 @@ namespace ISL.Language.Expressions
             if (IslCompiler.Regexes.complex.IsMatch(token)) return new ComplexExpression() { value = IslComplex.FromString(token) };
             if (IslCompiler.Regexes.floats.IsMatch(token)) return new FloatExpression() { value = IslFloat.FromString(token) };
             if (IslCompiler.Regexes.ints.IsMatch(token)) return new IntExpression() { value = IslInt.FromString(token) };
+
+            foreach (var kw in engine.Keywords)
+            {
+                if (kw.identifier == token)
+                {
+                    return new KeywordExpression() { Keyword = kw };
+                }
+            }
 
             foreach (var op in engine.Operators)
             {

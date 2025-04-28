@@ -19,11 +19,12 @@ namespace ISL.Compiler
         private void Tokenise()
         {
             // Split the source code into tokens (basic implementation)
+            bool isString = false;
             string currentToken = "";
             for (int i = 0; i < source.Length; i++)
             {
                 char c = source[i];
-                if (char.IsWhiteSpace(c))
+                if (char.IsWhiteSpace(c) && !isString)
                 {
                     if (currentToken != "")
                     {
@@ -32,7 +33,17 @@ namespace ISL.Compiler
                         currentToken = "";
                     }
                 }
-                else if (c == ';')
+                else if (c == '"')
+                {
+                    if (currentToken != "")
+                    {
+                        tokens.Add(isString?'"'+currentToken+'"':currentToken);
+                        Debug("Split on quote: " + currentToken);
+                        currentToken = "";
+                    }
+                    isString = !isString;
+                }
+                else if (c == ';' && !isString)
                 {
                     if (currentToken != "")
                     {
@@ -42,7 +53,17 @@ namespace ISL.Compiler
                     }
                     tokens.Add(";");
                 }
-                else if (HasBracket(c))
+                else if (c == ',' && !isString)
+                {
+                    if (currentToken != "")
+                    {
+                        tokens.Add(currentToken);
+                        Debug("Split on comma: " + currentToken);
+                        currentToken = "";
+                    }
+                    tokens.Add(",");
+                }
+                else if (HasBracket(c) && !isString)
                 {
                     if (currentToken != "")
                     {
