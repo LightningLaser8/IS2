@@ -27,7 +27,21 @@ namespace ISL.Compiler
 
             Treeify(expressions);
             Debug(" Validate Expression Syntax:");
-            expressions.ForEach(ex => { Debug($" validating {ex}"); ex.Validate(); });
+            bool wasSemi = true;
+            for (int i = 0; i < expressions.Count; i++)
+            {
+                Expression ex = expressions[i];
+                Debug("  token or expression " + ex.ToString() + (wasSemi ? ", wants expression here" : ", wants semicolon here"));
+                if (wasSemi && ex is TokenExpression te && te.value == ";") throw new SyntaxError("Unexpected ;");
+                if (!wasSemi && ex is not TokenExpression) throw new SyntaxError("Expected ;, got expression");
+                wasSemi = (ex is TokenExpression t2e && t2e.value == ";");
+                if (wasSemi)
+                {
+                    expressions.RemoveAt(i);
+                    i--;
+                }
+            }
+            expressions.ForEach(ex => { Debug($"  validating {ex}"); ex.Validate(); });
             Debug("Syntax Analysis / Code Gen Finished!");
         }
 
@@ -87,7 +101,7 @@ namespace ISL.Compiler
                 if (expr is BracketExpression cexp)
                 {
                     Debug($"  Found {cexp.bracket.Open} at {i}, looking for {cexp.bracket.Close}");
-                    int end = FindClosingBracket(i, level, cexp.bracket.Open, cexp.bracket.Close, expressions);
+                    int end = FindClosingBracket(i + 1, level, cexp.bracket.Open, cexp.bracket.Close, expressions);
                     if (end == -1) throw new SyntaxError("Expected closing " + cexp.bracket.Close);
                     Debug($"  Found closing {cexp.bracket.Close} at {end}");
                     expressions[end] = Expression.Null;
@@ -210,26 +224,38 @@ namespace ISL.Compiler
                 if (expr is null) break; //If out of bounds (i.e. it's done)
 
                 Debug($"  Expression {expr}");
-                if (expr is BracketExpression brx)
-                {
-                    if (brx.bracket.Open == openingToken)
-                    {
-                        currentLevel++;
-                        Debug($"  Opening bracket {openingToken} | Level is now " + currentLevel);
-                        continue;
-                    }
-                }
+
                 if (expr is TokenExpression ide)
                 {
                     if (ide.value == new string(closingToken, 1))
                     {
                         currentLevel--;
                         Debug($"  Closing bracket {closingToken} | Level is now " + currentLevel);
-                        if (currentLevel == level)
+                        if (currentLevel == level - 1)
                         {
                             Debug($"  Found it!");
                             return i;
                         }
+                        continue;
+                    }
+                }
+                if (expr is BracketExpression brx)
+                {
+                    if (brx.bracket.Close == closingToken)
+                    {
+                        currentLevel--;
+                        Debug($"  Closing bracket {closingToken} | Level is now " + currentLevel);
+                        if (currentLevel == level - 1)
+                        {
+                            Debug($"  Found it!");
+                            return i;
+                        }
+                    }
+                    if (brx.bracket.Open == openingToken)
+                    {
+                        currentLevel++;
+                        Debug($"  Opening bracket {openingToken} | Level is now " + currentLevel);
+                        continue;
                     }
                 }
             }
@@ -257,8 +283,8 @@ namespace ISL.Compiler
 
         private void Debug(string message)
         {
-            if (debugMode) output += message + "\n";
-            else output = "Debug mode is disabled.\n";
+            if (debugMode) debug += message + "\n";
+            else debug = "Debug mode is disabled.\n";
         }
     }
 }

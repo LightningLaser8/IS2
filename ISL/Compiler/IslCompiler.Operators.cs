@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 using ISL.Language.Operations;
@@ -92,16 +93,26 @@ namespace ISL.Compiler
                 }, 5),
                 #endregion
                 #region Variables
-                new UnaryOperator((str) => str == "infer", (target) => {
-                    Debug($"Will infer type of {target.Stringify()} on next assignment");
-                    if (target is not IslVariable targetadd) throw new TypeError($"Can only infer type of a variable.");
-                    targetadd.InferType = true;
+                new UnaryOperator((str) => str == "const", (target) => {
+                    if (target is not IslVariable targetadd) throw new TypeError($"Can only freeze type of a variable.");
+                    Debug($"Making {targetadd.Name} read-only");
+                    if(targetadd.InferType) throw new TypeError("Cannot freeze a type-inferred variable!");
+                    targetadd.ReadOnly = true;
                     return targetadd;
                 }, 11),
-                new ProgramAccessingUnaryOperator((str) => str == "var", (name, prog)=>{
+                new UnaryOperator((str) => str == "imply", (target) => {
+                    if (target is not IslVariable targetadd) throw new TypeError($"Can only imply type of a variable.");
+                    Debug($"Will type-cast all assigned values to {targetadd.Type} for {targetadd.Name}");
+                    if(targetadd.InferType) throw new TypeError("Cannot imply type of a type-inferred variable!");
+                    targetadd.ImpliedType = true;
+                    return targetadd;
+                }, 11),
+                new ProgramAccessingUnaryOperator((str) => str == "infer", (name, prog)=>{
                    if(name is not IslIdentifier iint) throw new SyntaxError($"Expected identifier in variable declaration, got {name.Type}");
-                   Debug($"Creating null (use infer) variable with name '{iint.Value}'");
-                   return prog.CreateVariable(iint.Value, IslType.Null);
+                   Debug($"Creating type-inferring (initially null) variable with name '{iint.Value}'");
+                   var vari = prog.CreateVariable(iint.Value, IslType.Null);
+                   vari.InferType = true;
+                   return vari;
                 }, 12),
                 new ProgramAccessingUnaryOperator((str) => str == "string", (name, prog)=>{
                    if(name is not IslIdentifier iint) throw new SyntaxError($"Expected identifier in variable declaration, got {name.Type}");
@@ -123,36 +134,109 @@ namespace ISL.Compiler
                    Debug($"Creating complex variable with name '{iint.Value}'");
                    return prog.CreateVariable(iint.Value, IslType.Complex);
                 }, 12),
+                new ProgramAccessingUnaryOperator((str) => str == "bool", (name, prog)=>{
+                   if(name is not IslIdentifier iint) throw new SyntaxError($"Expected identifier in variable declaration, got {name.Type}");
+                   Debug($"Creating boolean variable with name '{iint.Value}'");
+                   return prog.CreateVariable(iint.Value, IslType.Bool);
+                }, 12),
+                #endregion
+                #region Assignment
                 new ProgramAccessingBinaryOperator((str) => str == "=", (left, right, program) => {
-                    Debug($"Adding {left.Stringify()} and {right.Stringify()}");
-                    if(left is IslIdentifier iide) left = program.GetVariableImperative(iide.Value);
-                    if (left is not IslVariable lvar) throw new TypeError($"Invalid left-hand side type {left.Type} in assignment.");
-                    if (right.Type != lvar.Type && !lvar.InferType) throw new TypeError($"Cannot mix types in assignment ({right.Type} => {left.Type})");
-                    if(lvar.InferType)
-                    {
-                        Debug($"Inferring type of {lvar.Stringify()} as {right.Type}");
-                        lvar.ChangeType(right.Type);
-                    }
-                    lvar.Value = right;
+                    Debug($"Setting {left.Stringify()} to {right.Stringify()}");
+                    CheckVar(left, program, out var lvar);
+                    CheckAssignment(lvar, right);
+                    AssignVar(lvar, right);
                     return lvar;
+                }, -2),
+                new ProgramAccessingBinaryOperator((str) => str == "+=", (left, right, program) => {
+                    CheckVar(left, program, out var lvar);
+                    if (lvar.Value is not IIslAddable ladd) throw new TypeError($"Invalid left-hand (augend and variable) type {lvar.Type} in addition assignment.");
+                    if (right is not IIslAddable) throw new TypeError($"Invalid left-hand (addend) type {right.Type} in addition assignment.");
+                    Debug($"Setting {left.Stringify()} to {lvar.Value.Stringify()} + {right.Stringify()}");
+                    IslValue res = IslValue.Null;
+                    try{
+                        res = ladd.Add(right);
+                    }
+                    catch (TypeError){
+                        if(!lvar.ImpliedType) throw;
+                        Debug($"Type of {lvar.Name} implied to be {lvar.Type}, casting {right.Type} -> {lvar.Type}");
+                        if(right is not IIslCastable rcast) throw new TypeError($"Type {right.Type} is not castable!");
+                        res = ladd.Add(rcast.Cast(lvar.Type));
+                    }
+                    CheckAssignment(lvar, res);
+                    AssignVar(lvar, res);
+                    return lvar;
+                }, -2),
+                #endregion
+                #region Casting
+                new BinaryOperator((str) => str == "->", (left, right) => {
+                    if(right is not IslIdentifier ride) throw new TypeError($"Must cast to a type identifier, got {right.Type}");
+                    Debug($"Casting {left.Stringify()} to {ride.Value}");
+                    if(left is not IIslCastable lcast) throw new TypeError($"Type {left.Type} is not castable!");
+                    return lcast.Cast(IslValue.GetTypeFromName(ride.Value));
                 }, -1),
-                new ProgramAccessingBinaryOperator((str) => str == "->", (left, right, program) => {
-                    Debug($"Casting {left.Stringify()} to {right.Type}");
-                    //TODO: Finish this!
-
-                    //if(left is IslIdentifier iide) left = program.GetVariableImperative(iide.Value);
-                    //if (left is not IslVariable lvar) throw new TypeError($"Invalid left-hand side type {left.Type} in assignment.");
-                    //if (right.Type != lvar.Type && !lvar.InferType) throw new TypeError($"Cannot mix types in assignment ({right.Type} => {left.Type})");
-                    //if(lvar.InferType)
-                    //{
-                    //    Debug($"Inferring type of {lvar.Stringify()} as {right.Type}");
-                    //    lvar.ChangeType(right.Type);
-                    //}
-                    //lvar.Value = right;
-                    return left;
-                }, 13)
+                #endregion
+                #region Communication
+                new ProgramAccessingUnaryOperator((str) => str == "out", (target, prog) => {
+                    if (target is not IslVariable targetvar) throw new TypeError($"Can only output a variable.");
+                    Debug($"Will output {targetvar.Stringify()} on program end");
+                    prog.OutputVariable(targetvar.Name);
+                    return targetvar;
+                }, 10),
+                new ProgramAccessingUnaryOperator((str) => str == "in", (target, prog) => {
+                    //Just grab everything
+                    if (target is IslIdentifier iide && iide.Value == "everything") {
+                        Debug($"Taking all inputs as (read-only) locals");
+                        foreach(var item in prog.Ins)
+                        {
+                            var vari = prog.CreateVariable(item.Key, item.Value.Type, item.Value);
+                            vari.ReadOnly = true;
+                            Debug($"  Input {item.Key} as {vari.Stringify()}");
+                        }
+                    }
+                    return IslValue.Null;
+                    //Specific variable assignment
+                    if (target is not IslVariable targetvar) throw new TypeError($"Can only input to a variable.");
+                    Debug($"Taking input from {targetvar.Name} as (read-only) {targetvar.Stringify()}");
+                    if(!prog.Ins.TryGetValue(targetvar.Name, out var val)) throw new InvalidReferenceError($"No input with name {targetvar.Name} found.");
+                    CheckAssignment(targetvar, val);
+                    AssignVar(targetvar, val);
+                    targetvar.ReadOnly = true;
+                    Debug($"Input {targetvar.Name} is {targetvar.Stringify()}");
+                    return targetvar;
+                }, 10),
                 #endregion
             ];
         }
+        #region Checks
+        private static void CheckVar(IslValue name, IslProgram program, out IslVariable vari)
+        {
+            if (name is IslIdentifier iide) name = program.GetVariableImperative(iide.Value);
+            if (name is not IslVariable lvar) throw new TypeError($"Invalid left-hand side type {name.Type} in assignment.");
+            vari = lvar;
+        }
+        private static void CheckAssignment(IslVariable vari, IslValue value)
+        {
+            if (value.Type != vari.Type && !vari.InferType && !vari.ImpliedType) throw new TypeError($"Cannot mix types in assignment (setting {vari.Type} to a {value.Type})");
+        }
+        private void AssignVar(IslVariable vari, IslValue value)
+        {
+            if (vari.ReadOnly) throw new AccessError($"Variable {vari.Name} cannot be set - it is read-only.");
+            if (vari.InferType)
+            {
+                Debug($"Inferring type of {vari.Stringify()} as {value.Type}");
+                vari.ChangeType(value.Type);
+                vari.InferType = false;
+            }
+            if (vari.ImpliedType && value.Type != vari.Type)
+            {
+                Debug($"Type of {value.Stringify()} implied to be {vari.Type}, casting {value.Type} -> {vari.Type}");
+                if (value is not IIslCastable rcast) throw new TypeError($"Type {value.Type} is not castable, so cannot be assigned to a type-implied variable.");
+                vari.Value = rcast.Cast(vari.Type);
+                return;
+            }
+            vari.Value = value;
+        }
+        #endregion
     }
 }

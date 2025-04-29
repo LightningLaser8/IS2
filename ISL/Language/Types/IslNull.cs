@@ -9,7 +9,7 @@ namespace ISL.Language.Types
 {
     public class IslNull : IslValue, ITypedObject<IslNull, Nullable<bool>>
     {
-        public Nullable<bool> Value { get; } = null;
+        public bool? Value { get; } = null;
         public override IslType Type => IslType.Null;
 
         public static IslNull FromString(string isl)
@@ -21,6 +21,10 @@ namespace ISL.Language.Types
         public override string Stringify()
         {
             return "null";
+        }
+        public override object? ToCLR()
+        {
+            return null;
         }
     }
 }

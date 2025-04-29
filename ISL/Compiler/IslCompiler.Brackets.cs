@@ -7,6 +7,7 @@ using ISL.Language.Expressions;
 using ISL.Language.Expressions.Combined;
 using ISL.Language.Operations;
 using ISL.Language.Types;
+using ISL.Language.Variables;
 using ISL.Runtime.Errors;
 
 namespace ISL.Compiler
@@ -31,6 +32,10 @@ namespace ISL.Compiler
                 }),
                 new BracketType('[', ']', (expr) => {
                     return new CollectionExpression() { expressions = expr };
+                }),
+                new BracketType('\\', '\\', (expr) => {
+                    if (expr.Count > 1) throw new SyntaxError("Variable getters \\ .. \\ can only contain one expression!");
+                    return new GetterExpression() { NameProvider = expr[0] };
                 })
             ];
         }

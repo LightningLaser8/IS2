@@ -74,5 +74,10 @@ namespace ISL.Language.Types.Collections
         {
             return (Value).GetEnumerator();
         }
+
+        public override object? ToCLR()
+        {
+            return Value.Select(x => x.ToCLR()).ToArray();
+        }
     }
 }

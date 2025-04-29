@@ -9,7 +9,7 @@ using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
 {
-    internal class IslString : IslValue, ITypedObject<IslString, string>, IIslAddable, IIslSubtractable, IIslMultiplicable
+    internal class IslString : IslValue, ITypedObject<IslString, string>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslCastable
     {
         public override IslType Type => IslType.String;
 
@@ -45,13 +45,13 @@ namespace ISL.Language.Types
         {
             if (value is IslString iint)
                 return new IslString(Value + iint.Value);
-            throw new SyntaxError($"Cannot add a {value.Type} to a {this.Type}");
+            throw new TypeError($"Cannot add a {value.Type} to a {this.Type}");
         }
         public IslValue Subtract(IslValue value)
         {
             if (value is IslString iint)
                 return new IslString(Value.Replace(iint.Value, ""));
-            throw new SyntaxError($"Cannot subtract a {value.Type} from a {this.Type}");
+            throw new TypeError($"Cannot subtract a {value.Type} from a {this.Type}");
         }
         public IslValue Multiply(IslValue value)
         {
@@ -62,7 +62,20 @@ namespace ISL.Language.Types
                     repeated += Value;
                 return new IslString(repeated);
             }
-            throw new SyntaxError($"Cannot multiply a {this.Type} by a {value.Type}");
+            throw new TypeError($"Cannot multiply a {this.Type} by a {value.Type}");
+        }
+
+        public IslValue Cast(IslType type)
+        {
+            if(type == IslType.Int) return IslInt.FromString(Value);
+            if(type == IslType.Float) return IslFloat.FromString(Value);
+            if(type == IslType.Complex) return IslComplex.FromString(Value);
+            if(type == IslType.Bool) return IslBool.FromString(Value);
+            throw new TypeConversionError(Type.ToString(), type.ToString());
+        }
+        public override object? ToCLR()
+        {
+            return Value;
         }
     }
 }

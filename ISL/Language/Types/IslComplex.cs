@@ -10,7 +10,7 @@ using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
 {
-    internal class IslComplex : IslValue, ITypedObject<IslComplex, Complex>, IIslAddable, IIslDivisible, IIslMultiplicable, IIslSubtractable, IIslExponentiable, IIslTriggable
+    internal class IslComplex : IslValue, ITypedObject<IslComplex, Complex>, IIslAddable, IIslDivisible, IIslMultiplicable, IIslSubtractable, IIslExponentiable, IIslTriggable, IIslCastable
     {
         public override IslType Type => IslType.Complex;
         public Complex Value { get; }
@@ -42,7 +42,7 @@ namespace ISL.Language.Types
                 return new IslComplex(iflt.Value + Value);
             if (value is IslComplex icmp)
                 return new IslComplex(Value + icmp.Value);
-            throw new SyntaxError($"Cannot add a {value.Type} to a {this.Type}");
+            throw new TypeError($"Cannot add a {value.Type} to a {this.Type}");
         }
         public IslValue Subtract(IslValue value)
         {
@@ -52,7 +52,7 @@ namespace ISL.Language.Types
                 return new IslComplex(Value - iflt.Value);
             if (value is IslComplex icmp)
                 return new IslComplex(Value - icmp.Value);
-            throw new SyntaxError($"Cannot subtract a {value.Type} from a {this.Type}");
+            throw new TypeError($"Cannot subtract a {value.Type} from a {this.Type}");
         }
         public IslValue Multiply(IslValue value)
         {
@@ -62,7 +62,7 @@ namespace ISL.Language.Types
                 return new IslComplex(Value * iflt.Value);
             if (value is IslComplex icmp)
                 return new IslComplex(icmp.Value * Value);
-            throw new SyntaxError($"Cannot multiply a {Type} by a {value.Type}");
+            throw new TypeError($"Cannot multiply a {Type} by a {value.Type}");
         }
         public IslValue Divide(IslValue value)
         {
@@ -72,7 +72,7 @@ namespace ISL.Language.Types
                 return new IslComplex(Value / iflt.Value);
             if (value is IslComplex icmp)
                 return new IslComplex(Value / icmp.Value);
-            throw new SyntaxError($"Cannot divide a {Type} by a {value.Type}");
+            throw new TypeError($"Cannot divide a {Type} by a {value.Type}");
         }
         public IslValue Exponentiate(IslValue value)
         {
@@ -82,7 +82,7 @@ namespace ISL.Language.Types
                 return new IslComplex(Complex.Pow(Value, iflt.Value));
             if (value is IslComplex icmp)
                 return new IslComplex(Complex.Pow(Value, icmp.Value));
-            throw new SyntaxError($"Cannot raise a {Type} to the power of a {value.Type}");
+            throw new TypeError($"Cannot raise a {Type} to the power of a {value.Type}");
         }
         public IslValue Sin()
         {
@@ -112,6 +112,19 @@ namespace ISL.Language.Types
         public IslValue ATan()
         {
             return new IslComplex(Complex.Atan(Value));
+        }
+
+        public IslValue Cast(IslType type)
+        {
+            if (type == IslType.Int) return new IslInt((long)Value.Real);
+            if (type == IslType.Float) return new IslFloat(Value.Real);
+            if (type == IslType.Bool) return Value == new Complex(0, 0) ? IslBool.False : IslBool.True;
+            if (type == IslType.String) return new IslString(Value.ToString());
+            throw new TypeConversionError(Type.ToString(), type.ToString());
+        }
+        public override object? ToCLR()
+        {
+            return Value;
         }
     }
 }

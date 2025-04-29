@@ -34,5 +34,9 @@ namespace ISL.Language.Types
         {
             return fl.Value;
         }
+        public override object? ToCLR()
+        {
+            throw new Exception("Identifiers can't be converted between ISL and CLR.");
+        }
     }
 }

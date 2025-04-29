@@ -7,9 +7,11 @@ namespace ISLTest
     {
         static IslInterface? @interface;
         static IslProgram? program;
+        static string debugOutput = " ";
+        static string runOutput = " ";
         static void Main(string[] args)
         {
-            bool isCompiling = false;
+            bool saveProgram = false;
             string source = "";
             bool listening = true;
             bool repeat = true;
@@ -31,13 +33,13 @@ namespace ISLTest
                 }
                 else if (inp == "!runmode")
                 {
-                    isCompiling = false;
+                    saveProgram = false;
                     WriteResponse("!runmode", "Now running input once.");
                 }
                 else if (inp == "!compmode")
                 {
-                    isCompiling = true;
-                    WriteResponse("!compmode", "Now compiling input.");
+                    saveProgram = true;
+                    WriteResponse("!compmode", "Now storing input.");
                 }
                 else if (inp == "!end")
                 {
@@ -47,7 +49,7 @@ namespace ISLTest
                 }
                 else if (inp == "!reset")
                 {
-                    if (isCompiling)
+                    if (saveProgram)
                     {
                         WriteResponse("!reset", "Compiled program cleared.");
                         program = null;
@@ -72,23 +74,27 @@ namespace ISLTest
                     else
                     {
                         WriteResponse("!exec", "Executing ISL.");
-                        if (isCompiling)
+                        if (program is null)
                         {
-                            if (program is null)
+                            try
                             {
-                                try
-                                {
-                                    program = @interface.Compile(source, debug);
-                                }
-                                catch (Exception e)
-                                {
-                                    WriteError($"Compilation Error! > {e.GetType().Name}: {e.Message}");
-                                }
+                                program = @interface.Compile(source, debug);
                             }
-                            program?.SafeExecute();
+                            catch (Exception e)
+                            {
+                                WriteError($"Compilation Error! > {e.GetType().Name}: {e.Message}");
+                            }
                         }
-                        else @interface.CompileAndExecute(source, out program, debug);
-                        ShowResult(isCompiling);
+                        debugOutput = @interface.LastDebug;
+                        if (program is not null)
+                        {
+                            program.AddInput("debug", debug);
+                            program.AddInput("takes-input", listening);
+                            program.SafeExecute();
+                            runOutput = @interface.CompilerDebug;
+                        }
+                        ShowResult();
+                        if (!saveProgram) program = null;
                         source = "";
                     }
                     WriteSeparator("      ------------------     ");
@@ -107,7 +113,7 @@ namespace ISLTest
         static string TakeInput()
         {
             InputArrow();
-            return Console.ReadLine()??"";
+            return Console.ReadLine() ?? "";
         }
 
         static void InputArrow()
@@ -123,43 +129,55 @@ namespace ISLTest
             WriteSeparator("-    --- Instructions ---   -");
             WriteInstruction("!debug", "Toggles debug mode.");
             WriteInstruction("!runmode", "Mode: Runs ISL code once. The default.");
-            WriteInstruction("!compmode", "Mode: Compiles ISL code.");
+            WriteInstruction("!compmode", "Mode: Stores compiled ISL code.");
             WriteInstruction("!exec", "Executes the stored program.");
             WriteInstruction("!clear", "Clears all console output.");
             WriteInstruction("!reset", "Clears all ISL input and compiled programs.");
             WriteInstruction("!end", "Stops taking ISL input.");
             WriteInstruction("!quit", "Stops recieving input, and stops the program.");
+            WriteSeparator("-     ----- Inputs ----     -");
+            WriteInput("debug", IslType.Bool, "True if debug mode is on, false if not.");
+            WriteInput("takes-input", IslType.Bool, "True if code input can still be taken.");
             WriteSeparator("-     -----------------     -");
         }
 
-        static void ShowResult(bool isCompiled)
+        static void ShowResult()
         {
-            if(@interface is null)
+            if (@interface is null)
             {
-                WriteSeparator("      ----- Output -----     ");
-                WriteError("No interpreter connected!");
+                WriteSeparator("      ------ Debug -----     ");
+                WriteError("No interface connected!");
                 return;
             }
-            if (isCompiled && program is null)
+            if (debugOutput.Length > 0)
+            {
+                WriteSeparator("      ------ Debug -----     ");
+                WriteISLOutput(debugOutput);
+            }
+            if (runOutput.Length > 0)
+            {
+                WriteSeparator("      ---- Run Debug ---     ");
+                WriteISLOutput(runOutput);
+            }
+            if (program is null)
             {
                 WriteSeparator("      ----- Output -----     ");
                 WriteError("No program has been compiled.");
-                return;
             }
-            string outp = @interface.LastOutput;
-            if(outp.Length > 0)
+            else
             {
                 WriteSeparator("      ----- Output -----     ");
-                WriteISLOutput(outp);
+                var outputs = program.LastOutputs;
+                foreach (var item in outputs)
+                {
+                    WriteISLOutput($"({item.Value?.GetType().Name}) {item.Key} = {item.Value?.ToString()}", true);
+                }
             }
-            if (@interface is null) return;
-
             WriteSeparator("      ----- Result -----     ");
-            IslValue res = (isCompiled ? program!.LastResult : @interface.LastResult);
             if (@interface.Errored)
-                WriteError(" <!> " + res.Stringify());
+                WriteError(" <!> " + @interface.ErrorMessage);
             else
-                WriteISLOutput($"({res.Type}) > {res.Stringify()}", true);
+                WriteISLOutput("  "+program?.LastResult.Stringify(), true);
         }
 
         public static void ClearLastLine()
@@ -202,6 +220,19 @@ namespace ISLTest
         {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(instruction);
+            Console.ResetColor();
+            Console.Write(" - ");
+            Console.Write(desc);
+            Console.Write('\n');
+        }
+        static void WriteInput(string id, IslType type, string desc = "")
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write(id);
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.Write(" (");
+            Console.Write(type.ToString());
+            Console.Write(")");
             Console.ResetColor();
             Console.Write(" - ");
             Console.Write(desc);

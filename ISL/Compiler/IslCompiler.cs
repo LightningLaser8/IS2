@@ -23,14 +23,12 @@ namespace ISL.Compiler
 
         public bool debugMode = false;
 
-        public List<IslProgram> programs = [];
-
         //Stuff to clean up after runtime
         string source = "";
         readonly List<string> tokens = [];
         readonly List<Expression> expressions = [];
         readonly List<Expression> code = [];
-        internal string output = "";
+        internal string debug = "";
 
         readonly Dictionary<string, string> metas = [];
 
@@ -46,7 +44,7 @@ namespace ISL.Compiler
         {
             // Initialize the interpreter
             source = sourceCode;
-            output = "";
+            debug = "";
             if (source.Length == 0)
             {
                 throw new SyntaxError("No code input!");

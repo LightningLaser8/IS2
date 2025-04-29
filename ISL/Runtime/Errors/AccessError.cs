@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ISL.Compiler
+namespace ISL.Runtime.Errors
 {
-    internal partial class IslCompiler
+    internal class AccessError(string message) : IslError(message)
     {
-        public readonly string[] Tokens = [",", ";", ")", "]", "\\"];
     }
 }

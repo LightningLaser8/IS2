@@ -19,5 +19,9 @@ namespace ISL.Language.Expressions
         {
             throw new SyntaxError("Unexpected token '" + value + "'");
         }
+        public override string ToString()
+        {
+            return $"(Token) {value.Stringify()}";
+        }
     }
 }

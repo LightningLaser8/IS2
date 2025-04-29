@@ -10,19 +10,35 @@ using ISL.Compiler;
 
 namespace ISL
 {
+    /// <summary>
+    /// Class for interaction with ISL.
+    /// </summary>
     public class IslInterface
     {
         private readonly IslCompiler compiler = new();
-        public string LastOutput => output;
-        private string output = "";
-        public IslValue LastResult => result;
-        private IslValue result = IslValue.Null;
-
+        /// <summary>
+        /// Stores debug output of the compiler.
+        /// </summary>
+        public string LastDebug => debug;
+        private string debug = "";
+        /// <summary>
+        /// Stores debug output of the compiler.
+        /// </summary>
+        public string CompilerDebug => compiler.debug;
+        /// <summary>
+        /// Stores the last error the compiler threw. An empty string is the last run was successful.
+        /// </summary>
+        public string ErrorMessage => error;
+        private string error = "";
+        /// <summary>
+        /// True if the last run was successful, false if not.
+        /// </summary>
         public bool Errored => errored;
         private bool errored = false;
         public IslInterface() { }
         /// <summary>
         /// Compiles an ISL program to a C# expression tree. This program can then be run repeatedly.<br/>
+        /// May throw syntax errors.<br/>
         /// May throw type errors due to optimising code.
         /// </summary>
         /// <exception cref="IslError"></exception>
@@ -38,41 +54,27 @@ namespace ISL
             try
             {
                 program = compiler.Compile(source);
-                output = compiler.output;
+                this.debug = compiler.debug;
+                compiler.debug = "";
                 errored = false;
+                error = "";
                 return program;
-            }
-            catch (Exception)
-            {
-                output = compiler.output + "Error encountered!\n";
-                errored = true;
-                throw;
-            }
-        }
-        /// <summary>
-        /// Executes some ISL code. Returns a string with the output of the code. Will not throw ISL errors.<br/>
-        /// Will actually compile the program fully, then run it, so it is not recommended to use this method repeatedly. Instead, use Compile(), and repeatedly Execute() the program.<br/>
-        /// Returns an IslErrorMessage is an error occurred in the code.
-        /// </summary>
-        /// <param name="sourceCode">The ISL code to run.</param>
-        /// <returns>The result of the execution.</returns>
-        public IslValue CompileAndExecute(string sourceCode, out IslProgram? program, bool debug = false)
-        {
-            compiler.debugMode = debug;
-            try
-            {
-                result = compiler.CompileAndRun(sourceCode, out program);
-                output = compiler.output;
-                errored = false;
-                return result;
             }
             catch (IslError e)
             {
-                result = IslErrorMessage.FromString(e.GetType().Name + ": " + e.Message);
-                output = compiler.output + "Error encountered!\n";
+                this.debug = compiler.debug + "Error encountered!\n";
+                compiler.debug = "";
                 errored = true;
-                program = null;
-                return result;
+                error = e.GetType().Name + ": " + e.Message;
+                throw;
+            }
+            catch (Exception e)
+            {
+                this.debug = compiler.debug + "Internal error encountered!\n";
+                compiler.debug = "";
+                errored = true;
+                error = e.Message;
+                throw;
             }
         }
     }

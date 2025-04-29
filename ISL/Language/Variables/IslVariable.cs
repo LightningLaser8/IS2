@@ -4,23 +4,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ISL.Language.Types;
+using ISL.Runtime.Errors;
 
 namespace ISL.Language.Variables
 {
     public class IslVariable(string name, IslType type) : IslValue
     {
+        public bool ReadOnly { get; set; } = false;
         public bool InferType { get; set; } = false;
+        public bool ImpliedType { get; set; } = false;
         public string Name { get; } = name;
         public IslValue Value { get; set; } = DefaultForType(type);
         public override IslType Type { get; protected set; } = type;
 
         public override string Stringify()
         {
-            return $"[Local] {Name}: ({Type}) {Value.Stringify()}";
+            return $"[{(ReadOnly ? "Readonly " : "")}Local Var {Name}] ({Type}) {Value.Stringify()}";
         }
+
+        public override object? ToCLR()
+        {
+            return Value.ToCLR();
+        }
+
         internal void ChangeType(IslType type)
         {
-            if(InferType) Type = type;
+            if (ReadOnly) throw new AccessError("Variable cannot be cast - it is read-only.");
+            if (InferType) Type = type;
         }
     }
 }

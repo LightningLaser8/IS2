@@ -8,12 +8,12 @@ using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
 {
-    internal class IslBool : IslValue, ITypedObject<IslBool, bool>, IIslInvertable
+    internal class IslBool : IslValue, ITypedObject<IslBool, bool>, IIslInvertable, IIslCastable
     {
         public override IslType Type => IslType.Bool;
         public bool Value { get; } = false;
-        public IslBool() { }
-        public IslBool(bool val)
+        private IslBool() { }
+        private IslBool(bool val)
         {
             Value = val;
         }
@@ -45,6 +45,20 @@ namespace ISL.Language.Types
         public IslValue Invert()
         {
             return Value ? False : True;
+        }
+
+        public override object? ToCLR()
+        {
+            return Value;
+        }
+
+        public IslValue Cast(IslType type)
+        {
+            if (type == IslType.Int) return new IslInt(Value ? 1 : 0);
+            if (type == IslType.Float) return new IslFloat(Value ? 1 : 0);
+            if (type == IslType.Complex) return new IslComplex(Value ? 1 : 0, 0);
+            if (type == IslType.String) return new IslString(Value.ToString());
+            throw new TypeConversionError(Type.ToString(), type.ToString());
         }
     }
 }

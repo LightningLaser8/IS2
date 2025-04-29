@@ -3,6 +3,13 @@ using ISL.Language.Types;
 
 namespace ISL.Language.Operations
 {
+    /// <summary>
+    /// Operator which accesses the program's current state.<br/>
+    /// Cannot be optimised, as the compiler doesn't know what the operator will do with the program.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <param name="operate"></param>
+    /// <param name="precedence"></param>
     internal class ProgramAccessingUnaryOperator(Func<string, bool> predicate, Func<IslValue, IslProgram, IslValue> operate, int precedence) : UnaryOperator(predicate, (v) => IslValue.Null, precedence)
     {
         /// <summary>

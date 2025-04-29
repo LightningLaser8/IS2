@@ -16,15 +16,24 @@ namespace ISL.Language.Expressions
     {
         public static Expression From(string token, IslCompiler compiler)
         {
-            foreach(var tok in compiler.Tokens)
+
+            foreach (var bracket in compiler.Brackets)
+            {
+                if (new string(bracket.Open, 1) == token)
+                {
+                    return new BracketExpression()
+                    {
+                        bracket = bracket
+                    };
+                }
+            }
+            foreach (var tok in compiler.Tokens)
             {
                 if (tok == token)
                 {
                     return new TokenExpression() { value = token };
                 }
             }
-
-            if (IslCompiler.Regexes.getters.IsMatch(token)) return new VariableExpression() { variable = token[1..^1] };
             if (IslCompiler.Regexes.strings.IsMatch(token)) return new StringExpression() { value = IslString.FromString(token) };
             if (IslCompiler.Regexes.complex.IsMatch(token)) return new ComplexExpression() { value = IslComplex.FromString(token) };
             if (IslCompiler.Regexes.floats.IsMatch(token)) return new FloatExpression() { value = IslFloat.FromString(token) };
@@ -45,17 +54,6 @@ namespace ISL.Language.Expressions
                     if (op is BinaryOperator bop) return new BinaryOperatorExpression() { value = IslIdentifier.FromString(token), Operation = bop };
                     if (op is UnaryOperator uop) return new UnaryOperatorExpression() { value = IslIdentifier.FromString(token), Operation = uop };
                     return new OperatorExpression() { value = IslIdentifier.FromString(token), Operation = op };
-                }
-            }
-
-            foreach (var bracket in compiler.Brackets)
-            {
-                if (new string(bracket.Open, 1) == token)
-                {
-                    return new BracketExpression()
-                    {
-                        bracket = bracket
-                    };
                 }
             }
 

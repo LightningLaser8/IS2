@@ -68,7 +68,7 @@ namespace ISL.Language.Types
                 return new IslFloat(iflt.Value + Value);
             if (value is IslComplex icmp)
                 return new IslComplex(Value + icmp.Value);
-            throw new SyntaxError($"Cannot add a {value.Type} to a {this.Type}");
+            throw new TypeError($"Cannot add a {value.Type} to a {this.Type}");
         }
         public IslValue Subtract(IslValue value)
         {
@@ -78,7 +78,7 @@ namespace ISL.Language.Types
                 return new IslFloat(Value - iflt.Value);
             if (value is IslComplex icmp)
                 return new IslComplex(Value - icmp.Value);
-            throw new SyntaxError($"Cannot subtract a {value.Type} from a {this.Type}");
+            throw new TypeError($"Cannot subtract a {value.Type} from a {this.Type}");
         }
         public IslValue Multiply(IslValue value)
         {
@@ -88,7 +88,7 @@ namespace ISL.Language.Types
                 return new IslFloat(Value * iflt.Value);
             if (value is IslComplex icmp)
                 return new IslComplex(icmp.Value * Value);
-            throw new SyntaxError($"Cannot multiply a {Type} by a {value.Type}");
+            throw new TypeError($"Cannot multiply a {Type} by a {value.Type}");
         }
         public IslValue Divide(IslValue value)
         {
@@ -98,7 +98,7 @@ namespace ISL.Language.Types
                 return new IslFloat(Value / iflt.Value);
             if (value is IslComplex icmp)
                 return new IslComplex(Value / icmp.Value);
-            throw new SyntaxError($"Cannot divide a {Type} by a {value.Type}");
+            throw new TypeError($"Cannot divide a {Type} by a {value.Type}");
         }
 
         public IslValue Exponentiate(IslValue value)
@@ -109,7 +109,7 @@ namespace ISL.Language.Types
                 return new IslFloat(Math.Pow(Value, iflt.Value));
             if (value is IslComplex icmp)
                 return new IslComplex(Complex.Pow(Value, icmp.Value));
-            throw new SyntaxError($"Cannot raise a {Type} to the power of a {value.Type}");
+            throw new TypeError($"Cannot raise a {Type} to the power of a {value.Type}");
         }
 
         public IslValue Modulate(IslValue value)
@@ -118,7 +118,7 @@ namespace ISL.Language.Types
                 return new IslFloat(Value % ilong.Value);
             if (value is IslFloat iflt)
                 return new IslFloat(Value % iflt.Value);
-            throw new SyntaxError($"Cannot modulate a {Type} with a {value.Type}");
+            throw new TypeError($"Cannot modulate a {Type} with a {value.Type}");
         }
 
 
@@ -161,6 +161,15 @@ namespace ISL.Language.Types
             return new IslInt(ExtractBits().exponent);
         }
 
+        public IslValue Cast(IslType type)
+        {
+            if (type == IslType.Int) return new IslInt((long)Value);
+            if (type == IslType.Complex) return new IslComplex(Value);
+            if (type == IslType.Bool) return Value > 0 ? IslBool.True : IslBool.False;
+            if (type == IslType.String) return new IslString(Value.ToString());
+            throw new TypeConversionError(Type.ToString(), type.ToString());
+        }
+
         private (long mantissa, short exponent) ExtractBits()
         {
             // Translate the double into sign, exponent and mantissa.
@@ -201,6 +210,10 @@ namespace ISL.Language.Types
             }
 
             return (mantissa * (negative ? -1 : 1), exponent);
+        }
+        public override object? ToCLR()
+        {
+            return Value;
         }
     }
 }

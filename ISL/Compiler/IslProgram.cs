@@ -2,6 +2,7 @@
 using ISL.Language.Expressions;
 using ISL.Language.Types;
 using ISL.Language.Variables;
+using ISL.Language.Types.Collections;
 
 namespace ISL.Compiler
 {
@@ -45,6 +46,8 @@ namespace ISL.Compiler
         }
         private readonly List<Expression> codePoints = [];
 
+        public Dictionary<string, object?> LastOutputs => outputs;
+        private Dictionary<string, object?> outputs = [];
         public IslValue LastResult => result;
         private IslValue result = IslValue.Null;
         /// <summary>
@@ -61,6 +64,7 @@ namespace ISL.Compiler
             {
                 result = point.Eval(this);
             }
+            CreateOutputs();
             return result;
         }
         /// <summary>
@@ -81,25 +85,59 @@ namespace ISL.Compiler
             }
         }
 
+        public void AddInput(string name, long value)
+        {
+            Ins.Add(name, new IslInt(value));
+        }
+        public void AddInput(string name, double value)
+        {
+            Ins.Add(name, new IslFloat(value));
+        }
+        public void AddInput(string name, double real, double imaginary)
+        {
+            Ins.Add(name, new IslComplex(real, imaginary));
+        }
+        public void AddInput(string name, bool value)
+        {
+            Ins.Add(name, value ? IslBool.True : IslBool.False);
+        }
+        public void AddInput(string name, string value)
+        {
+            Ins.Add(name, new IslString(value));
+        }
+
+        private void CreateOutputs()
+        {
+            outputs = new(Vars.Where(kvp => Outs.Contains(kvp.Key)).Select(kvp2 => new KeyValuePair<string, object?>(kvp2.Key, kvp2.Value.Value.ToCLR())));
+        }
+
+        internal Dictionary<string, IslValue> Ins { get; } = [];
         internal Dictionary<string, IslVariable> Vars { get; } = [];
+        internal List<string> Outs { get; } = [];
+        internal void OutputVariable(string name)
+        {
+            Outs.Add(name);
+        }
         public IslVariable CreateVariable(string name, IslType type, IslValue value)
         {
             IslVariable vari = new(name, type)
             {
                 Value = value
             };
+            if (Vars.ContainsKey(name)) throw new InvalidReferenceError(name + " already exists! It's a " + GetVariable(name)?.Type);
             Vars.Add(name, vari);
             return vari;
         }
         public IslVariable CreateVariable(string name, IslType type)
         {
             IslVariable vari = new(name, type);
+            if (Vars.ContainsKey(name)) throw new InvalidReferenceError(name + " already exists! It's a " + GetVariable(name)?.Type);
             Vars.Add(name, vari);
             return vari;
         }
         public IslValue SetVariable(string name, IslValue value)
         {
-            var vari = GetVariable(name) ?? throw new InvalidReferenceError($"Variable '{name}' doesn't exist.");
+            var vari = GetVariableImperative(name);
             vari.Value = value;
             return value;
         }
@@ -114,7 +152,7 @@ namespace ISL.Compiler
         }
         public IslVariable GetVariableImperative(string name)
         {
-            if(!Vars.TryGetValue(name, out var islVariable)) throw new InvalidReferenceError($"Variable '{name}' doesn't exist.");
+            if (!Vars.TryGetValue(name, out var islVariable)) throw new InvalidReferenceError($"Variable '{name}' doesn't exist.");
             return islVariable;
         }
     }
