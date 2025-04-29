@@ -184,7 +184,7 @@ namespace ISLTest
         {
             Console.SetCursorPosition(0, Console.CursorTop - 1);
             Console.Write(new string(' ', Console.BufferWidth));
-            Console.SetCursorPosition(0, Console.CursorTop - 1);
+            Console.SetCursorPosition(0, Console.CursorTop);
         }
 
         static void WriteISLOutput(string output, bool isBright = false)

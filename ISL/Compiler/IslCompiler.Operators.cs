@@ -193,8 +193,8 @@ namespace ISL.Compiler
                             vari.ReadOnly = true;
                             Debug($"  Input {item.Key} as {vari.Stringify()}");
                         }
+                        return IslValue.Null;
                     }
-                    return IslValue.Null;
                     //Specific variable assignment
                     if (target is not IslVariable targetvar) throw new TypeError($"Can only input to a variable.");
                     Debug($"Taking input from {targetvar.Name} as (read-only) {targetvar.Stringify()}");

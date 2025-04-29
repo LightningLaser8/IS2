@@ -36,7 +36,10 @@ namespace ISL.Compiler
                 new BracketType('\\', '\\', (expr) => {
                     if (expr.Count > 1) throw new SyntaxError("Variable getters \\ .. \\ can only contain one expression!");
                     return new GetterExpression() { NameProvider = expr[0] };
-                })
+                }),
+                new BracketType('{', '}', (expr) => {
+                    return new CodeBlockExpression() { expressions = expr };
+                }),
             ];
         }
     }

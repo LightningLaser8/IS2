@@ -27,6 +27,28 @@ namespace ISL.Compiler
 
             Treeify(expressions);
             Debug(" Validate Expression Syntax:");
+            ValidateCodeBlock(expressions);
+            expressions.ForEach(ex => { Debug($"  validating {ex}"); ex.Validate(); });
+            Debug("Syntax Analysis / Code Gen Finished!");
+        }
+        internal static void s_ValidateCodeBlock(List<Expression> expressions)
+        {
+            bool wasSemi = true;
+            for (int i = 0; i < expressions.Count; i++)
+            {
+                Expression ex = expressions[i];
+                if (wasSemi && ex is TokenExpression te && te.value == ";") throw new SyntaxError("Unexpected ;");
+                if (!wasSemi && ex is not TokenExpression) throw new SyntaxError("Expected ;, got expression");
+                wasSemi = (ex is TokenExpression t2e && t2e.value == ";");
+                if (wasSemi)
+                {
+                    expressions.RemoveAt(i);
+                    i--;
+                }
+            }
+        }
+        internal void ValidateCodeBlock(List<Expression> expressions)
+        {
             bool wasSemi = true;
             for (int i = 0; i < expressions.Count; i++)
             {
@@ -41,8 +63,6 @@ namespace ISL.Compiler
                     i--;
                 }
             }
-            expressions.ForEach(ex => { Debug($"  validating {ex}"); ex.Validate(); });
-            Debug("Syntax Analysis / Code Gen Finished!");
         }
 
         private void Treeify(List<Expression> expressions)

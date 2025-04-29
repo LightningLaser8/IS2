@@ -16,6 +16,10 @@ namespace ISL.Compiler
         private void InitKeywords()
         {
             Keywords = [
+                new Keyword("if", (labels, exprs, program) =>{
+                    var cond = exprs[0].Eval(program);
+                    if(cond is not IslBool condition) throw new TypeError($"If-statements require a Boolean condition, got {exprs[0]}")
+                }, 2, [])
                 ];
         }
     }
