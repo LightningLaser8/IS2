@@ -38,6 +38,7 @@ namespace ISL.Language.Types
         {
             return Value ? "true" : "false";
         }
+        public override string ToString() => Stringify();
 
         public readonly static IslBool True = new(true);
         public readonly static IslBool False = new(false);

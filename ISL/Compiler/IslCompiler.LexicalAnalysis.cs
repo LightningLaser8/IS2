@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ISL.Runtime.Errors;
 
 namespace ISL.Compiler
 {
@@ -106,8 +107,13 @@ namespace ISL.Compiler
         {
             var content = contents.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             string naem = content[0];
-            string vals = content[1..].Aggregate((p, c) => p + " " + c);
+            if (content.Length == 0) { 
+                metas.Add(naem, ""); 
+                return; 
+            }
+            string vals = string.Join('c', content[1..]);
             Debug($"  Tag '{naem}' has value '{vals}'");
+            if (metas.ContainsKey(naem)) throw new SyntaxError("There is already a definition for tag "+naem);
             metas.Add(naem, vals);
         }
     }

@@ -13,7 +13,7 @@ namespace ISL.Language.Types
 
         public abstract string Stringify();
 
-        public static IslValue DefaultForType(IslType type)
+        internal static IslValue DefaultForType(IslType type)
         {
             return type switch
             {
@@ -31,7 +31,7 @@ namespace ISL.Language.Types
                 _ => throw new NotImplementedException(),
             };
         }
-        public static IslType GetTypeFromName(string typename)
+        internal static IslType GetTypeFromName(string typename)
         {
             return typename switch
             {
@@ -44,6 +44,8 @@ namespace ISL.Language.Types
                 _ => throw new TypeError($"Type {typename} is not defined!")
             };
         }
+
+        public override string ToString() => Stringify();
         /// <summary>
         /// Converts this value to a CLR (Common Language Runtime) equivalent.
         /// </summary>

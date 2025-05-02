@@ -46,8 +46,9 @@ namespace ISL.Compiler
         }
         private readonly List<Expression> codePoints = [];
 
-        public Dictionary<string, object?> LastOutputs => outputs;
-        private Dictionary<string, object?> outputs = [];
+        public Dictionary<string, IslValue> LastOutputs => outputs;
+        public Dictionary<string, object?> LastCLROutputs => new(outputs.Select(kvp => new KeyValuePair<string, object?>(kvp.Key, kvp.Value.ToCLR())));
+        private Dictionary<string, IslValue> outputs = [];
         public IslValue LastResult => result;
         private IslValue result = IslValue.Null;
         /// <summary>
@@ -113,7 +114,7 @@ namespace ISL.Compiler
         private void CreateOutputs()
         {
             #pragma warning disable IDE0306 // Simplify collection initialization, literally impossible here
-            outputs = new(Vars.Where(kvp => Outs.Contains(kvp.Key)).Select(kvp2 => new KeyValuePair<string, object?>(kvp2.Key, kvp2.Value.Value.ToCLR())));
+            outputs = new(Vars.Where(kvp => Outs.Contains(kvp.Key)).Select(kvp2 => new KeyValuePair<string, IslValue>(kvp2.Key, kvp2.Value.Value)));
             #pragma warning restore IDE0306
         }
 

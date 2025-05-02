@@ -60,8 +60,10 @@ namespace ISL.Compiler
             Debug("Getting metadata:");
             ProcessMetadata();
             Tokenise();
-            Debug("  " + tokens.Count.ToString() + " tokens:\n" +
-                "  " + tokens.Select(x => $"'{x}'").Aggregate((prev, curr) => prev + ", " + curr));
+            if (tokens.Count > 0)
+                Debug("  " + tokens.Count.ToString() + " tokens:\n" +
+                    "  " + string.Join(", ", tokens.Select(x => $"'{x}'")));
+            else Debug("No tokens.");
             // Syntax analysis
             // Code generation
             Debug("\nSyntax Analysis and Code Generation:\n");
@@ -71,7 +73,7 @@ namespace ISL.Compiler
             Debug("\nCode Optimisation:\n");
             Optimise();
             Debug("  >- " + code.Count.ToString() + " final code points: \n  " + string.Join(", ", code.Select(x => x.ToString())));
-            Debug("\n  > Final (Human-Readable) Code:\n "+string.Join(";\n", code.Select(x => x.Stringify()))+";");
+            Debug("\n  > Final (Human-Readable) Code:\n " + string.Join(";\n", code.Select(x => x.Stringify())) + ";");
             Debug("\nCompilation Complete!\n");
 
             var program = new IslProgram(CloneList(code), CloneDict(metas));

@@ -67,7 +67,11 @@ namespace ISL.Language.Types.Collections
 
         public override string Stringify()
         {
-            return Value.Aggregate("", (prev, curr) => prev + (prev.Length>0?", ":"") + curr.Stringify());
+            return "[" + string.Join(", ", Value.Select(x => x.Stringify())) + "]";
+        }
+        public override string ToString()
+        {
+            return Stringify();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

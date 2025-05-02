@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using ISL.Language.Expressions;
 using ISL.Language.Operations;
 using ISL.Language.Types;
+using ISL.Language.Types.Collections;
 using ISL.Language.Variables;
 using ISL.Runtime.Errors;
 
@@ -146,6 +148,11 @@ namespace ISL.Compiler
                    Debug($"Creating boolean variable with name '{iint.Value}'");
                    return prog.CreateVariable(iint.Value, IslType.Bool);
                 }, 12),
+                new ProgramAccessingUnaryOperator((str) => str == "group", (name, prog)=>{
+                   if(name is not IslIdentifier iint) throw new SyntaxError($"Expected identifier in variable declaration, got {name.Type}");
+                   Debug($"Creating group variable with name '{iint.Value}'");
+                   return prog.CreateVariable(iint.Value, IslType.Group);
+                }, 12),
                 #endregion
                 #region Assignment
                 new ProgramAccessingBinaryOperator((str) => str == "=", (left, right, program) => {
@@ -212,6 +219,23 @@ namespace ISL.Compiler
                     Debug($"Input {targetvar.Name} is {targetvar.Stringify()}");
                     return targetvar;
                 }, 10),
+                #endregion
+                #region Collections
+                //Append item to a group or string
+                new ProgramAccessingBinaryOperator(str => str == "<~", (left, right, prog) => {
+                    Debug($"Appending {right.Stringify()} to {left.Stringify()}");
+                    IslValue iv = IslValue.Null;
+                    if(left is IslIdentifier iide) {
+                        var v = prog.GetVariableImperative(iide.Value);
+                        Debug(" being nice and getting variable for you");
+                        Debug(" got "+v.Stringify());
+                        iv = v.Value;
+                    }
+                    else iv = left;
+                    if(iv is ICollection<IslValue> icol) { icol.Add(right); return iv; }
+                    if(iv is IslString istr) { return istr.Add(iv); }
+                    throw new TypeError($"Cannot append to a {iv.Type}");
+                }, -5)
                 #endregion
             ];
         }
