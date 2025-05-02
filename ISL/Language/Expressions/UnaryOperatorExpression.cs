@@ -38,5 +38,6 @@ namespace ISL.Language.Expressions
             affected?.Validate();
             if (affected is null) throw new SyntaxError($"Unary operator {value.Stringify()} requires an input, operand is missing!");
         }
+        public override string Stringify() => $"{value.Stringify()} {affected?.Stringify()}";
     }
 }

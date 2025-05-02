@@ -18,5 +18,7 @@ namespace ISL.Language.Expressions
         {
             return $"(Complex) {value.Value.Real} + {value.Value.Imaginary}i";
         }
+
+        public override string Stringify() => $"{value.Value.Real} + {value.Value.Imaginary}i";
     }
 }

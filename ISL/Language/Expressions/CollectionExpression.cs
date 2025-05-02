@@ -25,7 +25,7 @@ namespace ISL.Language.Expressions
 
         public override string ToString()
         {
-            return $"(Generic Collection) {{{(expressions.Count > 0 ? expressions.Aggregate("", (prev, curr) => $"{prev}, {curr}")[2..] : "")}}}";
+            return $"(Generic Collection) {{{string.Join(", ", expressions.Select(x => x.Stringify()))}}}";
         }
         public override void Validate()
         {
@@ -48,6 +48,11 @@ namespace ISL.Language.Expressions
                 }
             }
             expressions.ForEach(x => x.Validate());
+        }
+
+        public override string Stringify()
+        {
+            return $"[{string.Join(", ", expressions.Select(x => x.Stringify()))}]";
         }
     }
 }

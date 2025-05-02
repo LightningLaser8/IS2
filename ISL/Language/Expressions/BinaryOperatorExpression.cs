@@ -41,5 +41,7 @@ namespace ISL.Language.Expressions
             if (affectedL is null) throw new SyntaxError($"Binary operator {value.Stringify()} requires 2 inputs, left operand is missing!");
             if (affectedR is null) throw new SyntaxError($"Binary operator {value.Stringify()} requires 2 inputs, right operand is missing!");
         }
+
+        public override string Stringify() => affectedL?.Stringify() + " " + value.Stringify() + " " + affectedR?.Stringify();
     }
 }

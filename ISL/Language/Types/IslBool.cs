@@ -8,7 +8,7 @@ using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
 {
-    internal class IslBool : IslValue, ITypedObject<IslBool, bool>, IIslInvertable, IIslCastable
+    public class IslBool : IslValue, ITypedObject<IslBool, bool>, IIslInvertable, IIslCastable, IIslEquatable
     {
         public override IslType Type => IslType.Bool;
         public bool Value { get; } = false;
@@ -60,5 +60,7 @@ namespace ISL.Language.Types
             if (type == IslType.String) return new IslString(Value.ToString());
             throw new TypeConversionError(Type.ToString(), type.ToString());
         }
+
+        public IslBool EqualTo(IslValue other) => other is IslBool ib && Value == ib.Value;
     }
 }

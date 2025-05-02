@@ -25,5 +25,6 @@ namespace ISL.Language.Expressions.Combined
         {
             throw new SyntaxError("Unresolved bracket expression!");
         }
+        public override string Stringify() => $"{bracket.Open}";
     }
 }

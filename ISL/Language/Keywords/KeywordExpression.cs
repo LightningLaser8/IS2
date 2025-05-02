@@ -17,23 +17,30 @@ namespace ISL.Language.Keywords
         public List<Expression> Expressions { get; set; } = [];
         public override IslValue Eval(IslProgram program)
         {
-            if (Keyword is not ReturningKeyword) Keyword.Action.Invoke([.. Labels], [.. Expressions], program);
-            return Keyword is ReturningKeyword rkw ? rkw.Action.Invoke([.. Labels], [.. Expressions], program) : IslValue.Null;
+            if (Keyword is BackReferencingKeyword brk) brk.Action.Invoke(this, [.. Labels], [.. Expressions], program);
+            if (Keyword is not ReturningKeyword) Keyword.Action.Invoke(this, [.. Labels], [.. Expressions], program);
+            return Keyword is ReturningKeyword rkw ? rkw.Action.Invoke(this, [.. Labels], [.. Expressions], program) : IslValue.Null;
         }
 
         public override Expression Simplify()
         {
-            return new KeywordExpression() { Expressions = [.. Expressions.Select(x => x.Simplify())], Keyword = Keyword, Labels = Labels };
+            Expressions = [.. Expressions.Select(x => x.Simplify())];
+            return this;
         }
 
         public override string ToString()
         {
-            return $"(Keyword) [{(Labels.Count > 0 ? Labels.Aggregate((p, c) => p + ", " + c) : "")}] {Keyword.identifier} on {{{(Expressions.Count > 0 ? Expressions.Aggregate("", (p, c) => p + ", " + c.ToString())[2..] : "")}}}";
+            return $"(Keyword) [{string.Join(", ", Labels)}] {Keyword.identifier} on {{{string.Join(", ", Expressions.Select(x => x.ToString()))}}}";
         }
 
         public override void Validate()
         {
             if (Expressions.Count != Keyword.ArgumentCount) throw new SyntaxError($"Keyword {Keyword.identifier} requires {Keyword.ArgumentCount} arguments, got {Expressions.Count}");
+            Expressions.ForEach(x => x.Validate());
         }
+        public KeywordExpression? Reference { get; set; }
+
+        public IslValue result = IslValue.Null;
+        public override string Stringify() => $"{string.Join(", ", Labels)} {Keyword.identifier} {string.Join(", ", Expressions.Select(x => x.Stringify()))} ~> {Reference?.Stringify()??"no ref"}";
     }
 }

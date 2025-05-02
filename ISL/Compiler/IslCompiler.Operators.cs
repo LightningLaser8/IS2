@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
+using ISL.Language.Expressions;
 using ISL.Language.Operations;
 using ISL.Language.Types;
 using ISL.Language.Variables;
@@ -79,6 +80,12 @@ namespace ISL.Compiler
                     if (target is not IIslInvertable targetadd) throw new TypeError($"Invalid target type {target.Type} in inversion.");
                     return targetadd.Invert();
                 }, 5),
+                new BinaryOperator(str => str == "==", (left, right) => {
+                    Debug($"Checking equality of ({left.Type}) {left.Stringify()} and ({right.Type}) {right.Stringify()}");
+                    bool equal = false;
+                    if(left is IIslEquatable lconst && right is IIslEquatable rconst) equal = lconst.EqualTo(right);
+                    return equal ? IslBool.True : IslBool.False;
+                }, -1),
                 #endregion
                 #region Binary manipulation
                 new UnaryOperator((str) => str == "binmant", (target) => {
@@ -102,7 +109,7 @@ namespace ISL.Compiler
                 }, 11),
                 new UnaryOperator((str) => str == "imply", (target) => {
                     if (target is not IslVariable targetadd) throw new TypeError($"Can only imply type of a variable.");
-                    Debug($"Will type-cast all assigned values to {targetadd.Type} for {targetadd.Name}");
+                    Debug($"Will type-cast all assigned values to {targetadd.VarType} for {targetadd.Name}");
                     if(targetadd.InferType) throw new TypeError("Cannot imply type of a type-inferred variable!");
                     targetadd.ImpliedType = true;
                     return targetadd;
@@ -147,10 +154,10 @@ namespace ISL.Compiler
                     CheckAssignment(lvar, right);
                     AssignVar(lvar, right);
                     return lvar;
-                }, -2),
+                }, -5),
                 new ProgramAccessingBinaryOperator((str) => str == "+=", (left, right, program) => {
                     CheckVar(left, program, out var lvar);
-                    if (lvar.Value is not IIslAddable ladd) throw new TypeError($"Invalid left-hand (augend and variable) type {lvar.Type} in addition assignment.");
+                    if (lvar.Value is not IIslAddable ladd) throw new TypeError($"Invalid left-hand (augend and variable) type {lvar.VarType} in addition assignment.");
                     if (right is not IIslAddable) throw new TypeError($"Invalid left-hand (addend) type {right.Type} in addition assignment.");
                     Debug($"Setting {left.Stringify()} to {lvar.Value.Stringify()} + {right.Stringify()}");
                     IslValue res = IslValue.Null;
@@ -159,14 +166,14 @@ namespace ISL.Compiler
                     }
                     catch (TypeError){
                         if(!lvar.ImpliedType) throw;
-                        Debug($"Type of {lvar.Name} implied to be {lvar.Type}, casting {right.Type} -> {lvar.Type}");
+                        Debug($"Type of {lvar.Name} implied to be {lvar.VarType}, casting {right.Type} -> {lvar.VarType}");
                         if(right is not IIslCastable rcast) throw new TypeError($"Type {right.Type} is not castable!");
-                        res = ladd.Add(rcast.Cast(lvar.Type));
+                        res = ladd.Add(rcast.Cast(lvar.VarType));
                     }
                     CheckAssignment(lvar, res);
                     AssignVar(lvar, res);
                     return lvar;
-                }, -2),
+                }, -5),
                 #endregion
                 #region Casting
                 new BinaryOperator((str) => str == "->", (left, right) => {
@@ -174,7 +181,7 @@ namespace ISL.Compiler
                     Debug($"Casting {left.Stringify()} to {ride.Value}");
                     if(left is not IIslCastable lcast) throw new TypeError($"Type {left.Type} is not castable!");
                     return lcast.Cast(IslValue.GetTypeFromName(ride.Value));
-                }, -1),
+                }, -5),
                 #endregion
                 #region Communication
                 new ProgramAccessingUnaryOperator((str) => str == "out", (target, prog) => {
@@ -217,7 +224,7 @@ namespace ISL.Compiler
         }
         private static void CheckAssignment(IslVariable vari, IslValue value)
         {
-            if (value.Type != vari.Type && !vari.InferType && !vari.ImpliedType) throw new TypeError($"Cannot mix types in assignment (setting {vari.Type} to a {value.Type})");
+            if (value.Type != vari.VarType && !vari.InferType && !vari.ImpliedType) throw new TypeError($"Cannot mix types in assignment (setting {vari.VarType} to a {value.Type})");
         }
         private void AssignVar(IslVariable vari, IslValue value)
         {
@@ -228,11 +235,11 @@ namespace ISL.Compiler
                 vari.ChangeType(value.Type);
                 vari.InferType = false;
             }
-            if (vari.ImpliedType && value.Type != vari.Type)
+            if (vari.ImpliedType && value.Type != vari.VarType)
             {
-                Debug($"Type of {value.Stringify()} implied to be {vari.Type}, casting {value.Type} -> {vari.Type}");
+                Debug($"Type of {value.Stringify()} implied to be {vari.VarType}, casting {value.Type} -> {vari.VarType}");
                 if (value is not IIslCastable rcast) throw new TypeError($"Type {value.Type} is not castable, so cannot be assigned to a type-implied variable.");
-                vari.Value = rcast.Cast(vari.Type);
+                vari.Value = rcast.Cast(vari.VarType);
                 return;
             }
             vari.Value = value;

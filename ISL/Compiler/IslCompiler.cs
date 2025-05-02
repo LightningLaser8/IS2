@@ -66,11 +66,12 @@ namespace ISL.Compiler
             // Code generation
             Debug("\nSyntax Analysis and Code Generation:\n");
             Parse();
-            Debug("  >> " + expressions.Count.ToString() + " code points: \n  " + expressions.Aggregate<Expression, string>("", (x, y) => x + y.ToString() + ", "));
+            Debug("  >> " + expressions.Count.ToString() + " code points: \n  " + string.Join(", ", expressions.Select(x => x.ToString())));
             // Code Optimisation
             Debug("\nCode Optimisation:\n");
             Optimise();
-            Debug("  >- " + code.Count.ToString() + " final code points: \n  " + code.Aggregate<Expression, string>("", (x, y) => x + y.ToString() + ", "));
+            Debug("  >- " + code.Count.ToString() + " final code points: \n  " + string.Join(", ", code.Select(x => x.ToString())));
+            Debug("\n  > Final (Human-Readable) Code:\n "+string.Join(";\n", code.Select(x => x.Stringify()))+";");
             Debug("\nCompilation Complete!\n");
 
             var program = new IslProgram(CloneList(code), CloneDict(metas));

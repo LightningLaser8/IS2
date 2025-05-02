@@ -30,5 +30,6 @@ namespace ISL.Language.Variables
         {
             return $@"\ <ref {variable}> \";
         }
+        public override string Stringify() => $@"\{variable}\ ";
     }
 }

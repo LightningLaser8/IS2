@@ -9,7 +9,7 @@ using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
 {
-    internal class IslString : IslValue, ITypedObject<IslString, string>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslCastable
+    internal class IslString : IslValue, ITypedObject<IslString, string>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslCastable, IIslEquatable
     {
         public override IslType Type => IslType.String;
 
@@ -77,5 +77,7 @@ namespace ISL.Language.Types
         {
             return Value;
         }
+
+        public IslBool EqualTo(IslValue other) => other is IslString ist && ist.Value == this.Value;
     }
 }

@@ -37,5 +37,7 @@ namespace ISL.Language.Expressions
             if (NameProvider is not null) NameProvider.Validate();
             else throw new TypeError("Cannot get value of nothing!");
         }
+
+        public override string Stringify() => $@"\{NameProvider?.Stringify()}\";
     }
 }

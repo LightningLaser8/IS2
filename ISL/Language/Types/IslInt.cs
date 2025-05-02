@@ -12,7 +12,7 @@ namespace ISL.Language.Types
     /// <summary>
     /// Represents a 64-bit integral number in ISL.
     /// </summary>
-    public class IslInt : IslValue, ITypedObject<IslInt, long>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslDivisible, IIslInvertable, IIslExponentiable, IIslModulatable, IIslTriggable, IIslCastable
+    public class IslInt : IslValue, ITypedObject<IslInt, long>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslDivisible, IIslInvertable, IIslExponentiable, IIslModulatable, IIslTriggable, IIslCastable, IIslEquatable
     {
         public long Value { get; }
         public override IslType Type => IslType.Int;
@@ -165,6 +165,11 @@ namespace ISL.Language.Types
         public override object? ToCLR()
         {
             return Value;
+        }
+
+        public IslBool EqualTo(IslValue other)
+        {
+            return (other is IslInt iint && iint.Value == Value) || other is IslFloat iflt && iflt.Value == Value;
         }
     }
 }

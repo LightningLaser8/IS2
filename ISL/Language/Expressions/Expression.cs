@@ -41,6 +41,7 @@ namespace ISL.Language.Expressions
 
             foreach (var kw in compiler.Keywords)
             {
+                compiler.Debug("Keyword " + kw.identifier);
                 if (kw.identifier == token)
                 {
                     return new KeywordExpression() { Keyword = kw };
@@ -64,6 +65,8 @@ namespace ISL.Language.Expressions
         public static NullExpression Null = new();
         public abstract IslValue Eval(IslProgram program);
         public abstract Expression Simplify();
+
+        public abstract string Stringify();
         public virtual void Validate() { }
     }
 }

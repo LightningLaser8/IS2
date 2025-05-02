@@ -13,5 +13,6 @@ namespace ISL.Language.Expressions
         {
             return $"(Int) {value.Stringify()}";
         }
+        public override string Stringify() => $"{value.Stringify()}";
     }
 }

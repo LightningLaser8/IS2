@@ -31,5 +31,6 @@ namespace ISL.Language.Expressions.Combined
         {
             expression.Validate();
         }
+        public override string Stringify() => $"{this}";
     }
 }

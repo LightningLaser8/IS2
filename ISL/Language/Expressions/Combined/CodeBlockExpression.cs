@@ -27,12 +27,13 @@ namespace ISL.Language.Expressions.Combined
         }
         public override void Validate()
         {
-            IslCompiler.s_ValidateCodeBlock(this.expressions);
+            IslCompiler.ValidateCodeBlockStatic(this.expressions);
             expressions.ForEach(x => x.Validate());
         }
         public override string ToString()
         {
-            return $"{{{{ {(expressions.Count > 0 ? expressions.Aggregate("", (prev, curr) => $"{prev}, {curr}")[2..] : "")} }}}}";
+            return $"{{{{ {string.Join("; ", expressions.Select(x => x.ToString()))} }}}}";
         }
+        public override string Stringify() => $"{{{string.Join("; ", expressions.Select(x => x.Stringify()))}}}";
     }
 }

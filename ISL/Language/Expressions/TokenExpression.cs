@@ -23,5 +23,6 @@ namespace ISL.Language.Expressions
         {
             return $"(Token) {value.Stringify()}";
         }
+        public override string Stringify() => $"{value.Stringify()}";
     }
 }

@@ -10,7 +10,7 @@ using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
 {
-    internal class IslComplex : IslValue, ITypedObject<IslComplex, Complex>, IIslAddable, IIslDivisible, IIslMultiplicable, IIslSubtractable, IIslExponentiable, IIslTriggable, IIslCastable
+    internal class IslComplex : IslValue, ITypedObject<IslComplex, Complex>, IIslAddable, IIslDivisible, IIslMultiplicable, IIslSubtractable, IIslExponentiable, IIslTriggable, IIslCastable, IIslEquatable
     {
         public override IslType Type => IslType.Complex;
         public Complex Value { get; }
@@ -126,5 +126,7 @@ namespace ISL.Language.Types
         {
             return Value;
         }
+
+        public IslBool EqualTo(IslValue other) => other is IslComplex complex && complex.Value == this.Value;
     }
 }

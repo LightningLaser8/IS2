@@ -19,5 +19,6 @@ namespace ISL.Language.Expressions
         {
             return $"(Bool) {value.Stringify()}";
         }
+        public override string Stringify() => value ? "true" : "false";
     }
 }

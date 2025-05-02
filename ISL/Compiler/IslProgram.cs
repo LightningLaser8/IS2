@@ -87,28 +87,34 @@ namespace ISL.Compiler
 
         public void AddInput(string name, long value)
         {
-            Ins.Add(name, new IslInt(value));
+            AddInputV(name, new IslInt(value));
         }
         public void AddInput(string name, double value)
         {
-            Ins.Add(name, new IslFloat(value));
+            AddInputV(name, new IslFloat(value));
         }
         public void AddInput(string name, double real, double imaginary)
         {
-            Ins.Add(name, new IslComplex(real, imaginary));
+            AddInputV(name, new IslComplex(real, imaginary));
         }
         public void AddInput(string name, bool value)
         {
-            Ins.Add(name, value ? IslBool.True : IslBool.False);
+            AddInputV(name, value ? IslBool.True : IslBool.False);
         }
         public void AddInput(string name, string value)
         {
-            Ins.Add(name, new IslString(value));
+            AddInputV(name, new IslString(value));
+        }
+        internal void AddInputV(string name, IslValue value)
+        {
+            if (!Ins.TryAdd(name, value)) Ins[name] = value;
         }
 
         private void CreateOutputs()
         {
+            #pragma warning disable IDE0306 // Simplify collection initialization, literally impossible here
             outputs = new(Vars.Where(kvp => Outs.Contains(kvp.Key)).Select(kvp2 => new KeyValuePair<string, object?>(kvp2.Key, kvp2.Value.Value.ToCLR())));
+            #pragma warning restore IDE0306
         }
 
         internal Dictionary<string, IslValue> Ins { get; } = [];
@@ -124,14 +130,14 @@ namespace ISL.Compiler
             {
                 Value = value
             };
-            if (Vars.ContainsKey(name)) throw new InvalidReferenceError(name + " already exists! It's a " + GetVariable(name)?.Type);
+            if (Vars.ContainsKey(name)) throw new InvalidReferenceError(name + " already exists! It's a " + GetVariable(name)?.VarType);
             Vars.Add(name, vari);
             return vari;
         }
         public IslVariable CreateVariable(string name, IslType type)
         {
             IslVariable vari = new(name, type);
-            if (Vars.ContainsKey(name)) throw new InvalidReferenceError(name + " already exists! It's a " + GetVariable(name)?.Type);
+            if (Vars.ContainsKey(name)) throw new InvalidReferenceError(name + " already exists! It's a " + GetVariable(name)?.VarType);
             Vars.Add(name, vari);
             return vari;
         }

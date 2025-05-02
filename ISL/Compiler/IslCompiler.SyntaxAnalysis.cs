@@ -20,7 +20,10 @@ namespace ISL.Compiler
         {
             expressions.Clear();
 
-            expressions.AddRange(tokens.Select((x) => Expression.From(x, this)));
+            expressions.AddRange(tokens.Select((x) =>
+            {
+                return Expression.From(x, this);
+            }));
             Debug("Bracketise:");
             //Put shit in brackets
             Bracketise(expressions);
@@ -31,7 +34,7 @@ namespace ISL.Compiler
             expressions.ForEach(ex => { Debug($"  validating {ex}"); ex.Validate(); });
             Debug("Syntax Analysis / Code Gen Finished!");
         }
-        internal static void s_ValidateCodeBlock(List<Expression> expressions)
+        internal static void ValidateCodeBlockStatic(List<Expression> expressions)
         {
             bool wasSemi = true;
             for (int i = 0; i < expressions.Count; i++)
@@ -70,10 +73,7 @@ namespace ISL.Compiler
             Debug("Operator Precedence:");
 
             //Get precedence
-            int highestPrecedence = int.MinValue;
-            OperatorExpression? highOp = null;
-            int lowestPrecedence = int.MaxValue;
-            OperatorExpression? lowOp = null;
+            List<int> precedences = [];
             foreach (var expr in expressions)
             {
                 if (expr is OperatorExpression oe)
@@ -81,34 +81,27 @@ namespace ISL.Compiler
                     var op = oe.GetOp();
                     if (op is not null)
                     {
-                        if (op.Precedence < lowestPrecedence)
-                        {
-                            lowestPrecedence = op.Precedence;
-                            lowOp = oe;
-                        }
-                        if (op.Precedence > highestPrecedence)
-                        {
-                            highestPrecedence = op.Precedence;
-                            highOp = oe;
-                        }
+                        if (!precedences.Contains(op.Precedence)) precedences.Add(op.Precedence);
                     }
                 }
             }
-            if (highestPrecedence == int.MinValue)
+            precedences.Sort();
+            precedences.Reverse();
+            if (precedences.Count == 0)
             {
                 Debug("  No operators present.");
                 Debug("  No tree creation required.");
             }
             else
             {
-                Debug($"  Highest precedence is {highestPrecedence} ({highOp?.ToString() ?? ""})");
-                Debug($"  Lowest precedence is {lowestPrecedence} ({lowOp?.ToString() ?? ""})");
+                Debug($"  Precedences: [{precedences.Aggregate<int, string>("", (p, c) => $"{p}, {c}")[2..]}]");
                 Debug("Create Expression Tree:");
-                for (int precedence = highestPrecedence; precedence >= lowestPrecedence; precedence--)
+                foreach (int precedence in precedences)
                     CreateTreeLevel(precedence, expressions);
                 Debug("  Tree Created.");
             }
             MakeKeywordsGrabExpressions(expressions);
+            MakeKeywordsBackReference(expressions);
         }
 
         private void Bracketise(List<Expression> expressions, int level = 0)
@@ -130,8 +123,9 @@ namespace ISL.Compiler
                     Debug("Treeifying captured expressions:");
                     Treeify(captured);
                     var packaged = cexp.bracket.Create.Invoke(captured);
+                    Debug("Removing expressions:");
                     expressions[i] = packaged;
-                    expressions.RemoveRange(i + 1, end - i);
+                    if(expressions.Count > 0) expressions.RemoveRange(i + 1, end - i);
                     Debug($"  Brackets enclose {packaged}");
                 }
             }
@@ -201,6 +195,45 @@ namespace ISL.Compiler
         private void MakeKeywordsGrabExpressions(List<Expression> expressions)
         {
             Debug($" Keyword Loop:");
+            int currentIndex = expressions.Count;
+            while (true)
+            {
+                Debug($"  index from {(currentIndex == expressions.Count ? "end" : currentIndex)}");
+                currentIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
+                if (currentIndex == -1)
+                {
+                    Debug("  program ended");
+                    break; //Stop if program done
+                }
+                else Debug($"  next expression at {currentIndex}");
+                var expr = expressions[currentIndex];
+                Debug($"  index {currentIndex} is {expr}");
+
+                if (expr is KeywordExpression kwe)
+                {
+                    Debug($" > found keyword {expr}");
+                    Debug($"   search index from {(currentIndex == -1 ? "start" : currentIndex)}");
+                    for (byte i = 0; i < kwe.Keyword.ArgumentCount; i++)
+                    {
+                        int searchIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
+                        if (searchIndex == -1)
+                        {
+                            Debug("  oh no, keyword doesn't have enough expressions, let's error!");
+                            throw new SyntaxError($"Unexpected end of input!");
+                        }
+                        else Debug($"  next argument at {searchIndex}");
+                        kwe.Expressions.Add(expressions[searchIndex]);
+                        Debug($"  keyword ate {expressions[searchIndex]}");
+                        expressions[searchIndex] = Expression.Null;
+                    }
+
+                }
+            }
+            expressions.RemoveAll((expr) => expr == Expression.Null);
+        }
+        private void MakeKeywordsBackReference(List<Expression> expressions)
+        {
+            Debug($" Add Backreferences:");
             int currentIndex = -1;
             while (true)
             {
@@ -215,22 +248,32 @@ namespace ISL.Compiler
                 var expr = expressions[currentIndex];
                 Debug($"  index {currentIndex} is {expr}");
 
-                if (expr is KeywordExpression kwe)
+                if (expr is KeywordExpression kwe && kwe.Keyword is BackReferencingKeyword brk)
                 {
-                    Debug($" > found keyword {expr}");
-                    for (byte i = 0; i < kwe.Keyword.ArgumentCount; i++)
+
+                    Debug($" < keyword wants backreference");
+                    Debug($"  search index from {(currentIndex == -1 ? "start" : currentIndex)}");
+                    int lastkw = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
+                    Debug($"  keyword at {(lastkw == -1 ? "end" : lastkw)} ({expressions[lastkw]})");
+                    if (lastkw == -1)
                     {
-                        int searchIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
-                        if (searchIndex == -1)
-                        {
-                            Debug("  oh no, keyword doesn't have enough expressions, let's error!");
-                            throw new SyntaxError($"Unexpected end of input!");
-                        }
-                        else Debug($"  next argument at {searchIndex}");
-                        kwe.Expressions.Add(expressions[searchIndex]);
-                        Debug($"  keyword ate {expressions[searchIndex]}");
-                        expressions[searchIndex] = Expression.Null;
+                        throw new SyntaxError($"Keyword {brk.identifier} must come directly after a statement or expression!");
                     }
+                    if (expressions[lastkw] is TokenExpression tx && tx.value == ";")
+                    {
+                        Debug("  skipped semicolon");
+                        lastkw = FindNextNonNullExpression(lastkw, EvaluationDirection.Left, expressions);
+                        Debug($"  keyword at {(lastkw == -1 ? "end" : lastkw)} ({expressions[lastkw]})");
+                    }
+                    if (lastkw == -1)
+                    {
+                        throw new SyntaxError($"Keyword {brk.identifier} must come directly after a statement or expression!");
+                    }
+                    var toGrab = expressions[lastkw];
+                    if (toGrab is not KeywordExpression kx) throw new SyntaxError($"Keyword {brk.identifier} must come directly after a keyword! (currently {toGrab}");
+                    if (!brk.AllowedReferences.Contains(kx.Keyword.identifier)) throw new SyntaxError($"Keyword {brk.identifier} must come directly after one of these keywords: {string.Join(' ', brk.AllowedReferences)} (found {kx.Keyword.identifier})!");
+                    kwe.Reference = kx;
+                    Debug($" ~ Keyword refs {kwe.Reference}{(ReferenceEquals(kwe, kwe.Reference)?" (itself!)":"")}");
                 }
             }
             expressions.RemoveAll((expr) => expr == Expression.Null);
@@ -250,7 +293,7 @@ namespace ISL.Compiler
                     if (ide.value == new string(closingToken, 1))
                     {
                         currentLevel--;
-                        Debug($"  Closing bracket {closingToken} | Level is now " + currentLevel);
+                        Debug($"  Closing bracket {ide.value} | Level is now " + currentLevel);
                         if (currentLevel == level - 1)
                         {
                             Debug($"  Found it!");
@@ -261,7 +304,8 @@ namespace ISL.Compiler
                 }
                 if (expr is BracketExpression brx)
                 {
-                    if (brx.bracket.Close == closingToken)
+                    //Allow stuff like backslashes
+                    if (brx.bracket.Open == brx.bracket.Close && brx.bracket.Close == closingToken)
                     {
                         currentLevel--;
                         Debug($"  Closing bracket {closingToken} | Level is now " + currentLevel);
@@ -270,6 +314,7 @@ namespace ISL.Compiler
                             Debug($"  Found it!");
                             return i;
                         }
+                        continue;
                     }
                     if (brx.bracket.Open == openingToken)
                     {
@@ -301,7 +346,7 @@ namespace ISL.Compiler
             Left, Right
         }
 
-        private void Debug(string message)
+        internal void Debug(string message)
         {
             if (debugMode) debug += message + "\n";
             else debug = "Debug mode is disabled.\n";

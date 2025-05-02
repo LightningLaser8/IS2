@@ -17,5 +17,6 @@ namespace ISL.Language.Expressions
         {
             return "(Null) null";
         }
+        public override string Stringify() => $"null";
     }
 }
