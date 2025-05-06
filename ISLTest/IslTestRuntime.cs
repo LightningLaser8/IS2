@@ -1,22 +1,170 @@
-﻿using ISL;
+﻿using System.CommandLine;
+using ISL;
 using ISL.Compiler;
 using ISL.Language.Types;
 namespace ISLTest
 {
     internal class IslTestRuntime
     {
+        static readonly string AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\ISL";
+
         static IslInterface? @interface;
         static IslProgram? program;
         static string debugOutput = " ";
         static string runOutput = " ";
-        static void Main(string[] args)
+        static bool debug = false;
+        static bool verboseDebug = false;
+        static bool saveProgram = false;
+        static void Init()
         {
-            bool saveProgram = false;
+            if (!Directory.Exists(AppDataPath))
+                Directory.CreateDirectory(AppDataPath);
+        }
+        enum DebugVerbosity
+        {
+            None = 0,
+            Runtime = 1,
+            All = 2
+        }
+        static async Task<int> Main(string[] args)
+        {
+            Init();
+            var debugOption = new Option<DebugVerbosity>(
+                name: "--debug",
+                description: "Outputs debug information about compilation and runtime.",
+                getDefaultValue: () => DebugVerbosity.None
+                );
+
+            var saveOption = new Option<bool>(
+                name: "--save",
+                description: "Saves created program to a file.",
+                getDefaultValue: () => false
+                );
+
+            var fileOption = new Option<FileInfo?>(
+                name: "--file",
+                description: "The .isl file to read and execute. File will be created if not present.",
+                isDefault: true,
+                parseArgument: result =>
+                {
+                    if (result.Tokens.Count == 0)
+                    {
+                        return new FileInfo(AppDataPath + "\\source.isl");
+                    }
+                    string? filePath = result.Tokens.Single().Value;
+                    if (!File.Exists(filePath))
+                    {
+                        result.ErrorMessage = "File does not exist";
+                        return null;
+                    }
+                    else
+                    {
+                        return new FileInfo(filePath);
+                    }
+                });
+
+
+            var fileCommand = new Command(
+                name: "run",
+                description: "Opens, compiles and executes an ISL file."
+                )
+            { fileOption };
+            var directCommand = new Command(
+                name: "open",
+                description: "Provides an interface for running ISL directly."
+                )
+            { fileOption };
+
+            var rootCommand = new RootCommand("App for testing and debugging pure ISL.");
+            rootCommand.AddGlobalOption(debugOption);
+            rootCommand.AddCommand(fileCommand);
+            rootCommand.AddCommand(directCommand);
+
+            fileCommand.SetHandler((file, debug) =>
+            {
+                IslTestRuntime.debug = (int)debug > 0;
+                IslTestRuntime.verboseDebug = (int)debug > 1;
+                FileMode(file!);
+            },
+            fileOption, debugOption);
+
+            directCommand.SetHandler((debug) =>
+            {
+                IslTestRuntime.debug = (int)debug > 0;
+                IslTestRuntime.verboseDebug = (int)debug > 1;
+                DirectMode();
+            },
+             debugOption);
+
+            return await rootCommand.InvokeAsync(args);
+        }
+        static void FileMode(FileInfo file)
+        {
+            if (!file.Exists)
+            {
+                CreateFile(file.FullName, Examples.HelloWorld);
+            }
+            string source = string.Join('\n', File.ReadLines(file.FullName));
+            var compiler = new IslInterface();
+            try
+            {
+                var prog = compiler.Compile(source, debug);
+                Console.WriteLine("---------------------------\n");
+                if (verboseDebug)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.Write(string.Join('\n', compiler.LastDebug.Split('\n').Select(x => "  " + x)) + "\n");
+                    Console.ResetColor();
+                    Console.WriteLine("---------------------------\n");
+                }
+                prog.SafeExecute();
+                if (debug)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.Write(string.Join('\n', compiler.CompilerDebug.Split('\n').Select(x => "  " + x)) + "\n");
+                    Console.ResetColor();
+                    Console.WriteLine("---------------------------\n");
+                }
+                foreach (var output in prog.LastOutputs)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                    Console.Write($"{output.Key}");
+                    Console.ResetColor();
+                    Console.Write(" = ");
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.Write($"[{output.Value.Type}] ");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.Write($"{output.Value.Stringify()}");
+                    Console.ResetColor();
+                }
+            }
+            catch (Exception e)
+            {
+                if (verboseDebug)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.Write(string.Join('\n', compiler.LastDebug.Split('\n').Select(x => "  " + x)) + "\n");
+                    Console.ResetColor();
+                    Console.WriteLine("---------------------------\n");
+                }
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Compilation Error: ({e.GetType().Name}) {e.Message}");
+                Console.ResetColor();
+            }
+        }
+
+        static void CreateFile(string path, byte[] file)
+        {
+            var stream = File.Create(path);
+            stream.Write(file);
+            stream.Close();
+        }
+        static void DirectMode()
+        {
             string source = "";
+            WriteInstructions();
             bool listening = true;
             bool repeat = true;
-            bool debug = false;
-            WriteInstructions();
             while (repeat)
             {
                 @interface = new IslInterface();
@@ -26,26 +174,11 @@ namespace ISLTest
                     WriteResponse("!quit", "Stopping program.");
                     break;
                 }
-                else if (inp == "!debug")
-                {
-                    debug = !debug;
-                    WriteResponse("!debug", $"Debug mode {(debug ? "" : "de")}activated.");
-                }
                 else if (inp == "!help")
                 {
                     debug = !debug;
                     WriteResponse("!help", $"Helping.");
                     WriteHelps();
-                }
-                else if (inp == "!runmode")
-                {
-                    saveProgram = false;
-                    WriteResponse("!runmode", "Now running input once.");
-                }
-                else if (inp == "!compmode")
-                {
-                    saveProgram = true;
-                    WriteResponse("!compmode", "Now storing input.");
                 }
                 else if (inp == "!end")
                 {

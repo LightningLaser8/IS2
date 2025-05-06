@@ -1,0 +1,1 @@
+out string _ = "Hello World";

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ISLTest": {
+      "commandName": "Project",
+      "commandLineArgs": "run --debug All"
+    }
+  }
+}
