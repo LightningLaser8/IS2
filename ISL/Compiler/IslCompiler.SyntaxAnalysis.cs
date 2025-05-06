@@ -94,7 +94,7 @@ namespace ISL.Compiler
             }
             else
             {
-                Debug($"  Precedences: [{precedences.Aggregate<int, string>("", (p, c) => $"{p}, {c}")[2..]}]");
+                Debug($"  Precedences: [{string.Join(", ", precedences)}");
                 Debug("Create Expression Tree:");
                 foreach (int precedence in precedences)
                     CreateTreeLevel(precedence, expressions);
@@ -187,6 +187,30 @@ namespace ISL.Compiler
                         }
                     }
                     else Debug($" > skipped (precedence {boe.Operation.Precedence} does not match target {precedence})");
+                }
+                if (expr is CompoundOperatorExpression coe)
+                {
+                    if (coe.Operation.Precedence == precedence)
+                    {
+                        Debug($" > unary/binary operator {coe} at {currentIndex}, assume binary");
+                        //Find next non-null
+                        int targetR = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
+                        if (targetR != -1)
+                        {
+                            coe.affectedRequired = expressions[targetR];
+                            expressions[targetR] = Expression.Null;
+                            Debug("  found right operand " + coe.affectedRequired.ToString() + " at " + targetR.ToString());
+                        }
+                        //Find last non-null
+                        int targetL = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
+                        if (targetL != -1)
+                        {
+                            coe.affectedOptional = expressions[targetL];
+                            expressions[targetL] = Expression.Null;
+                            Debug("  found left operand " + coe.affectedOptional.ToString() + " at " + targetL.ToString());
+                        }
+                    }
+                    else Debug($" > skipped (precedence {coe.Operation.Precedence} does not match target {precedence})");
                 }
             }
             expressions.RemoveAll((expr) => expr == Expression.Null);
@@ -339,17 +363,16 @@ namespace ISL.Compiler
                 expr = expressions[search];
             }
             return search;
-        }
-
-        private enum EvaluationDirection
-        {
-            Left, Right
-        }
+        }        
 
         internal void Debug(string message)
         {
             if (debugMode) debug += message + "\n";
             else debug = "Debug mode is disabled.\n";
         }
+    }
+    internal enum EvaluationDirection
+    {
+        Left, Right
     }
 }

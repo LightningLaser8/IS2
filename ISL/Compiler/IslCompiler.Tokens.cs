@@ -8,6 +8,6 @@ namespace ISL.Compiler
 {
     internal partial class IslCompiler
     {
-        public readonly string[] Tokens = [",", ";", ")", "]", "\\", "}"];
+        public readonly string[] Tokens = [",", ";", ")", "]", "\\", "}", "!"];
     }
 }

@@ -18,6 +18,14 @@ namespace ISL.Compiler
     internal partial class IslCompiler
     {
         public Operator[] Operators = [];
+        public bool HasOperator(string token, bool mustBeAutoSplit = false)
+        {
+            foreach (var op in Operators)
+            {
+                if ((!mustBeAutoSplit || op.AutoSplit) && op.predicate(token)) return true;
+            }
+            return false;
+        }
         private void InitOperators()
         {
             Operators = [
@@ -28,12 +36,16 @@ namespace ISL.Compiler
                     if (right is not IIslAddable rightadd) throw new TypeError($"Invalid right-hand (addend) type {right.Type} in addition.");
                     return leftadd.Add(right);
                 }),
-                new BinaryOperator((str) => str == "-", (left, right) => {
+                new CompoundOperator((str) => str == "-", new BinaryOperator((left, right) => {
                     Debug($"Subtracting {right.Stringify()} from {left.Stringify()}");
                     if (left is not IIslSubtractable leftadd) throw new TypeError($"Invalid left-hand (minuend) type {left.Type} in subtraction.");
                     if (right is not IIslSubtractable rightadd) throw new TypeError($"Invalid right-hand (subtrahend) type {right.Type} in subtraction.");
                     return leftadd.Subtract(right);
-                }),
+                }), new UnaryOperator((str) => str == "-", (target) => {
+                    Debug($"Negating {target.Stringify()}");
+                    if (target is not IIslSubtractable leftadd) throw new TypeError($"Invalid target type {target.Type} in negation.");
+                    return new IslInt(0).Subtract(target);
+                })),
                 new BinaryOperator((str) => str == "*", (left, right) => {
                     Debug($"Multiplying {left.Stringify()} by {right.Stringify()}");
                     if (left is not IIslMultiplicable leftadd) throw new TypeError($"Invalid left-hand (multiplicand) type {left.Type} in multiplication.");
@@ -81,7 +93,7 @@ namespace ISL.Compiler
                     Debug($"Inverting {target.Stringify()}");
                     if (target is not IIslInvertable targetadd) throw new TypeError($"Invalid target type {target.Type} in inversion.");
                     return targetadd.Invert();
-                }, 5),
+                }, 5) { AutoSplit = true },
                 new BinaryOperator(str => str == "==", (left, right) => {
                     Debug($"Checking equality of ({left.Type}) {left.Stringify()} and ({right.Type}) {right.Stringify()}");
                     bool equal = false;
@@ -235,7 +247,12 @@ namespace ISL.Compiler
                     if(iv is ICollection<IslValue> icol) { icol.Add(right); return iv; }
                     if(iv is IslString istr) { return istr.Add(iv); }
                     throw new TypeError($"Cannot append to a {iv.Type}");
-                }, -5)
+                }, -5),
+                new BinaryOperator(str => str == "at", (left, right) => {
+                    Debug($"Getting value from {left.Stringify()} at index {left.Stringify()}");
+                    if (left is not IIslIndexable icol) throw new TypeError($"Cannot index a {left.Type}");
+                    return icol.Index(right);
+                }, -1),
                 #endregion
             ];
         }

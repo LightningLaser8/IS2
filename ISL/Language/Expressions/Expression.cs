@@ -27,21 +27,9 @@ namespace ISL.Language.Expressions
                     };
                 }
             }
-            foreach (var tok in compiler.Tokens)
-            {
-                if (tok == token)
-                {
-                    return new TokenExpression() { value = token };
-                }
-            }
-            if (IslCompiler.Regexes.strings.IsMatch(token)) return new StringExpression() { value = IslString.FromString(token) };
-            if (IslCompiler.Regexes.complex.IsMatch(token)) return new ComplexExpression() { value = IslComplex.FromString(token) };
-            if (IslCompiler.Regexes.floats.IsMatch(token)) return new FloatExpression() { value = IslFloat.FromString(token) };
-            if (IslCompiler.Regexes.ints.IsMatch(token)) return new IntExpression() { value = IslInt.FromString(token) };
 
             foreach (var kw in compiler.Keywords)
             {
-                compiler.Debug("Keyword " + kw.identifier);
                 if (kw.identifier == token)
                 {
                     return new KeywordExpression() { Keyword = kw };
@@ -52,11 +40,27 @@ namespace ISL.Language.Expressions
             {
                 if (op.predicate(token))
                 {
+                    if (op is CompoundOperator cop) return new CompoundOperatorExpression() { value = IslIdentifier.FromString(token), Operation = cop };
                     if (op is BinaryOperator bop) return new BinaryOperatorExpression() { value = IslIdentifier.FromString(token), Operation = bop };
                     if (op is UnaryOperator uop) return new UnaryOperatorExpression() { value = IslIdentifier.FromString(token), Operation = uop };
                     return new OperatorExpression() { value = IslIdentifier.FromString(token), Operation = op };
                 }
             }
+
+            foreach (var tok in compiler.Tokens)
+            {
+                if (tok == token)
+                {
+                    return new TokenExpression() { value = token };
+                }
+            }
+
+            if (IslCompiler.Regexes.strings.IsMatch(token)) return new StringExpression() { value = IslString.FromString(token) };
+            if (IslCompiler.Regexes.complex.IsMatch(token)) return new ComplexExpression() { value = IslComplex.FromString(token) };
+            if (IslCompiler.Regexes.floats.IsMatch(token)) return new FloatExpression() { value = IslFloat.FromString(token) };
+            if (IslCompiler.Regexes.ints.IsMatch(token)) return new IntExpression() { value = IslInt.FromString(token) };
+
+            if (token == "true" || token == "false") return new BoolExpression(IslBool.FromString(token));
 
             if (token == "null") return Null;
 

@@ -7,9 +7,9 @@ using ISL.Language.Types;
 
 namespace ISL.Language.Expressions
 {
-    internal class BoolExpression : ConstantExpression
+    internal class BoolExpression(bool val) : ConstantExpression
     {
-        public IslBool value = false;
+        public IslBool value = val ? IslBool.True : IslBool.False;
         public override IslValue Eval()
         {
             return value;

@@ -9,7 +9,7 @@ using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
 {
-    internal class IslString : IslValue, ITypedObject<IslString, string>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslCastable, IIslEquatable
+    internal class IslString : IslValue, ITypedObject<IslString, string>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslCastable, IIslEquatable, IIslIndexable, IIslAppendable
     {
         public override IslType Type => IslType.String;
 
@@ -79,5 +79,11 @@ namespace ISL.Language.Types
         }
 
         public IslBool EqualTo(IslValue other) => other is IslString ist && ist.Value == this.Value;
+        public IslValue Index(IslValue index) {
+            if (index is IslInt iint) return new IslString(new(Value[(int)iint.Value], 1));
+            if (index is IslString istr) return Index(new IslInt(Value.IndexOf(istr.Value) + istr.Value.Length));
+            throw new TypeError($"String indices must be ints or strings, got {index.Type}");
+        }
+        public void Append(IslValue value) => throw new NotImplementedException();
     }
 }

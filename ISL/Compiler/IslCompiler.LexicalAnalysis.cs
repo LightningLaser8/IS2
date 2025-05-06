@@ -64,6 +64,15 @@ namespace ISL.Compiler
                     }
                     tokens.Add(",");
                 }
+                else if (HasOperator(currentToken, true) && !isString)
+                {
+                    if (currentToken != "")
+                    {
+                        tokens.Add(currentToken);
+                        Debug("Split on operator: " + currentToken);
+                        currentToken = $"{c}";
+                    }
+                }
                 else if (HasBracket(c) && !isString)
                 {
                     if (currentToken != "")

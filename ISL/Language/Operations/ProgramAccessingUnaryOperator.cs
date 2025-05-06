@@ -16,6 +16,9 @@ namespace ISL.Language.Operations
         /// Performs the operation.
         /// </summary>
         public new Func<IslValue, IslProgram, IslValue> Operate { get; set; } = operate;
+        public ProgramAccessingUnaryOperator(Func<IslValue, IslProgram, IslValue> operate, int precedence) : this((s) => false, operate, precedence)
+        {
+        }
     }
     internal class ProgramAccessingBinaryOperator(Func<string, bool> predicate, Func<IslValue, IslValue, IslProgram, IslValue> operate, int precedence) : BinaryOperator(predicate, (v, v2) => IslValue.Null, precedence)
     {
@@ -23,5 +26,8 @@ namespace ISL.Language.Operations
         /// Performs the operation.
         /// </summary>
         public new Func<IslValue, IslValue, IslProgram, IslValue> Operate { get; set; } = operate;
+        public ProgramAccessingBinaryOperator(Func<IslValue, IslValue, IslProgram, IslValue> operate, int precedence) : this((s) => false, operate, precedence)
+        {
+        }
     }
 }

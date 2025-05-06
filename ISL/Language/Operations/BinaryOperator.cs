@@ -8,6 +8,9 @@ namespace ISL.Language.Operations
         {
             Precedence = precedence;
         }
+        public BinaryOperator(Func<IslValue, IslValue, IslValue> operate) : this((s) => false, operate)
+        {
+        }
 
         /// <summary>
         /// Performs the operation on two inputs.

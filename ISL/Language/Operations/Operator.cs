@@ -30,5 +30,6 @@ namespace ISL.Language.Operations
         /// Performs the operation.
         /// </summary>
         public Func<IslValue> Operate { get; set; } = operate;
+        public bool AutoSplit { get; set; } = false;
     }
 }

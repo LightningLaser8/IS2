@@ -45,7 +45,7 @@ namespace ISL.Language.Types
 
         public IslValue Invert()
         {
-            return Value ? False : True;
+            return (Value ? False : True);
         }
 
         public override object? ToCLR()

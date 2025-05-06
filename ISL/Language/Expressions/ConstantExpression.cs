@@ -11,6 +11,7 @@ namespace ISL.Language.Expressions
             if (val is IslFloat iflt) return new FloatExpression() { value = iflt };
             if (val is IslString istr) return new StringExpression() { value = istr };
             if (val is IslComplex icmp) return new ComplexExpression() { value = icmp };
+            if (val is IslBool ibol) return new BoolExpression(ibol);
             if (val is IslNull) return new NullExpression();
             if (val is IslIdentifier iidn) return new IdentifierExpression() { value = iidn };
             return Expression.Null;

@@ -158,11 +158,15 @@ namespace ISLTest
             WriteSeparator("  Variable Manipulation:");
             WriteHelp("<var> = <value>", "Sets the value of the variable at <var> to <value>.");
             WriteHelp("<var> += <value>", "Sets the value of the variable at <var> to its current value + <value>.");
-            WriteHelp("<var> <~ <value>", "Appends <value> to the end of <var>.");
+            WriteHelp("<var> <~ <value>", "Appends <value> to the end of <var>. Returns the variable's value.");
+            WriteSeparator("  Collection Manipulation:");
+            WriteSubheading(" Works on groups and strings.");
+            WriteHelp("<col> <~ <value>", "Appends <value> to the end of <col>. Returns the collection.");
+            WriteHelp("<col> at <index>", "Returns the element at index <index> of the collection <col>. Also can be used to search strings.");
             WriteSeparator("  Types:");
             WriteHelp("<value> -> <type>", "Returns <value> cast to type <type>. <type> must be a capitalised type name.");
             WriteSeparator("        -- Variables -      ");
-            WriteSeparator("Technically operators");
+            WriteSubheading(" Technically operators");
             WriteHelp("string <name>", "Creates and returns a string variable with name <name>.");
             WriteHelp("int <name>", "Creates and returns a 64-bit integer variable with name <name>.");
             WriteHelp("float <name>", "Creates and returns a double-precision floaring point number variable with name <name>.");
@@ -296,6 +300,12 @@ namespace ISLTest
         static void WriteSeparator(string separator)
         {
             Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine(separator);
+            Console.ResetColor();
+        }
+        static void WriteSubheading(string separator)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.WriteLine(separator);
             Console.ResetColor();
         }

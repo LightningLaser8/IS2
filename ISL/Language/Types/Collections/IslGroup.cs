@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ISL.Language.Operations;
 using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types.Collections
 {
-    internal class IslGroup : IslValue, ITypedObject<IslGroup, List<IslValue>>, ICollection<IslValue>
+    internal class IslGroup : IslValue, ITypedObject<IslGroup, List<IslValue>>, ICollection<IslValue>, IIslAppendable, IIslIndexable
     {
         public override IslType Type => IslType.Group;
         public List<IslValue> Value { get; init; } = [];
@@ -82,6 +83,13 @@ namespace ISL.Language.Types.Collections
         public override object? ToCLR()
         {
             return Value.Select(x => x.ToCLR()).ToArray();
+        }
+
+        public void Append(IslValue value) => Add(value);
+        public IslValue Index(IslValue index)
+        {
+            if (index is IslInt iint) return this[(int)iint.Value];
+            throw new TypeError($"Group indices must be integers, got {index.Type}");
         }
     }
 }
