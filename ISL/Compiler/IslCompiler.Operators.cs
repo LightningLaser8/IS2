@@ -170,36 +170,39 @@ namespace ISL.Compiler
                 new ProgramAccessingBinaryOperator((str) => str == "=", (left, right, program) => {
                     Debug($"Setting {left.Stringify()} to {right.Stringify()}");
                     CheckVar(left, program, out var lvar);
-                    CheckAssignment(lvar, right);
                     AssignVar(lvar, right);
                     return lvar;
                 }, -5),
+                // + - * / % **
                 new ProgramAccessingBinaryOperator((str) => str == "+=", (left, right, program) => {
                     CheckVar(left, program, out var lvar);
-                    if (lvar.Value is not IIslAddable ladd) throw new TypeError($"Invalid left-hand (augend and variable) type {lvar.VarType} in addition assignment.");
-                    if (right is not IIslAddable) throw new TypeError($"Invalid left-hand (addend) type {right.Type} in addition assignment.");
-                    Debug($"Setting {left.Stringify()} to {lvar.Value.Stringify()} + {right.Stringify()}");
-                    IslValue res = IslValue.Null;
-                    try{
-                        res = ladd.Add(right);
-                    }
-                    catch (TypeError){
-                        if(!lvar.ImpliedType) throw;
-                        Debug($"Type of {lvar.Name} implied to be {lvar.VarType}, casting {right.Type} -> {lvar.VarType}");
-                        if(right is not IIslCastable rcast) throw new TypeError($"Type {right.Type} is not castable!");
-                        res = ladd.Add(rcast.Cast(lvar.VarType));
-                    }
-                    CheckAssignment(lvar, res);
-                    AssignVar(lvar, res);
-                    return lvar;
+                    return AssignmentOperation(lvar, right, 0);
+                }, -5),
+                new ProgramAccessingBinaryOperator((str) => str == "-=", (left, right, program) => {
+                    CheckVar(left, program, out var lvar);
+                    return AssignmentOperation(lvar, right, 1);
+                }, -5),
+                new ProgramAccessingBinaryOperator((str) => str == "*=", (left, right, program) => {
+                    CheckVar(left, program, out var lvar);
+                    return AssignmentOperation(lvar, right, 2);
+                }, -5),
+                new ProgramAccessingBinaryOperator((str) => str == "/=", (left, right, program) => {
+                    CheckVar(left, program, out var lvar);
+                    return AssignmentOperation(lvar, right, 3);
+                }, -5),
+                new ProgramAccessingBinaryOperator((str) => str == "%=", (left, right, program) => {
+                    CheckVar(left, program, out var lvar);
+                    return AssignmentOperation(lvar, right, 4);
+                }, -5),
+                new ProgramAccessingBinaryOperator((str) => str == "**=", (left, right, program) => {
+                    CheckVar(left, program, out var lvar);
+                    return AssignmentOperation(lvar, right, 5);
                 }, -5),
                 #endregion
                 #region Casting
                 new BinaryOperator((str) => str == "->", (left, right) => {
                     if(right is not IslIdentifier ride) throw new TypeError($"Must cast to a type identifier, got {right.Type}");
-                    Debug($"Casting {left.Stringify()} to {ride.Value}");
-                    if(left is not IIslCastable lcast) throw new TypeError($"Type {left.Type} is not castable!");
-                    return lcast.Cast(IslValue.GetTypeFromName(ride.Value));
+                    return TryCast(left, IslValue.GetTypeFromName(ride.Value));
                 }, -5),
                 #endregion
                 #region Communication
@@ -257,6 +260,31 @@ namespace ISL.Compiler
             ];
         }
         #region Checks
+        private IslVariable AssignmentOperation(IslVariable vari, IslValue value, int operation)
+        {
+            var op = Operators[operation];
+            Debug($"Assignment operator (with base operation at {operation}) on {vari.Name} with {value.Stringify()}");
+            IslValue input = vari.ImpliedType ? TryCast(value, vari.VarType) : value;
+            IslValue res = (
+                op is CompoundOperator co
+                ? co.BinaryOperator.Operate(vari.Value, input)
+                : op is UnaryOperator uo
+                ? uo.Operate(vari.Value)
+                : op is BinaryOperator bo
+                ? bo.Operate(vari.Value, input)
+                : op.Operate()
+                );
+            if (vari.ImpliedType) res = TryCast(res, vari.VarType);
+            AssignVar(vari, res);
+            return vari;
+        }
+        private IslValue TryCast(IslValue islValue, IslType type)
+        {
+            if (islValue.Type == type) return islValue;
+            Debug($"Casting {islValue.Stringify()} to {type}");
+            if (islValue is not IIslCastable icast) throw new TypeError($"Type {islValue.Type} is not castable!");
+            return icast.Cast(type);
+        }
         private static void CheckVar(IslValue name, IslProgram program, out IslVariable vari)
         {
             if (name is IslIdentifier iide) name = program.GetVariableImperative(iide.Value);
@@ -269,6 +297,7 @@ namespace ISL.Compiler
         }
         private void AssignVar(IslVariable vari, IslValue value)
         {
+            CheckAssignment(vari, value);
             if (vari.ReadOnly) throw new AccessError($"Variable {vari.Name} cannot be set - it is read-only.");
             if (vari.InferType)
             {
@@ -280,7 +309,7 @@ namespace ISL.Compiler
             {
                 Debug($"Type of {value.Stringify()} implied to be {vari.VarType}, casting {value.Type} -> {vari.VarType}");
                 if (value is not IIslCastable rcast) throw new TypeError($"Type {value.Type} is not castable, so cannot be assigned to a type-implied variable.");
-                vari.Value = rcast.Cast(vari.VarType);
+                vari.Value = TryCast(value, vari.VarType);
                 return;
             }
             vari.Value = value;
