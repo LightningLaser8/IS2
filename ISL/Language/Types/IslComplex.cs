@@ -4,7 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using ISL.Compiler;
+using ISL.Interpreter;
 using ISL.Language.Operations;
 using ISL.Runtime.Errors;
 
@@ -25,7 +25,7 @@ namespace ISL.Language.Types
         }
         public static IslComplex FromString(string isl)
         {
-            if (IslCompiler.Regexes.complex.IsMatch(isl)) return new IslComplex(0, double.Parse(isl[..^1]));
+            if (IslInterpreter.Regexes.complex.IsMatch(isl)) return new IslComplex(0, double.Parse(isl[..^1]));
             throw new SyntaxError(isl + " is not a complex number!");
         }
 

@@ -6,9 +6,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ISL.Runtime.Errors;
 
-namespace ISL.Compiler
+namespace ISL.Interpreter
 {
-    internal partial class IslCompiler
+    internal partial class IslInterpreter
     {
         private void RemoveComments()
         {

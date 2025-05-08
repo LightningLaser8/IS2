@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ISL.Language.Types;
 using ISL.Runtime.Errors;
-using ISL.Compiler;
+using ISL.Interpreter;
 
 namespace ISL
 {
@@ -15,7 +15,7 @@ namespace ISL
     /// </summary>
     public class IslInterface
     {
-        private readonly IslCompiler compiler = new();
+        private readonly IslInterpreter compiler = new();
         /// <summary>
         /// Stores debug output of the compiler.
         /// </summary>

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ISL.Compiler;
+using ISL.Interpreter;
 using ISL.Language.Operations;
 using ISL.Runtime.Errors;
 
@@ -23,7 +23,7 @@ namespace ISL.Language.Types
 
         public static IslString FromString(string isl)
         {
-            if (!IslCompiler.Regexes.strings.IsMatch(isl)) throw new SyntaxError($"Invalid string: {isl}");
+            if (!IslInterpreter.Regexes.strings.IsMatch(isl)) throw new SyntaxError($"Invalid string: {isl}");
             return new IslString(isl[1..^1]);
         }
 

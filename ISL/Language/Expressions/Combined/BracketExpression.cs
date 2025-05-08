@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using ISL.Compiler;
+using ISL.Interpreter;
 using ISL.Language.Types;
 using ISL.Runtime.Errors;
 

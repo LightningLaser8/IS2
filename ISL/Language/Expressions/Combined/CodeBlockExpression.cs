@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ISL.Compiler;
+using ISL.Interpreter;
 using ISL.Language.Types;
 
 namespace ISL.Language.Expressions.Combined
@@ -27,7 +27,7 @@ namespace ISL.Language.Expressions.Combined
         }
         public override void Validate()
         {
-            IslCompiler.ValidateCodeBlockStatic(this.expressions);
+            IslInterpreter.ValidateCodeBlockStatic(this.expressions);
             expressions.ForEach(x => x.Validate());
         }
         public override string ToString()

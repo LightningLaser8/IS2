@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 using ISL.Language.Expressions;
 using ISL.Language.Types;
 using ISL.Runtime.Errors;
-using ISL.Compiler;
+using ISL.Interpreter;
 using ISL.Language.Variables;
 
-namespace ISL.Compiler
+namespace ISL.Interpreter
 {
-    internal sealed partial class IslCompiler
+    internal sealed partial class IslInterpreter
     {
-        public IslCompiler()
+        public IslInterpreter()
         {
             InitOperators();
             InitKeywords();

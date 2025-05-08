@@ -10,9 +10,9 @@ using ISL.Language.Types;
 using ISL.Language.Variables;
 using ISL.Runtime.Errors;
 
-namespace ISL.Compiler
+namespace ISL.Interpreter
 {
-    internal partial class IslCompiler
+    internal partial class IslInterpreter
     {
         public BracketType[] Brackets = [];
         public bool HasBracket(char brkt)

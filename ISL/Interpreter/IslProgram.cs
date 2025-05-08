@@ -4,7 +4,7 @@ using ISL.Language.Types;
 using ISL.Language.Variables;
 using ISL.Language.Types.Collections;
 
-namespace ISL.Compiler
+namespace ISL.Interpreter
 {
     public class IslProgram
     {

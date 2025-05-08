@@ -1,4 +1,4 @@
-﻿using ISL.Compiler;
+﻿using ISL.Interpreter;
 using ISL.Language.Operations;
 using ISL.Language.Types;
 using ISL.Runtime.Errors;

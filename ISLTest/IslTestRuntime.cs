@@ -1,6 +1,6 @@
 ﻿using System.CommandLine;
 using ISL;
-using ISL.Compiler;
+using ISL.Interpreter;
 using ISL.Language.Types;
 namespace ISLTest
 {
@@ -15,6 +15,8 @@ namespace ISLTest
         static bool debug = false;
         static bool verboseDebug = false;
         static bool saveProgram = false;
+        static bool cacheProgram = false;
+        static string output = "";
         static void Init()
         {
             if (!Directory.Exists(AppDataPath))
@@ -22,9 +24,9 @@ namespace ISLTest
         }
         enum DebugVerbosity
         {
-            None = 0,
-            Runtime = 1,
-            All = 2
+            Silent = 0,
+            Normal = 1,
+            Verbose = 2
         }
         static async Task<int> Main(string[] args)
         {
@@ -32,14 +34,30 @@ namespace ISLTest
             var debugOption = new Option<DebugVerbosity>(
                 name: "--debug",
                 description: "Outputs debug information about compilation and runtime.",
-                getDefaultValue: () => DebugVerbosity.None
+                getDefaultValue: () => DebugVerbosity.Silent
                 );
-
+            debugOption.AddAlias("-d");
+            debugOption.AddAlias("--verbosity");
+            debugOption.AddAlias("-v");
             var saveOption = new Option<bool>(
                 name: "--save",
                 description: "Saves created program to a file.",
                 getDefaultValue: () => false
                 );
+            saveOption.AddAlias("-s");
+            var cacheOption = new Option<bool>(
+                name: "--cache",
+                description: "Stores a program to be run multiple times.",
+                getDefaultValue: () => false
+                );
+            cacheOption.AddAlias("-c");
+
+            var outOption = new Option<FileInfo>(
+                name: "--output",
+                description: "Specifies the location to save programs to. If the file name has no .isl extension, one will be provided. This is relative to the AppData\\ISL folder.",
+                getDefaultValue: () => new(AppDataPath + "\\output.isl")
+                );
+            outOption.AddAlias("-o");
 
             var fileOption = new Option<FileInfo?>(
                 name: "--file",
@@ -62,6 +80,7 @@ namespace ISLTest
                         return new FileInfo(filePath);
                     }
                 });
+            fileOption.AddAlias("-f");
 
 
             var fileCommand = new Command(
@@ -70,10 +89,10 @@ namespace ISLTest
                 )
             { fileOption };
             var directCommand = new Command(
-                name: "open",
+                name: "interface",
                 description: "Provides an interface for running ISL directly."
                 )
-            { fileOption };
+            { fileOption, saveOption, cacheOption, outOption };
 
             var rootCommand = new RootCommand("App for testing and debugging pure ISL.");
             rootCommand.AddGlobalOption(debugOption);
@@ -88,13 +107,17 @@ namespace ISLTest
             },
             fileOption, debugOption);
 
-            directCommand.SetHandler((debug) =>
+            directCommand.SetHandler((debug, save, cache, outp) =>
             {
                 IslTestRuntime.debug = (int)debug > 0;
                 IslTestRuntime.verboseDebug = (int)debug > 1;
+                saveProgram = save;
+                cacheProgram = cache;
+                output = Path.Combine(AppDataPath, outp.Name);
+                if (!output.EndsWith(".isl")) output += ".isl";
                 DirectMode();
             },
-             debugOption);
+             debugOption, saveOption, cacheOption, outOption);
 
             return await rootCommand.InvokeAsync(args);
         }
@@ -163,56 +186,49 @@ namespace ISLTest
         {
             string source = "";
             WriteInstructions();
-            bool listening = true;
             bool repeat = true;
             while (repeat)
             {
                 @interface = new IslInterface();
                 string inp = TakeInput();
-                if (inp == "!quit")
+                if (inp == "quit")
                 {
-                    WriteResponse("!quit", "Stopping program.");
+                    WriteResponse("quit", "Stopping program.");
                     break;
                 }
-                else if (inp == "!help")
+                else if (inp == "help")
                 {
                     debug = !debug;
-                    WriteResponse("!help", $"Helping.");
+                    WriteResponse("help", "Helping.");
                     WriteHelps();
                 }
-                else if (inp == "!end")
+                else if (inp == "reset")
                 {
-                    listening = false;
-                    WriteResponse("!end", "ISL input ended.");
-                    WriteSeparator("  -   ------------------   - ");
-                }
-                else if (inp == "!reset")
-                {
-                    if (saveProgram)
+                    if (cacheProgram)
                     {
-                        WriteResponse("!reset", "Compiled program cleared.");
+                        WriteResponse("reset", "Cached program cleared.");
                         program = null;
                     }
-                    else WriteResponse("!reset", "Compile mode is off: use !compmode to enable", true);
+                    else WriteResponse("reset", "Cache mode is off.", true);
                     WriteSeparator("  -   ------------------   - ");
                 }
-                else if (inp == "!clear")
+                else if (inp == "clear")
                 {
                     Console.Clear();
                     WriteInstructions();
                     Console.WriteLine();
                     source = "";
-                    WriteResponse("!clear", "Console (and source) cleared.");
+                    WriteResponse("clear", "Console (and source) cleared.");
                 }
-                else if (inp == "!exec")
+                else if (inp == "exec")
                 {
                     if (source.Length == 0)
                     {
-                        WriteResponse("!exec", "No ISL to execute.", true);
+                        WriteResponse("exec", "No ISL to execute.", true);
                     }
                     else
                     {
-                        WriteResponse("!exec", "Executing ISL.");
+                        WriteResponse("exec", "Executing ISL.");
                         if (program is null)
                         {
                             try
@@ -228,25 +244,39 @@ namespace ISLTest
                         if (program is not null)
                         {
                             program.AddInput("debug", debug);
-                            program.AddInput("takes-input", listening);
+                            program.AddInput("saves", saveProgram);
+                            program.AddInput("caches", cacheProgram);
                             program.SafeExecute();
                             runOutput = @interface.CompilerDebug;
                         }
                         ShowResult(debug);
-                        if (!saveProgram) program = null;
+                        if(saveProgram) SaveProgram(source);
+                        if (!cacheProgram) program = null;
                         source = "";
                     }
                     WriteSeparator("  -   ------------------   - ");
                 }
                 else
                 {
-                    if (listening) source += inp + "\n";
+                    source += inp + "\n";
                 }
             }
             WriteSeparator(" [   ISL Testing Complete  ] ");
 
             WriteSeparator("Press any key to exit...");
             Console.ReadKey();
+        }
+
+        static void SaveProgram(string source)
+        {
+            if (File.Exists(output))
+            {
+                File.Delete(output);
+            }
+            var file = File.CreateText(output);
+            file.WriteLine(source);
+            file.Close();
+            WriteSeparator("Program saved at "+output);
         }
 
         static string TakeInput()
@@ -328,18 +358,18 @@ namespace ISLTest
         {
             WriteSeparator("##   ISL Terminal Runtime  ##");
             WriteSeparator("  -   -- Instructions --   -");
-            WriteInstruction("!debug", "Toggles debug mode.");
-            WriteInstruction("!runmode", "Mode: Runs ISL code once. The default.");
-            WriteInstruction("!compmode", "Mode: Stores compiled ISL code.");
-            WriteInstruction("!exec", "Executes the stored program.");
-            WriteInstruction("!clear", "Clears all console output.");
-            WriteInstruction("!reset", "Clears all ISL input and compiled programs.");
-            WriteInstruction("!end", "Stops taking ISL input.");
-            WriteInstruction("!quit", "Stops recieving input, and stops the program.");
-            WriteInstruction("!help", "Outputs a list of descriptions of ISL features.");
+            WriteSubheading("Write the instruction alone on a line to use it.");
+            WriteInstruction("exec", "Executes the stored program.");
+            WriteInstruction("clear", "Clears all console output.");
+            WriteInstruction("reset", "Clears all ISL input and compiled programs.");
+            WriteInstruction("end", "Stops taking ISL input.");
+            WriteInstruction("quit", "Stops recieving input, and stops the program.");
+            WriteInstruction("help", "Outputs a list of descriptions of ISL features.");
             WriteSeparator("  -   ----- Inputs -----   -");
+            WriteSubheading("Accessed using in variables.");
             WriteInput("debug", IslType.Bool, "True if debug mode is on, false if not.");
-            WriteInput("takes-input", IslType.Bool, "True if code input can still be taken.");
+            WriteInput("saves", IslType.Bool, "True if the program will save to a file.");
+            WriteInput("caches", IslType.Bool, "True if the program will cache the program");
             WriteSeparator("  -   ------------------   - ");
         }
 
@@ -357,7 +387,7 @@ namespace ISLTest
             }
             if (debug)
             {
-                if (debugOutput.Length > 0)
+                if (debugOutput.Length > 0 && verboseDebug)
                 {
                     WriteSeparator("  -   ------ Debug -----   - ");
                     WriteISLOutput(debugOutput);

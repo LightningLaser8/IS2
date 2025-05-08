@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ISL.Compiler
+namespace ISL.Interpreter
 {
-    internal partial class IslCompiler
+    internal partial class IslInterpreter
     {
         public void Optimise()
         {

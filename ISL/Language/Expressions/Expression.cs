@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using ISL.Language.Expressions.Combined;
 using ISL.Language.Operations;
 using ISL.Language.Types;
-using ISL.Compiler;
+using ISL.Interpreter;
 using ISL.Language.Keywords;
 using ISL.Language.Variables;
 
@@ -14,7 +14,7 @@ namespace ISL.Language.Expressions
 {
     internal abstract class Expression
     {
-        public static Expression From(string token, IslCompiler compiler)
+        public static Expression From(string token, IslInterpreter compiler)
         {
 
             foreach (var bracket in compiler.Brackets)
@@ -55,10 +55,10 @@ namespace ISL.Language.Expressions
                 }
             }
 
-            if (IslCompiler.Regexes.strings.IsMatch(token)) return new StringExpression() { value = IslString.FromString(token) };
-            if (IslCompiler.Regexes.complex.IsMatch(token)) return new ComplexExpression() { value = IslComplex.FromString(token) };
-            if (IslCompiler.Regexes.floats.IsMatch(token)) return new FloatExpression() { value = IslFloat.FromString(token) };
-            if (IslCompiler.Regexes.ints.IsMatch(token)) return new IntExpression() { value = IslInt.FromString(token) };
+            if (IslInterpreter.Regexes.strings.IsMatch(token)) return new StringExpression() { value = IslString.FromString(token) };
+            if (IslInterpreter.Regexes.complex.IsMatch(token)) return new ComplexExpression() { value = IslComplex.FromString(token) };
+            if (IslInterpreter.Regexes.floats.IsMatch(token)) return new FloatExpression() { value = IslFloat.FromString(token) };
+            if (IslInterpreter.Regexes.ints.IsMatch(token)) return new IntExpression() { value = IslInt.FromString(token) };
 
             if (token == "true" || token == "false") return new BoolExpression(IslBool.FromString(token));
 

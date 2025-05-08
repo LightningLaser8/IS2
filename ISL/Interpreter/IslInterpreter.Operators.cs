@@ -13,9 +13,9 @@ using ISL.Language.Types.Collections;
 using ISL.Language.Variables;
 using ISL.Runtime.Errors;
 
-namespace ISL.Compiler
+namespace ISL.Interpreter
 {
-    internal partial class IslCompiler
+    internal partial class IslInterpreter
     {
         public Operator[] Operators = [];
         public bool HasOperator(string token, bool mustBeAutoSplit = false)

@@ -1,4 +1,4 @@
-﻿using ISL.Compiler;
+﻿using ISL.Interpreter;
 using ISL.Language.Types;
 
 namespace ISL.Language.Operations

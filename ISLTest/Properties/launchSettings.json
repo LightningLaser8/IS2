@@ -2,7 +2,7 @@
   "profiles": {
     "ISLTest": {
       "commandName": "Project",
-      "commandLineArgs": "run --debug All"
+      "commandLineArgs": "interface --debug Verbose -so debug.isl"
     }
   }
 }

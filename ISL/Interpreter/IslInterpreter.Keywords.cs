@@ -7,9 +7,9 @@ using ISL.Language.Keywords;
 using ISL.Language.Types;
 using ISL.Runtime.Errors;
 
-namespace ISL.Compiler
+namespace ISL.Interpreter
 {
-    internal partial class IslCompiler
+    internal partial class IslInterpreter
     {
         public Keyword[] Keywords = [];
 

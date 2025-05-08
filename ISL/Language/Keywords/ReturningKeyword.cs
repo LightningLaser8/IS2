@@ -1,4 +1,4 @@
-﻿using ISL.Compiler;
+﻿using ISL.Interpreter;
 using ISL.Language.Expressions;
 using ISL.Language.Types;
 using System;

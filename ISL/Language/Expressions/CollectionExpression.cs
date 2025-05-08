@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ISL.Compiler;
+using ISL.Interpreter;
 using ISL.Language.Types;
 using ISL.Language.Types.Collections;
 using ISL.Runtime.Errors;
