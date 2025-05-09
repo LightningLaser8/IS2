@@ -128,15 +128,15 @@ namespace ISLTest
                 CreateFile(file.FullName, Examples.HelloWorld);
             }
             string source = string.Join('\n', File.ReadLines(file.FullName));
-            var compiler = new IslInterface();
+            var interpreter = new IslInterface();
             try
             {
-                var prog = compiler.Compile(source, debug);
+                var prog = interpreter.CreateProgram(source, debug);
                 Console.WriteLine("---------------------------\n");
                 if (verboseDebug)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.Write(string.Join('\n', compiler.LastDebug.Split('\n').Select(x => "  " + x)) + "\n");
+                    Console.Write(string.Join('\n', interpreter.LastDebug.Split('\n').Select(x => "  " + x)) + "\n");
                     Console.ResetColor();
                     Console.WriteLine("---------------------------\n");
                 }
@@ -144,7 +144,7 @@ namespace ISLTest
                 if (debug)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.Write(string.Join('\n', compiler.CompilerDebug.Split('\n').Select(x => "  " + x)) + "\n");
+                    Console.Write(string.Join('\n', interpreter.CompilerDebug.Split('\n').Select(x => "  " + x)) + "\n");
                     Console.ResetColor();
                     Console.WriteLine("---------------------------\n");
                 }
@@ -166,7 +166,7 @@ namespace ISLTest
                 if (verboseDebug)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.Write(string.Join('\n', compiler.LastDebug.Split('\n').Select(x => "  " + x)) + "\n");
+                    Console.Write(string.Join('\n', interpreter.LastDebug.Split('\n').Select(x => "  " + x)) + "\n");
                     Console.ResetColor();
                     Console.WriteLine("---------------------------\n");
                 }
@@ -233,7 +233,7 @@ namespace ISLTest
                         {
                             try
                             {
-                                program = @interface.Compile(source, debug);
+                                program = @interface.CreateProgram(source, debug);
                             }
                             catch (Exception e)
                             {

@@ -34,13 +34,13 @@ namespace ISL.Interpreter
 
         //Entry point
 
-        public IslValue CompileAndRun(string sourceCode, out IslProgram program)
+        public IslValue Run(string sourceCode, out IslProgram program)
         {
-            program = Compile(sourceCode);
+            program = CreateProgram(sourceCode);
             return program.Execute();
         }
 
-        public IslProgram Compile(string sourceCode)
+        public IslProgram CreateProgram(string sourceCode)
         {
             // Initialize the interpreter
             source = sourceCode;

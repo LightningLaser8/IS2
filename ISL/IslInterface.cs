@@ -15,7 +15,7 @@ namespace ISL
     /// </summary>
     public class IslInterface
     {
-        private readonly IslInterpreter compiler = new();
+        private readonly IslInterpreter interpreter = new();
         /// <summary>
         /// Stores debug output of the compiler.
         /// </summary>
@@ -24,7 +24,7 @@ namespace ISL
         /// <summary>
         /// Stores debug output of the compiler.
         /// </summary>
-        public string CompilerDebug => compiler.debug;
+        public string CompilerDebug => interpreter.debug;
         /// <summary>
         /// Stores the last error the compiler threw. An empty string is the last run was successful.
         /// </summary>
@@ -47,31 +47,31 @@ namespace ISL
         /// <exception cref="TypeError"></exception>
         /// <param name="source">The ISL code to run. Will throw a SyntaxError if invalid.</param>
         /// <returns>The result of the execution.</returns>
-        public IslProgram Compile(string source, bool debug = false)
+        public IslProgram CreateProgram(string source, bool debug = false)
         {
             IslProgram program;
-            compiler.debugMode = debug;
+            interpreter.debugMode = debug;
             try
             {
-                program = compiler.Compile(source);
-                this.debug = compiler.debug;
-                compiler.debug = "";
+                program = interpreter.CreateProgram(source);
+                this.debug = interpreter.debug;
+                interpreter.debug = "";
                 errored = false;
                 error = "";
                 return program;
             }
             catch (IslError e)
             {
-                this.debug = compiler.debug + "Error encountered!\n";
-                compiler.debug = "";
+                this.debug = interpreter.debug + "Error encountered!\n";
+                interpreter.debug = "";
                 errored = true;
                 error = e.GetType().Name + ": " + e.Message;
                 throw;
             }
             catch (Exception e)
             {
-                this.debug = compiler.debug + "Internal error encountered!\n";
-                compiler.debug = "";
+                this.debug = interpreter.debug + "Internal error encountered!\n";
+                interpreter.debug = "";
                 errored = true;
                 error = e.Message;
                 throw;
