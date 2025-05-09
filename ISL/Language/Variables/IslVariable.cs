@@ -15,7 +15,7 @@ namespace ISL.Language.Variables
         public bool ImpliedType { get; set; } = false;
         public string Name { get; } = name;
         public IslValue Value { get; set; } = DefaultForType(type);
-        public override IslType Type { get; protected set; } = IslType.Identifier;
+        public override IslType Type { get; protected set; } = IslType.Variable;
         public IslType VarType { get; protected set; } = type;
 
         public override string Stringify()

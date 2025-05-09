@@ -3,13 +3,13 @@ using ISL.Language.Types;
 
 namespace ISL.Language.Operations
 {
-    internal class UnaryOperator(Func<string, bool> predicate, Func<IslValue, IslValue> operate, EvaluationDirection operandDirection = EvaluationDirection.Right) : Operator(predicate, () => IslValue.Null)
+    internal class UnaryOperator(string id, Func<IslValue, IslValue> operate, EvaluationDirection operandDirection = EvaluationDirection.Right) : Operator(id, () => IslValue.Null)
     {
-        public UnaryOperator(Func<string, bool> predicate, Func<IslValue, IslValue> operate, int precedence, EvaluationDirection operandDirection = EvaluationDirection.Right) : this(predicate, operate, operandDirection)
+        public UnaryOperator(string id, Func<IslValue, IslValue> operate, int precedence, EvaluationDirection operandDirection = EvaluationDirection.Right) : this(id, operate, operandDirection)
         {
             Precedence = precedence;
         }
-        public UnaryOperator(Func<IslValue, IslValue> operate) : this((s) => false, operate)
+        public UnaryOperator(Func<IslValue, IslValue> operate) : this("", operate)
         {
         }
         /// <summary>

@@ -24,7 +24,19 @@ namespace ISL.Interpreter
             string currentToken = "";
             for (int i = 0; i < source.Length; i++)
             {
+                //Check for splitting operators
+                if (HasOperator(currentToken, true) && !isString)
+                {
+                    if (currentToken != "")
+                    {
+                        tokens.Add(currentToken);
+                        Debug("Split on operator: " + currentToken);
+                        currentToken = "";
+                    }
+                }
+                //Add character
                 char c = source[i];
+
                 if (char.IsWhiteSpace(c) && !isString)
                 {
                     if (currentToken != "")
@@ -63,15 +75,6 @@ namespace ISL.Interpreter
                         currentToken = "";
                     }
                     tokens.Add(",");
-                }
-                else if (HasOperator(currentToken, true) && !isString)
-                {
-                    if (currentToken != "")
-                    {
-                        tokens.Add(currentToken);
-                        Debug("Split on operator: " + currentToken);
-                        currentToken = $"{c}";
-                    }
                 }
                 else if (HasBracket(c) && !isString)
                 {

@@ -125,7 +125,7 @@ namespace ISL.Interpreter
                     var packaged = cexp.bracket.Create.Invoke(captured);
                     Debug("Removing expressions:");
                     expressions[i] = packaged;
-                    if(expressions.Count > 0) expressions.RemoveRange(i + 1, end - i);
+                    if (expressions.Count > 0) expressions.RemoveRange(i + 1, end - i);
                     Debug($"  Brackets enclose {packaged}");
                 }
             }
@@ -212,6 +212,27 @@ namespace ISL.Interpreter
                     }
                     else Debug($" > skipped (precedence {coe.Operation.Precedence} does not match target {precedence})");
                 }
+                if (expr is NAryOperatorExpression noe)
+                {
+                    if (noe.Operation.Precedence == precedence)
+                    {
+                        int grabs = noe.Operation.Separators.Length * 2 + 1;
+                        Debug(" > n-ary operator " + noe.ToString() + " at " + currentIndex.ToString() + " wanting " + grabs + " exprs");
+                        //Find next non-null
+                        for (int i = 0; i < grabs; i++)
+                        {
+                            int target = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
+                            if (target != -1)
+                            {
+                                noe.affected.Add(expressions[target]);
+                                Debug("   ate " + expressions[target].Stringify());
+                                expressions[target] = Expression.Null;
+                            }
+                        }
+                        noe.affected.RemoveAll(x => x is TokenExpression te && noe.Operation.Separators.Contains(te.value.Value));
+                    }
+                    else Debug($" > skipped (precedence {noe.Operation.Precedence} does not match target {precedence})");
+                }
             }
             expressions.RemoveAll((expr) => expr == Expression.Null);
         }
@@ -297,7 +318,7 @@ namespace ISL.Interpreter
                     if (toGrab is not KeywordExpression kx) throw new SyntaxError($"Keyword {brk.identifier} must come directly after a keyword! (currently {toGrab}");
                     if (!brk.AllowedReferences.Contains(kx.Keyword.identifier)) throw new SyntaxError($"Keyword {brk.identifier} must come directly after one of these keywords: {string.Join(' ', brk.AllowedReferences)} (found {kx.Keyword.identifier})!");
                     kwe.Reference = kx;
-                    Debug($" ~ Keyword refs {kwe.Reference}{(ReferenceEquals(kwe, kwe.Reference)?" (itself!)":"")}");
+                    Debug($" ~ Keyword refs {kwe.Reference}{(ReferenceEquals(kwe, kwe.Reference) ? " (itself!)" : "")}");
                 }
             }
             expressions.RemoveAll((expr) => expr == Expression.Null);
@@ -363,7 +384,7 @@ namespace ISL.Interpreter
                 expr = expressions[search];
             }
             return search;
-        }        
+        }
 
         internal void Debug(string message)
         {

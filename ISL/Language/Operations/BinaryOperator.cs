@@ -2,13 +2,13 @@
 
 namespace ISL.Language.Operations
 {
-    internal class BinaryOperator(Func<string, bool> predicate, Func<IslValue, IslValue, IslValue> operate) : Operator(predicate, () => IslValue.Null)
+    internal class BinaryOperator(string id, Func<IslValue, IslValue, IslValue> operate) : Operator(id, () => IslValue.Null)
     {
-        public BinaryOperator(Func<string, bool> predicate, Func<IslValue, IslValue, IslValue> operate, int precedence) : this(predicate, operate)
+        public BinaryOperator(string id, Func<IslValue, IslValue, IslValue> operate, int precedence) : this(id, operate)
         {
             Precedence = precedence;
         }
-        public BinaryOperator(Func<IslValue, IslValue, IslValue> operate) : this((s) => false, operate)
+        public BinaryOperator(Func<IslValue, IslValue, IslValue> operate) : this("", operate)
         {
         }
 

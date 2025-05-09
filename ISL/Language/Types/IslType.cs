@@ -20,5 +20,6 @@ namespace ISL.Language.Types
         Class,
         Identifier,
         Token,
+        Variable
     }
 }

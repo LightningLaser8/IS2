@@ -38,8 +38,9 @@ namespace ISL.Language.Expressions
 
             foreach (var op in compiler.Operators)
             {
-                if (op.predicate(token))
+                if (op.id == token)
                 {
+                    if (op is NAryOperator nop) return new NAryOperatorExpression() { value = IslIdentifier.FromString(token), Operation = nop };
                     if (op is CompoundOperator cop) return new CompoundOperatorExpression() { value = IslIdentifier.FromString(token), Operation = cop };
                     if (op is BinaryOperator bop) return new BinaryOperatorExpression() { value = IslIdentifier.FromString(token), Operation = bop };
                     if (op is UnaryOperator uop) return new UnaryOperatorExpression() { value = IslIdentifier.FromString(token), Operation = uop };

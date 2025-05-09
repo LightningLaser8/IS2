@@ -9,9 +9,9 @@ using ISL.Runtime.Errors;
 
 namespace ISL.Language.Operations
 {
-    internal class Operator(Func<string, bool> predicate, Func<IslValue> operate)
+    internal class Operator(string id, Func<IslValue> operate)
     {
-        public Operator(Func<string, bool> predicate, Func<IslValue> operate, int precedence) : this(predicate, operate)
+        public Operator(string id, Func<IslValue> operate, int precedence) : this(id, operate)
         {
             Precedence = precedence;
         }
@@ -21,10 +21,7 @@ namespace ISL.Language.Operations
         /// </summary>
         public int Precedence { get; protected set; }
 
-        /// <summary>
-        /// Should return true if a string is this operator.
-        /// </summary>
-        public readonly Func<string, bool> predicate = predicate;
+        public string id = id;
 
         /// <summary>
         /// Performs the operation.
