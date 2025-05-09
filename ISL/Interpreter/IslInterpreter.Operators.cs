@@ -1,15 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
-using ISL.Language.Expressions;
-using ISL.Language.Operations;
+﻿using ISL.Language.Operations;
 using ISL.Language.Types;
-using ISL.Language.Types.Collections;
 using ISL.Language.Variables;
 using ISL.Runtime.Errors;
 

@@ -1,5 +1,4 @@
 ﻿using ISL.Language.Types;
-using ISL.Language.Variables;
 
 namespace ISL.Language.Expressions
 {

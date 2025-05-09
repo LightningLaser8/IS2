@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ISL.Interpreter;
 using ISL.Language.Expressions.Combined;
+using ISL.Language.Keywords;
 using ISL.Language.Operations;
 using ISL.Language.Types;
-using ISL.Interpreter;
-using ISL.Language.Keywords;
-using ISL.Language.Variables;
 
 namespace ISL.Language.Expressions
 {

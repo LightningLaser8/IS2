@@ -250,7 +250,7 @@ namespace ISLTest
                             runOutput = @interface.CompilerDebug;
                         }
                         ShowResult(debug);
-                        if(saveProgram) SaveProgram(source);
+                        if (saveProgram) SaveProgram(source);
                         if (!cacheProgram) program = null;
                         source = "";
                     }
@@ -276,7 +276,7 @@ namespace ISLTest
             var file = File.CreateText(output);
             file.WriteLine(source);
             file.Close();
-            WriteSeparator("Program saved at "+output);
+            WriteSeparator("Program saved at " + output);
         }
 
         static string TakeInput()

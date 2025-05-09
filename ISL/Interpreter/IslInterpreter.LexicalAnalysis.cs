@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 using ISL.Runtime.Errors;
 
 namespace ISL.Interpreter
@@ -50,7 +45,7 @@ namespace ISL.Interpreter
                 {
                     if (currentToken != "")
                     {
-                        tokens.Add(isString?'"'+currentToken+'"':currentToken);
+                        tokens.Add(isString ? '"' + currentToken + '"' : currentToken);
                         Debug("Split on quote: " + currentToken);
                         currentToken = "";
                     }
@@ -119,13 +114,14 @@ namespace ISL.Interpreter
         {
             var content = contents.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             string naem = content[0];
-            if (content.Length == 0) { 
-                metas.Add(naem, ""); 
-                return; 
+            if (content.Length == 0)
+            {
+                metas.Add(naem, "");
+                return;
             }
             string vals = string.Join('c', content[1..]);
             Debug($"  Tag '{naem}' has value '{vals}'");
-            if (metas.ContainsKey(naem)) throw new SyntaxError("There is already a definition for tag "+naem);
+            if (metas.ContainsKey(naem)) throw new SyntaxError("There is already a definition for tag " + naem);
             metas.Add(naem, vals);
         }
     }

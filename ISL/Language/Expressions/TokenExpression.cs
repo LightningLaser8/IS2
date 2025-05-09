@@ -1,11 +1,5 @@
 ﻿using ISL.Language.Types;
 using ISL.Runtime.Errors;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ISL.Language.Expressions
 {
@@ -13,7 +7,7 @@ namespace ISL.Language.Expressions
     {
         public override IslIdentifier Eval()
         {
-            throw new SyntaxError("Unexpected token '"+value+"'");
+            throw new SyntaxError("Unexpected token '" + value + "'");
         }
         public override Expression Simplify()
         {

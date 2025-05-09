@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ISL.Language.Operations;
+﻿using ISL.Language.Operations;
 using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types

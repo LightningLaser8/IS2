@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ISL.Interpreter;
+﻿using ISL.Interpreter;
 using ISL.Language.Expressions;
 using ISL.Language.Types;
 using ISL.Runtime.Errors;
@@ -41,6 +36,6 @@ namespace ISL.Language.Keywords
         public KeywordExpression? Reference { get; set; }
 
         public IslValue result = IslValue.Null;
-        public override string Stringify() => $"{string.Join(", ", Labels)} {Keyword.identifier} {string.Join(", ", Expressions.Select(x => x.Stringify()))} ~> {Reference?.Stringify()??"no ref"}";
+        public override string Stringify() => $"{string.Join(", ", Labels)} {Keyword.identifier} {string.Join(", ", Expressions.Select(x => x.Stringify()))} ~> {Reference?.Stringify() ?? "no ref"}";
     }
 }

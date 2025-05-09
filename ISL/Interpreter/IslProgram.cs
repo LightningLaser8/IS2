@@ -1,8 +1,7 @@
-﻿using ISL.Runtime.Errors;
-using ISL.Language.Expressions;
+﻿using ISL.Language.Expressions;
 using ISL.Language.Types;
 using ISL.Language.Variables;
-using ISL.Language.Types.Collections;
+using ISL.Runtime.Errors;
 
 namespace ISL.Interpreter
 {
@@ -113,9 +112,9 @@ namespace ISL.Interpreter
 
         private void CreateOutputs()
         {
-            #pragma warning disable IDE0306 // Simplify collection initialization, literally impossible here
+#pragma warning disable IDE0306 // Simplify collection initialization, literally impossible here
             outputs = new(Vars.Where(kvp => Outs.Contains(kvp.Key)).Select(kvp2 => new KeyValuePair<string, IslValue>(kvp2.Key, kvp2.Value.Value)));
-            #pragma warning restore IDE0306
+#pragma warning restore IDE0306
         }
 
         internal Dictionary<string, IslValue> Ins { get; } = [];

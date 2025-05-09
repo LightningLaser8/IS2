@@ -1,5 +1,4 @@
-﻿using ISL.Interpreter;
-using ISL.Language.Types;
+﻿using ISL.Language.Types;
 
 namespace ISL.Language.Expressions
 {

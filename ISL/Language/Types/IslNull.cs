@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ISL.Runtime.Errors;
+﻿using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
 {
@@ -14,7 +9,7 @@ namespace ISL.Language.Types
 
         public static IslNull FromString(string isl)
         {
-            if(isl == "null") return new IslNull();
+            if (isl == "null") return new IslNull();
             throw new SyntaxError($"{isl} is not null, but is used as such.");
         }
 

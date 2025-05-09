@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ISL.Language.Expressions;
+﻿using ISL.Language.Expressions;
 using ISL.Language.Types;
 using ISL.Runtime.Errors;
-using ISL.Interpreter;
-using ISL.Language.Variables;
 
 namespace ISL.Interpreter
 {

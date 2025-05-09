@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ISL.Interpreter;
+﻿using ISL.Interpreter;
 using ISL.Language.Operations;
 using ISL.Runtime.Errors;
 
@@ -67,10 +62,10 @@ namespace ISL.Language.Types
 
         public IslValue Cast(IslType type)
         {
-            if(type == IslType.Int) return IslInt.FromString(Value);
-            if(type == IslType.Float) return IslFloat.FromString(Value);
-            if(type == IslType.Complex) return IslComplex.FromString(Value);
-            if(type == IslType.Bool) return IslBool.FromString(Value);
+            if (type == IslType.Int) return IslInt.FromString(Value);
+            if (type == IslType.Float) return IslFloat.FromString(Value);
+            if (type == IslType.Complex) return IslComplex.FromString(Value);
+            if (type == IslType.Bool) return IslBool.FromString(Value);
             throw new TypeConversionError(Type.ToString(), type.ToString());
         }
         public override object? ToCLR()
@@ -79,7 +74,8 @@ namespace ISL.Language.Types
         }
 
         public IslBool EqualTo(IslValue other) => other is IslString ist && ist.Value == this.Value;
-        public IslValue Index(IslValue index) {
+        public IslValue Index(IslValue index)
+        {
             if (index is IslInt iint) return new IslString(new(Value[(int)iint.Value], 1));
             if (index is IslString istr) return Index(new IslInt(Value.IndexOf(istr.Value) + istr.Value.Length));
             throw new TypeError($"String indices must be ints or strings, got {index.Type}");

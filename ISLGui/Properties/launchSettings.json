@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ISLGui (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "ISLGui (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

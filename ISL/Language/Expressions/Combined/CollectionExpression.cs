@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ISL.Interpreter;
+﻿using ISL.Interpreter;
 using ISL.Language.Types;
 using ISL.Language.Types.Collections;
 using ISL.Runtime.Errors;
@@ -32,9 +27,9 @@ namespace ISL.Language.Expressions.Combined
             int index = 0;
             bool wasAComma = true;
             for (int i = 0; i < expressions.Count; i++)
-                if(expressions[i] is TokenExpression tk && tk.value == ",")
+                if (expressions[i] is TokenExpression tk && tk.value == ",")
                 {
-                    if (wasAComma) throw new SyntaxError("Unexpected double comma at index #"+index);
+                    if (wasAComma) throw new SyntaxError("Unexpected double comma at index #" + index);
                     wasAComma = true;
                     index++;
                     expressions.RemoveAt(i);
@@ -42,7 +37,7 @@ namespace ISL.Language.Expressions.Combined
                 }
                 else
                 {
-                    if(!wasAComma) throw new SyntaxError("Expected comma after value #"+index);
+                    if (!wasAComma) throw new SyntaxError("Expected comma after value #" + index);
                     wasAComma = false;
                 }
             expressions.ForEach(x => x.Validate());
