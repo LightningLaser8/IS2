@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ISL.Interpreter;
 using ISL.Language.Types;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -33,7 +29,7 @@ namespace ISLGui
             var itype = IslValue.GetTypeFromName(type);
             if (name.Trim().Length == 0) return;
             if (value.Trim().Length == 0) value = IslValue.DefaultForType(itype).Stringify();
-            
+
             try
             {
                 ins.Add(new()

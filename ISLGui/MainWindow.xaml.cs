@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 using ISL;
 using ISL.Interpreter;
@@ -9,10 +8,8 @@ using Microsoft.UI.Text;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Windows.Storage.Pickers;
 using Windows.UI;
-using Windows.UI.Text;
 using WinRT.Interop;
 
 // To learn more about WinUI, the WinUI project structure,
