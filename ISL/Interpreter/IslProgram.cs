@@ -32,6 +32,10 @@ namespace ISL.Interpreter
                 return "";
             }
         }
+        public string[] GetMetaTags()
+        {
+            return [.. meta.Keys];
+        }
         private readonly Dictionary<string, string> meta = [];
 
         internal IslProgram(List<Expression> code, Dictionary<string, string> meta)
@@ -104,6 +108,10 @@ namespace ISL.Interpreter
         public void AddInput(string name, string value)
         {
             AddInputV(name, new IslString(value));
+        }
+        public void AddInput(string name, IslValue value)
+        {
+            AddInputV(name, value);
         }
         internal void AddInputV(string name, IslValue value)
         {

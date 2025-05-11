@@ -4,7 +4,7 @@ using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
 {
-    internal class IslString : IslValue, ITypedObject<IslString, string>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslCastable, IIslEquatable, IIslIndexable, IIslAppendable
+    public class IslString : IslValue, ITypedObject<IslString, string>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslCastable, IIslEquatable, IIslIndexable, IIslAppendable
     {
         public override IslType Type => IslType.String;
 

@@ -13,7 +13,7 @@ namespace ISL.Language.Types
 
         public abstract string Stringify();
 
-        internal static IslValue DefaultForType(IslType type)
+        public static IslValue DefaultForType(IslType type)
         {
             return type switch
             {
@@ -31,7 +31,7 @@ namespace ISL.Language.Types
                 _ => throw new NotImplementedException(),
             };
         }
-        internal static IslType GetTypeFromName(string typename)
+        public static IslType GetTypeFromName(string typename)
         {
             return typename switch
             {

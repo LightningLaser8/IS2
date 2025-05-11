@@ -1,6 +1,6 @@
 ﻿namespace ISL.Language.Types
 {
-    internal class IslIdentifier : IslValue, ITypedObject<IslIdentifier, string>
+    public class IslIdentifier : IslValue, ITypedObject<IslIdentifier, string>
     {
         public string Value { get; set; }
 

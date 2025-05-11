@@ -1,6 +1,6 @@
 ﻿namespace ISL.Language.Types
 {
-    internal class IslErrorMessage : IslIdentifier
+    public class IslErrorMessage : IslIdentifier
     {
         public static new IslErrorMessage FromString(string str)
         {

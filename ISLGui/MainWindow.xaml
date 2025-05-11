@@ -7,9 +7,145 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Title="ISLGui">
+    Title="ISL Graphical Editor">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </StackPanel>
+    <Grid Width="auto" Height="auto" Background="Black">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="175"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="55"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Scale="1,1,1" Margin="5,10,10,0" HorizontalAlignment="Center">
+            <Button Click="OpenButtonClicked" ToolTipService.ToolTip="Open existing file [Ctrl + O]">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="O" Modifiers="Control"/>
+                </Button.KeyboardAccelerators>
+                <SymbolIcon>OpenFile</SymbolIcon>
+            </Button>
+            <Button Click="SaveButtonClicked" ToolTipService.ToolTip="Overwrite file content [Ctrl + S]">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="S" Modifiers="Control" />
+                </Button.KeyboardAccelerators>
+                <SymbolIcon>Save</SymbolIcon>
+            </Button>
+            <Button Click="RefreshButtonClicked" ToolTipService.ToolTip="Reload file content [Ctrl + R]">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="R" Modifiers="Control" />
+                </Button.KeyboardAccelerators>
+                <SymbolIcon>Refresh</SymbolIcon>
+            </Button>
+        </StackPanel>
+        <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="1" Margin="10,5,10,0" Padding="10, 5, 10, 0">
+            <TextBlock FontFamily="Consolas" x:Name="BottomText" FontSize="12">&lt;No file opened&gt;</TextBlock>
+            <StackPanel Orientation="Horizontal" Margin="10,5,10,0">
+                <Button Height="25" FontSize="12" Padding="5,0,5,0" Width="80" Click="CodeMode" x:Name="CodeModeButton">Code</Button>
+                <Button Height="25" FontSize="12" Padding="5,0,5,0" Width="80" Click="SetupMode" x:Name="SetupModeButton">Setup</Button>
+                <Button Height="25" FontSize="12" Padding="5,0,5,0" Width="80" Click="RunMode" x:Name="RunModeButton">Run</Button>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="0" Width="150" Orientation="Vertical" HorizontalAlignment="Center" Background="#242424" Margin="5,20,5,20">
+            <ListView Width="150" 
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Top" 
+                x:Name="Files"
+                Background="#242424"
+                Margin="0,10,0,10"
+                Padding="0,0,0,0">
+            </ListView>
+            <Button x:Name="NewFile" Click="CreateFileTriggered" Width="130" ToolTipService.ToolTip="Create new .isl file [Ctrl + N]" Margin="10,0,10,0">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="N" Modifiers="Control" />
+                </Button.KeyboardAccelerators>
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <TextBox x:Name="FileNameInput" PlaceholderText="File name..." FontSize="11" Width="100" Height="20" MinHeight="20" Padding="3,0,3,0" Visibility="Collapsed"/>
+                    <TextBlock Text="New Script" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+        <Grid x:Name="CodeEditor" Grid.Row="1" Grid.Column="1" Width="Auto" Height="Auto" Background="#131313" Margin="0,20,10,20">
+            <!-- IsReadOnly="True" AcceptsReturn="True" IsSpellCheckEnabled="False" -->
+            <TextBlock AllowFocusOnInteraction="False" IsHitTestVisible="False" x:Name="TextOutput" Foreground="white" FontFamily="Consolas" Padding="1,0,0,0">
+                <TextBlock.Resources>
+                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#131313" />
+                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#131313" />
+                    <x:Double x:Key="TextControlPointerOverBackgroundThemeOpacity">0.8</x:Double>
+                 </TextBlock.Resources>
+            </TextBlock>
+            <TextBox Text='out string _ = "Hello World"' TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="False"
+    SelectionHighlightColor="#424242" TextChanged="SyntaxHighlightingTriggered" x:Name="TextInput" Foreground="Transparent" Background="Transparent" Opacity="0.5" FontFamily="Consolas" Padding="0" Margin="0">
+                <TextBox.Resources>
+                    <SolidColorBrush x:Key="TextControlForeground" Color="Transparent" />
+                    <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="Transparent" />
+                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+                    <SolidColorBrush x:Key="TextControlForegroundFocused" Color="Transparent" />
+                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+                </TextBox.Resources>
+            </TextBox>
+        </Grid>
+        <StackPanel Orientation="Vertical" x:Name="SetupConfigurator" Grid.Row="1" Grid.Column="1" Width="Auto" Height="Auto" Background="#131313" Margin="0,20,10,20" Padding="10,10,10,10">
+            <StackPanel Orientation="Horizontal" >
+                <TextBlock Text="In Variables" FontSize="20" FontWeight="Bold"/>
+                <TextBlock Text=" (?)" ToolTipService.ToolTip="Pass variables into your program, to be accessed with the syntax `in&#160;&lt;type&gt;&#160;&lt;name&gt;;`."/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Button Margin="5" Click="ClearInVariables">Clear Variables</Button>
+                <Button Margin="5" Click="CopyInVars">Copy All</Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <ComboBox x:Name="InVarType" PlaceholderText="Variable Type..." Margin="5">
+                    <x:String>Bool</x:String>
+                    <x:String>Int</x:String>
+                    <x:String>Float</x:String>
+                    <x:String>String</x:String>
+                </ComboBox>
+                <TextBox x:Name="InVarName" PlaceholderText="Variable Name..." Margin="5" MinWidth="100" MaxWidth="200"/>
+                <TextBlock Text=" = " VerticalAlignment="Center"/>
+                <TextBox x:Name="InVarValue" PlaceholderText="Variable Value..." Margin="5" MinWidth="200" MaxWidth="400"/>
+                <Button Margin="5" Click="AddInVariable">Add Variable</Button>
+            </StackPanel>
+            <ListView x:Name="InVars" HorizontalAlignment="Stretch" MinHeight="6" MaxHeight="300" Background="#242424"/>
+        </StackPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" x:Name="RunWindow" Grid.Row="1" Grid.Column="1" Width="Auto" Height="Auto" >
+            <StackPanel Orientation="Vertical" Background="#131313" Margin="0,20,10,20" Padding="10,10,10,10">
+                <Button Click="RunTriggered" FontSize="20" ToolTipService.ToolTip="Run the currently selected script.">
+                    <SymbolIcon Symbol="Play"/>
+                </Button>
+                
+                <StackPanel Orientation="Horizontal" >
+                    <TextBlock Text="Output Variables" FontSize="20" FontWeight="Bold"/>
+                    <TextBlock Text=" (?)" ToolTipService.ToolTip="Variables output by your program, using `out&#160;&lt;type&gt;&#160;&lt;name&gt;&#160;=&#160;&lt;output&gt;;`."/>
+                </StackPanel>
+                <ListView x:Name="OutVars" HorizontalAlignment="Stretch" MinHeight="6" MaxHeight="300" Background="#242424"/>
+
+                <StackPanel Orientation="Horizontal" >
+                    <TextBlock Text="Metadata Tags" FontSize="20" FontWeight="Bold"/>
+                    <TextBlock Text=" (?)" ToolTipService.ToolTip="Information about the script, given with `[&lt;key&gt;&#160;&lt;...value&gt;]`."/>
+                </StackPanel>
+                <ListView x:Name="Metas" HorizontalAlignment="Stretch" MinHeight="6" MaxHeight="300" Background="#242424"/>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Debug Output" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <ToggleSwitch x:Name="DebugToggle"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" x:Name="DebugOutputs" Visibility="Collapsed">
+                    <ScrollViewer MaxHeight="150" Width="Auto" 
+          VerticalScrollBarVisibility="Auto" Background="#242424" Margin="5">
+                        <TextBlock x:Name="DebugOutput" FontFamily="Consolas" Padding="10" TextWrapping="Wrap"/>
+                    </ScrollViewer>
+                    <ScrollViewer MaxHeight="150" Width="Auto" 
+          VerticalScrollBarVisibility="Auto" Background="#242424" Margin="5">
+                        <TextBlock x:Name="RuntimeDebugOutput" FontFamily="Consolas" Padding="10" TextWrapping="Wrap"/>
+                    </ScrollViewer>
+                    <ScrollViewer MaxHeight="30" Width="Auto" 
+          VerticalScrollBarVisibility="Auto" Background="#240000" Margin="5">
+                        <TextBlock x:Name="ErrorOutput" FontFamily="Consolas" Padding="10,0,10,0" Foreground="red" TextWrapping="Wrap"/>
+                    </ScrollViewer>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+        
+    </Grid>
 </Window>

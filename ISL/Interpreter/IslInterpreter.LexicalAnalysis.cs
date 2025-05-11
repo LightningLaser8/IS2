@@ -7,6 +7,7 @@ namespace ISL.Interpreter
     {
         private void RemoveComments()
         {
+            source = source.ReplaceLineEndings("\n");
             source = Regexes.comments.Replace(source, "");
             Debug("Line comments removed.");
             source = Regexes.blockComments.Replace(source, "");
@@ -94,7 +95,7 @@ namespace ISL.Interpreter
         }
         private void ProcessMetadata()
         {
-            Debug("Source: \n" + source.Replace("\n", "\\n"));
+            Debug("Source: \n" + source.ReplaceLineEndings(@"\n"));
             MatchCollection matches = Regexes.metadata.Matches(source);
             if (matches.Count == 0)
             {
@@ -119,7 +120,7 @@ namespace ISL.Interpreter
                 metas.Add(naem, "");
                 return;
             }
-            string vals = string.Join('c', content[1..]);
+            string vals = string.Join(' ', content[1..]);
             Debug($"  Tag '{naem}' has value '{vals}'");
             if (metas.ContainsKey(naem)) throw new SyntaxError("There is already a definition for tag " + naem);
             metas.Add(naem, vals);

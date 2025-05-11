@@ -7,7 +7,7 @@ namespace ISL.Language.Types
     /// <summary>
     /// Represents a 64-bit floating-point number in ISL.
     /// </summary>
-    public class IslFloat : IslValue, ITypedObject<IslFloat, double>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslDivisible, IIslExponentiable, IIslModulatable, IIslFloatPropertyExtractable, IIslTriggable, IIslEquatable
+    public class IslFloat : IslValue, ITypedObject<IslFloat, double>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslDivisible, IIslExponentiable, IIslModulatable, IIslFloatPropertyExtractable, IIslTriggable, IIslEquatable, IIslCastable
     {
         public override IslType Type => IslType.Float;
 
