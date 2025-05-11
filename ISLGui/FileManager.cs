@@ -13,7 +13,14 @@ namespace ISLGui
         public IslFile() { }
         public bool Dirty { get; set; } = false;
         public bool Exists => File.Exists(FilePath);
-        public string FilePath => CurrentDirectory + FileName;
+        public string FilePath
+        {
+            get => CurrentDirectory + FileName; init
+            {
+                CurrentDirectory = value[..value.LastIndexOf('\\')]+'\\';
+                FileName = value[(value.LastIndexOf('\\')+1)..];
+            }
+        }
         public string CurrentDirectory { get; init; } = "\\";
         public string FileName { get; init; } = "script.isl";
         public string Error { get; private set; } = "";

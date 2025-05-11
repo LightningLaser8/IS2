@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using ISL;
 using ISL.Interpreter;
@@ -27,7 +28,7 @@ namespace ISLGui
         private readonly FileManager manager = new();
         private readonly VariableManager varManager = new();
         private readonly Highlighter islHighlighter = new();
-        public MainWindow()
+        public MainWindow(string initFilePath)
         {
             this.InitializeComponent();
 
@@ -49,14 +50,25 @@ namespace ISLGui
             islHighlighter.SetSyntaxColor(TokenType.Keyword, Color.FromArgb(255, 188, 155, 223));
             islHighlighter.SetSyntaxColor(TokenType.Comment, Color.FromArgb(255, 73, 107, 35));
             islHighlighter.SetSyntaxColor(TokenType.MetaTag, Color.FromArgb(255, 100, 230, 255));
-            //Open default file
-            var defaultFile = new IslFile()
-            {
-                CurrentDirectory = defaultFilePath,
-            };
+            //Add events
             manager.FileButtonClicked += Manager_FileButtonClicked;
             manager.FileButtonDeleted += Manager_FileButtonDeleted;
-            manager.SelectFile(manager.AddFile(defaultFile));
+            //Open default file, if applicable
+            if (initFilePath.Length == 0)
+            {
+                var defaultFile = new IslFile()
+                {
+                    CurrentDirectory = defaultFilePath,
+                };
+                manager.SelectFile(manager.AddFile(defaultFile));
+            }
+            else
+            {
+                manager.SelectFile(manager.AddFile(new IslFile()
+                {
+                    FilePath = Path.GetFullPath(initFilePath)
+                }));
+            }
             manager.AddButtonsToListView(Files);
             LoadFileIntoTextbox();
             CodeMode(0, new());
