@@ -17,8 +17,8 @@ namespace ISLGui
         {
             get => CurrentDirectory + FileName; init
             {
-                CurrentDirectory = value[..value.LastIndexOf('\\')]+'\\';
-                FileName = value[(value.LastIndexOf('\\')+1)..];
+                CurrentDirectory = value[..value.LastIndexOf('\\')] + '\\';
+                FileName = value[(value.LastIndexOf('\\') + 1)..];
             }
         }
         public string CurrentDirectory { get; init; } = "\\";

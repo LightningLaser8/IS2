@@ -27,7 +27,7 @@ namespace ISLGui
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             string[] cmdargs = Environment.GetCommandLineArgs();
-            m_window = new MainWindow(cmdargs.Length>1?cmdargs[1]:"");
+            m_window = new MainWindow(cmdargs.Length > 1 ? cmdargs[1] : "");
             m_window.Activate();
         }
 

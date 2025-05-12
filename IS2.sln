@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISLTest", "ISLTest\ISLTest.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISLGui", "ISLGui\ISLGui.csproj", "{3B34B795-5A9D-46D3-9469-BC0D112EEE85}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrate", "Integrate\Integrate.csproj", "{AEEBB978-F796-4454-9B6E-B5A805E0D531}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrateTest", "IntegrateTest\IntegrateTest.csproj", "{7E12E9D7-4C40-42CD-815D-E3793AF22E44}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +33,14 @@ Global
 		{3B34B795-5A9D-46D3-9469-BC0D112EEE85}.Release|Any CPU.ActiveCfg = Release|x64
 		{3B34B795-5A9D-46D3-9469-BC0D112EEE85}.Release|Any CPU.Build.0 = Release|x64
 		{3B34B795-5A9D-46D3-9469-BC0D112EEE85}.Release|Any CPU.Deploy.0 = Release|x64
+		{AEEBB978-F796-4454-9B6E-B5A805E0D531}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEEBB978-F796-4454-9B6E-B5A805E0D531}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEEBB978-F796-4454-9B6E-B5A805E0D531}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEEBB978-F796-4454-9B6E-B5A805E0D531}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E12E9D7-4C40-42CD-815D-E3793AF22E44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E12E9D7-4C40-42CD-815D-E3793AF22E44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E12E9D7-4C40-42CD-815D-E3793AF22E44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E12E9D7-4C40-42CD-815D-E3793AF22E44}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
