@@ -47,6 +47,7 @@ namespace ISL.Interpreter
         {
             codePoints = code;
         }
+        public IslProgram() { }
         private readonly List<Expression> codePoints = [];
 
         public Dictionary<string, IslValue> LastOutputs => outputs;

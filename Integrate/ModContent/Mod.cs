@@ -1,4 +1,6 @@
-﻿namespace Integrate.ModContent
+﻿using Integrate.ModContent.ISL;
+
+namespace Integrate.ModContent
 {
     public class Mod
     {
@@ -10,9 +12,10 @@
         public string Description { get; init; } = "[Description goes here]";
 
         public Content[] content = [];
+        public Script[] scripts = [];
         public string Describe()
         {
-            return $"{DisplayName} ('{Name}' by {Author}, v{Version}): {Tagline}\n {Description}\nContent:\n  {string.Join("\n  ", content.Select(x => $"'{x.name}' in {x.registry}: {x.JSON}"))}";
+            return $"{DisplayName} ('{Name}' by {Author}, v{Version}): {Tagline}\n {Description}\nContent:\n  {string.Join("\n  ", content.Select(x => $"'{x.name}' in {x.registry}: {x.JSON}"))}\nScripts:\n  {string.Join("\n  ", scripts.Select(x => $"'{(x.GetMetadata("name").Length > 0 ? x.GetMetadata("name") : "script")}' on events: {string.Join(", ", x.GetMetadata("event"))}"))}";
         }
     }
 }

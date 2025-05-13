@@ -5,6 +5,7 @@ using System.Text.Json;
 using Integrate.Loader;
 using Integrate.Metadata;
 using Integrate.ModContent;
+using Integrate.ModContent.ISL;
 using Integrate.Registry;
 
 namespace Integrate
@@ -92,7 +93,7 @@ namespace Integrate
         {
             return Construct(sourceName, typeof(T)) as T;
         }
-        public static void Assign(object target, ExpandoObject source)
+        internal static void Assign(object target, ExpandoObject source)
         {
             var propdict = source.ToDictionary();
             foreach (var prop in source.Select(x => x.Key))
@@ -166,6 +167,7 @@ namespace Integrate
             };
             infoOut("  'mod.json' processed.");
             string defpath = Pathify(path, modJson.Definitions);
+            string scrpath = Pathify(path, modJson.Scripts);
             var defs = ModFileHandler.LoadDefinitionJsonFile(defpath);
             infoOut($"  Definition file '{defpath}' loaded.");
             var content = defs.defs.Select(eobj =>
@@ -183,6 +185,8 @@ namespace Integrate
                 infoOut("   Defined content: " + item.ToString());
             }
             infoOut($"  Definition file '{defpath}' processed.");
+            string[] scrs = ModFileHandler.LoadScriptJsonFile(scrpath);
+            infoOut($"  Script file '{scrpath}' loaded & processed.");
 
             infoOut($" Processing content files...");
             List<Content> conts = [];
@@ -202,6 +206,19 @@ namespace Integrate
                 infoOut($"   '{item.name}' content registered: {createdContent.JSON}");
             }
             mod.content = [.. conts];
+
+            infoOut($" Processing script files...");
+            List<Script> scripts = [];
+            foreach (var scrPath in scrs)
+            {
+                infoOut("  Loading script: " + scrPath);
+                var script = ModFileHandler.LoadScriptFile(Pathify(path, scrPath));
+                infoOut($"   '{scrPath}' loaded.");
+                scripts.Add(script);
+            }
+            mod.content = [.. conts];
+            mod.scripts = [.. scripts];
+
             infoOut($" Mod loaded: \n{mod.Describe()}");
             infoOut($"Mod loading complete.");
             return mod;

@@ -1,6 +1,6 @@
 ﻿namespace ISL.Runtime.Errors
 {
-    internal class IslError(string message) : Exception(message)
+    public class IslError(string message) : Exception(message)
     {
         /// <summary>
         /// The line number of the error.

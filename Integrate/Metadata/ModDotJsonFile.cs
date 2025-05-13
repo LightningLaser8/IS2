@@ -9,5 +9,6 @@
         public readonly string Tagline = "An Integrate Mod.";
         public readonly string Description = "[Description goes here]";
         public readonly string Definitions = "definitions.json";
+        public readonly string Scripts = "scripts.json";
     }
 }

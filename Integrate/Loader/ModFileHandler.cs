@@ -2,6 +2,7 @@
 using System.Dynamic;
 using System.Text.Json;
 using Integrate.Metadata;
+using Integrate.ModContent.ISL;
 
 namespace Integrate.Loader
 {
@@ -23,10 +24,16 @@ namespace Integrate.Loader
         }
         internal static DefinitionDotJsonFile LoadDefinitionJsonFile(string path)
         {
-            if (!File.Exists(path)) throw new FileNotFoundException($"Mod has no 'definitions.json' file at the specified path ({path}).");
+            if (!File.Exists(path)) throw new FileNotFoundException($"Mod has no definition file at the specified path ({path}).");
             string contents = File.ReadAllText(path);
             var json = JsonSerializer.Deserialize<ExpandoObject[]>(contents, JsonOptions) ?? [];
             return new DefinitionDotJsonFile() { defs = json };
+        }
+        internal static string[] LoadScriptJsonFile(string path)
+        {
+            if (!File.Exists(path)) throw new FileNotFoundException($"Mod has no scripts file at the specified path ({path}).");
+            string contents = File.ReadAllText(path);
+            return JsonSerializer.Deserialize<string[]>(contents, JsonOptions) ?? [];
         }
         internal static ExpandoObject LoadContentFile(string path)
         {
@@ -34,6 +41,13 @@ namespace Integrate.Loader
             string contents = File.ReadAllText(path);
             var json = JsonSerializer.Deserialize<ExpandoObject>(contents, JsonOptions) ?? [];
             return JsonElementsToCLR(json);
+        }
+        internal static Script LoadScriptFile(string path)
+        {
+            if (!path.EndsWith(".isl")) path += ".isl";
+            if (!File.Exists(path)) throw new FileNotFoundException($"There is no file at the specified path ({path}).");
+            string contents = File.ReadAllText(path);
+            return new Script(contents, path);
         }
         private static ExpandoObject JsonElementsToCLR(ExpandoObject eo)
         {
@@ -44,6 +58,7 @@ namespace Integrate.Loader
                 if (kvp.Value is JsonElement jse)
                 {
                     obj[kvp.Key] = JsonElementToCLR(jse);
+                    Debug.WriteLine(obj[kvp.Key]?.GetType().Name ?? "null");
                 }
             }
             return eo;
@@ -56,7 +71,11 @@ namespace Integrate.Loader
             if (jse.ValueKind == JsonValueKind.Null) return null;
             if (jse.ValueKind == JsonValueKind.Undefined) return null;
             if (jse.ValueKind == JsonValueKind.True) return true;
-            if (jse.ValueKind == JsonValueKind.Number) return jse.GetRawText().Contains('.') ? jse.GetDouble() : jse.GetInt64();
+            if (jse.ValueKind == JsonValueKind.Number)
+            {
+                if (jse.GetRawText().Contains('.')) return jse.GetDouble();
+                else return jse.GetInt64();
+            }
             if (jse.ValueKind == JsonValueKind.String) return jse.GetString();
             if (jse.ValueKind == JsonValueKind.Array) return jse.EnumerateArray().Select(JsonElementToCLR).ToList();
             return null;
