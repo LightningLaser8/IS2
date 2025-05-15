@@ -11,12 +11,12 @@ namespace ISLGui
 {
     internal partial class Highlighter
     {
-        private readonly static string[] ops = ["+", "-", "*", "/", "%", "**", "==", "!", "=", "+=", "-=", "*=", "/=", "%=", "->", "<~", "#"];
+        private readonly static string[] ops = ["+", "-", "*", "/", "%", "**", "==", "!", "=", "+=", "-=", "*=", "/=", "%=", "->", "<~", "#", "~>"];
         private readonly static char[] toks = [';', ',', '?', ':'];
         private readonly static string[] splittingOps = ["!"];
         private readonly static char[] bracks = ['(', ')', '[', ']', '{', '}', '\\'];
         private readonly static string[] keywords = ["if", "else", "elseif"];
-        private readonly static string[] keyops = ["in", "out", "infer", "imply", "bool", "int", "float", "string", "complex", "group"];
+        private readonly static string[] keyops = ["in", "out", "infer", "imply", "bool", "int", "float", "string", "complex", "group", "binmant", "binexp"];
         private bool HasOperator(string token, bool needsSplit = false) => needsSplit ? splittingOps.Contains(token) : ops.Contains(token);
         private bool HasBracket(char token) => bracks.Contains(token);
         public List<string> Tokenise(string source)
@@ -59,7 +59,7 @@ namespace ISLGui
                 }
                 else if (c == '"')
                 {
-                    if (currentToken != "")
+                    if (currentToken != "" || isString)
                     {
                         tokens.Add(isString ? '"' + currentToken + '"' : currentToken);
                         currentToken = "";

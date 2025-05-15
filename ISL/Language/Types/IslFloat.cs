@@ -101,7 +101,10 @@ namespace ISL.Language.Types
             if (value is IslInt ilong)
                 return new IslFloat(Math.Pow(Value, ilong.Value));
             if (value is IslFloat iflt)
+            {
+                if (iflt < 0 && !double.IsInteger(iflt)) return new IslComplex(Complex.Pow(Value, iflt.Value));
                 return new IslFloat(Math.Pow(Value, iflt.Value));
+            }
             if (value is IslComplex icmp)
                 return new IslComplex(Complex.Pow(Value, icmp.Value));
             throw new TypeError($"Cannot raise a {Type} to the power of a {value.Type}");

@@ -197,7 +197,11 @@ namespace ISL.Interpreter
                 new BinaryOperator("->", (left, right) => {
                     if(right is not IslIdentifier ride) throw new TypeError($"Must cast to a type identifier, got {right.Type}");
                     return TryCast(left, IslValue.GetTypeFromName(ride.Value));
-                }, -5),
+                }, -4),
+                new BinaryOperator("~>", (left, right) => {
+                    if(right is not IslIdentifier ride) throw new TypeError($"Must cast to a type identifier, got {right.Type}");
+                    return ForgivingCast(left, IslValue.GetTypeFromName(ride.Value));
+                }, -4),
                 #endregion
                 #region Communication
                 new ProgramAccessingUnaryOperator("out", (target, prog) => {
@@ -272,11 +276,30 @@ namespace ISL.Interpreter
             AssignVar(vari, res);
             return vari;
         }
-        private IslValue TryCast(IslValue islValue, IslType type)
+        private static IslValue ForgivingCast(IslValue islValue, IslType type)
+        {
+            try
+            {
+                return TryCast(islValue, type);
+            }
+            catch (Exception)
+            {
+                try
+                {
+                    return IslValue.DefaultForType(type);
+                }
+                catch (Exception)
+                {
+                    return IslValue.Null;
+                }
+            }
+        }
+        private static IslValue TryCast(IslValue islValue, IslType type, bool forgiving = false)
         {
             if (islValue.Type == type) return islValue;
             // Debug($"Casting {islValue.Stringify()} to {type}");
-            if (islValue is not IIslCastable icast) throw new TypeError($"Type {islValue.Type} is not castable!");
+            if (islValue is not IIslCastable icast)
+                throw new TypeError($"Type {islValue.Type} is not castable!");
             return icast.Cast(type);
         }
         private static void CheckVar(IslValue name, IslProgram program, out IslVariable vari)

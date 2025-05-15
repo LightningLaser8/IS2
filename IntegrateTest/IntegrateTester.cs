@@ -119,10 +119,12 @@ internal class IntegrateTester
         {
             Console.WriteLine(" Control is a function call with a simple int assignment then tostring");
             Console.WriteLine(" GC having a field day here");
-            await Task.Delay(1000);
+            await Task.Delay(3000);
             TestIslPerfEvents("No Listeners", "ev2", 100000);
-            await Task.Delay(1000);
+            await Task.Delay(3000);
             TestIslPerfEvents("One Script","ev3", 100000);
+            await Task.Delay(3000);
+            TestIslPerfEvents("Two Scripts", "ev4", 100000);
         });
     } 
     private static void PerfUnitTest(string method, Action<int> action, int tests)

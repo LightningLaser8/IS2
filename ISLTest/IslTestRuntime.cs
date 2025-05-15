@@ -328,6 +328,7 @@ namespace ISLTest
             WriteHelp("<col> at <index>", "Returns the element at index <index> of the collection <col>. Also can be used to search strings.");
             WriteSeparator("  Types:");
             WriteHelp("<value> -> <type>", "Returns <value> cast to type <type>. <type> must be a capitalised type name.");
+            WriteHelp("<value?> ~> <type>", "Returns <value> cast to type <type>, or <type>'s default value (or null) if not possible. <type> must be a capitalised type name.");
             WriteSeparator("        -- Variables -      ");
             WriteSubheading(" Technically operators");
             WriteHelp("string <name>", "Creates and returns a string variable with name <name>.");
