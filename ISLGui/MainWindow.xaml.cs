@@ -9,6 +9,7 @@ using Microsoft.UI.Text;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Windows.Storage.Pickers;
 using Windows.UI;
 using WinRT.Interop;
@@ -28,6 +29,8 @@ namespace ISLGui
         private readonly FileManager manager = new();
         private readonly VariableManager varManager = new();
         private readonly Highlighter islHighlighter = new();
+
+        private ScrollViewer? InputScroller = null;
         public MainWindow(string initFilePath)
         {
             this.InitializeComponent();
@@ -74,6 +77,7 @@ namespace ISLGui
             CodeMode(0, new());
         }
 
+        private void InputScroller_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e) => SyncScrolling();
         private void Manager_FileButtonDeleted(int fileIndex) => LoadFileIntoTextbox();
 
         private void Manager_FileButtonClicked(IslFile representedFile) => LoadFileIntoTextbox();
@@ -135,6 +139,11 @@ namespace ISLGui
 
         private void SyntaxHighlightingTriggered(object sender, Microsoft.UI.Xaml.Controls.TextChangedEventArgs e)
         {
+            if(InputScroller is null)
+            {
+                InputScroller = GetScrollViewerOf(TextInput);
+                if (InputScroller is not null) InputScroller.ViewChanged += InputScroller_ViewChanged;
+            }
             SyntaxHighlighting();
         }
         private void SyntaxHighlighting()
@@ -299,6 +308,37 @@ namespace ISLGui
                     FontFamily = new("Consolas")
                 });
                 Metas.Items.Add(container);
+            }
+        }
+
+        private void TextInput_EffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args) => SyncScrolling();
+        private void SyncScrolling()
+        {
+            if (InputScroller is null) return;
+            SyntaxScroller.ScrollToVerticalOffset(InputScroller.VerticalOffset);
+        }
+        private static ScrollViewer? GetScrollViewerOf(TextBox textBox)
+        {
+            var child = VisualTreeHelper.GetChild(textBox, 0);
+            var grid = (Grid)child;
+            if(grid is null) return null;
+            for (var i = 0; i <= VisualTreeHelper.GetChildrenCount(grid) - 1; i++)
+            {
+                object obj = VisualTreeHelper.GetChild(grid, i);
+                if (obj is not ScrollViewer) continue;
+                return (ScrollViewer)obj;
+            }
+            return null;
+        }
+        private static void ScrollToPoint(TextBox textBox, double offset)
+        {
+            var grid = (Grid)VisualTreeHelper.GetChild(textBox, 0);
+            for (var i = 0; i <= VisualTreeHelper.GetChildrenCount(grid) - 1; i++)
+            {
+                object obj = VisualTreeHelper.GetChild(grid, i);
+                if (obj is not ScrollViewer) continue;
+                ((ScrollViewer)obj).ChangeView(0.0f, offset, 1.0f, true);
+                break;
             }
         }
     }

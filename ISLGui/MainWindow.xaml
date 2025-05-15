@@ -67,15 +67,17 @@
         </StackPanel>
         <Grid x:Name="CodeEditor" Grid.Row="1" Grid.Column="1" Width="Auto" Height="Auto" Background="#131313" Margin="0,20,10,20">
             <!-- IsReadOnly="True" AcceptsReturn="True" IsSpellCheckEnabled="False" -->
-            <TextBlock AllowFocusOnInteraction="False" IsHitTestVisible="False" x:Name="TextOutput" Foreground="white" FontFamily="Consolas" Padding="1,0,0,0">
-                <TextBlock.Resources>
-                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#131313" />
-                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#131313" />
-                    <x:Double x:Key="TextControlPointerOverBackgroundThemeOpacity">0.8</x:Double>
-                 </TextBlock.Resources>
-            </TextBlock>
+            <ScrollViewer x:Name="SyntaxScroller" VerticalScrollBarVisibility="Hidden">
+                <TextBlock AllowFocusOnInteraction="False" IsHitTestVisible="False" x:Name="TextOutput" Foreground="white" FontFamily="Consolas" Padding="1,0,0,0">
+                    <TextBlock.Resources>
+                        <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#131313" />
+                        <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#131313" />
+                        <x:Double x:Key="TextControlPointerOverBackgroundThemeOpacity">0.8</x:Double>
+                    </TextBlock.Resources>
+                </TextBlock>
+            </ScrollViewer>
             <TextBox Text='out string _ = "Hello World"' TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="False"
-    SelectionHighlightColor="#424242" TextChanged="SyntaxHighlightingTriggered" x:Name="TextInput" Foreground="Transparent" Background="Transparent" Opacity="0.5" FontFamily="Consolas" Padding="0" Margin="0">
+    SelectionHighlightColor="#424242" TextChanged="SyntaxHighlightingTriggered" x:Name="TextInput" Foreground="Transparent" Background="Transparent" Opacity="0.5" FontFamily="Consolas" Padding="0" Margin="0" EffectiveViewportChanged="TextInput_EffectiveViewportChanged">
                 <TextBox.Resources>
                     <SolidColorBrush x:Key="TextControlForeground" Color="Transparent" />
                     <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="Transparent" />
@@ -113,7 +115,7 @@
                 <Button Click="RunTriggered" FontSize="20" ToolTipService.ToolTip="Run the currently selected script.">
                     <SymbolIcon Symbol="Play"/>
                 </Button>
-                
+
                 <StackPanel Orientation="Horizontal" >
                     <TextBlock Text="Output Variables" FontSize="20" FontWeight="Bold"/>
                     <TextBlock Text=" (?)" ToolTipService.ToolTip="Variables output by your program, using `out&#160;&lt;type&gt;&#160;&lt;name&gt;&#160;=&#160;&lt;output&gt;;`."/>
@@ -146,6 +148,6 @@
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
-        
+
     </Grid>
 </Window>
