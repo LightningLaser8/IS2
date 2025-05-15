@@ -21,41 +21,41 @@ namespace ISL.Interpreter
             Operators = [
                 #region Basic maths
                 new BinaryOperator("+", (left, right) => {
-                    Debug($"Adding {left.Stringify()} and {right.Stringify()}");
+                    // Debug($"Adding {left.Stringify()} and {right.Stringify()}");
                     if (left is not IIslAddable leftadd) throw new TypeError($"Invalid left-hand (augend) type {left.Type} in addition.");
                     if (right is not IIslAddable rightadd) throw new TypeError($"Invalid right-hand (addend) type {right.Type} in addition.");
                     return leftadd.Add(right);
                 }),
                 new CompoundOperator("-", new BinaryOperator((left, right) => {
-                    Debug($"Subtracting {right.Stringify()} from {left.Stringify()}");
+                    // Debug($"Subtracting {right.Stringify()} from {left.Stringify()}");
                     if (left is not IIslSubtractable leftadd) throw new TypeError($"Invalid left-hand (minuend) type {left.Type} in subtraction.");
                     if (right is not IIslSubtractable rightadd) throw new TypeError($"Invalid right-hand (subtrahend) type {right.Type} in subtraction.");
                     return leftadd.Subtract(right);
                 }), new UnaryOperator("-", (target) => {
-                    Debug($"Negating {target.Stringify()}");
+                    // Debug($"Negating {target.Stringify()}");
                     if (target is not IIslSubtractable leftadd) throw new TypeError($"Invalid target type {target.Type} in negation.");
                     return new IslInt(0).Subtract(target);
                 })),
                 new BinaryOperator("*", (left, right) => {
-                    Debug($"Multiplying {left.Stringify()} by {right.Stringify()}");
+                    // Debug($"Multiplying {left.Stringify()} by {right.Stringify()}");
                     if (left is not IIslMultiplicable leftadd) throw new TypeError($"Invalid left-hand (multiplicand) type {left.Type} in multiplication.");
                     if (right is not IIslMultiplicable rightadd) throw new TypeError($"Invalid right-hand (multiplier) type {right.Type} in multiplication.");
                     return leftadd.Multiply(right);
                 }, 1),
                 new BinaryOperator("/", (left, right) => {
-                    Debug($"Dividing {left.Stringify()} by {right.Stringify()}");
+                    // Debug($"Dividing {left.Stringify()} by {right.Stringify()}");
                     if (left is not IIslDivisible leftadd) throw new TypeError($"Invalid left-hand (dividend) type {left.Type} in division.");
                     if (right is not IIslDivisible rightadd) throw new TypeError($"Invalid right-hand (divisor) type {right.Type} in division.");
                     return leftadd.Divide(right);
                 }, 1),
                 new BinaryOperator("%", (left, right) => {
-                    Debug($"Modulating {left.Stringify()} by(?) {right.Stringify()}");
+                    // Debug($"Modulating {left.Stringify()} by(?) {right.Stringify()}");
                     if (left is not IIslModulatable leftadd) throw new TypeError($"Invalid left-hand (dividend) type {left.Type} in modulation.");
                     if (right is not IIslModulatable rightadd) throw new TypeError($"Invalid right-hand (divisor) type {right.Type} in modulation.");
                     return leftadd.Modulate(right);
                 }, 1),
                 new BinaryOperator("**", (left, right) => {
-                    Debug($"Raising {left.Stringify()} to the power of {right.Stringify()}");
+                    // Debug($"Raising {left.Stringify()} to the power of {right.Stringify()}");
                     if (left is not IIslExponentiable leftadd) throw new TypeError($"Invalid left-hand (base) type {left.Type} in exponentiation.");
                     if (right is not IIslExponentiable rightadd) throw new TypeError($"Invalid right-hand (power) type {right.Type} in exponentiation.");
                     return leftadd.Exponentiate(right);
@@ -63,29 +63,29 @@ namespace ISL.Interpreter
                 #endregion
                 #region Trigonometry
                 new UnaryOperator("sin", (target) => {
-                    Debug($"Sining {target.Stringify()}");
+                    // Debug($"Sining {target.Stringify()}");
                     if (target is not IIslTriggable targetadd) throw new TypeError($"Invalid target type {target.Type} in trigonometric function.");
                     return targetadd.Sin();
                 }, 3),
                 new UnaryOperator("cos", (target) => {
-                    Debug($"Cosing {target.Stringify()}");
+                    // Debug($"Cosing {target.Stringify()}");
                     if (target is not IIslTriggable targetadd) throw new TypeError($"Invalid target type {target.Type} in trigonometric function.");
                     return targetadd.Cos();
                 }, 3),
                 new UnaryOperator("tan", (target) => {
-                    Debug($"Tanning {target.Stringify()}");
+                    // Debug($"Tanning {target.Stringify()}");
                     if (target is not IIslTriggable targetadd) throw new TypeError($"Invalid target type {target.Type} in trigonometric function.");
                     return targetadd.Tan();
                 }, 3),
                 #endregion
                 #region Logical operators
                 new UnaryOperator("!", (target) => {
-                    Debug($"Inverting {target.Stringify()}");
+                    // Debug($"Inverting {target.Stringify()}");
                     if (target is not IIslInvertable targetadd) throw new TypeError($"Invalid target type {target.Type} in inversion.");
                     return targetadd.Invert();
                 }, 5) { AutoSplit = true },
                 new BinaryOperator("==", (left, right) => {
-                    Debug($"Checking equality of ({left.Type}) {left.Stringify()} and ({right.Type}) {right.Stringify()}");
+                    // Debug($"Checking equality of ({left.Type}) {left.Stringify()} and ({right.Type}) {right.Stringify()}");
                     bool equal = false;
                     if(left is IIslEquatable lconst && right is IIslEquatable rconst) equal = lconst.EqualTo(right);
                     return equal ? IslBool.True : IslBool.False;
@@ -97,12 +97,12 @@ namespace ISL.Interpreter
                 #endregion
                 #region Binary manipulation
                 new UnaryOperator("binmant", (target) => {
-                    Debug($"Getting mantissa of {target.Stringify()}");
+                    // Debug($"Getting mantissa of {target.Stringify()}");
                     if (target is not IslFloat targetadd) throw new TypeError($"Invalid target type {target.Type} in mantissa extraction.");
                     return targetadd.Mantissa();
                 }, 5),
                 new UnaryOperator("binexp", (target) => {
-                    Debug($"Getting exponent of {target.Stringify()}");
+                    // Debug($"Getting exponent of {target.Stringify()}");
                     if (target is not IslFloat targetadd) throw new TypeError($"Invalid target type {target.Type} in exponent extraction.");
                     return targetadd.Exponent();
                 }, 5),
@@ -110,59 +110,59 @@ namespace ISL.Interpreter
                 #region Variables
                 new UnaryOperator("const", (target) => {
                     if (target is not IslVariable targetadd) throw new TypeError($"Can only freeze type of a variable.");
-                    Debug($"Making {targetadd.Name} read-only");
+                    // Debug($"Making {targetadd.Name} read-only");
                     if(targetadd.InferType) throw new TypeError("Cannot freeze a type-inferred variable!");
                     targetadd.ReadOnly = true;
                     return targetadd;
                 }, 11),
                 new UnaryOperator("imply", (target) => {
                     if (target is not IslVariable targetadd) throw new TypeError($"Can only imply type of a variable.");
-                    Debug($"Will type-cast all assigned values to {targetadd.VarType} for {targetadd.Name}");
+                    // Debug($"Will type-cast all assigned values to {targetadd.VarType} for {targetadd.Name}");
                     if(targetadd.InferType) throw new TypeError("Cannot imply type of a type-inferred variable!");
                     targetadd.ImpliedType = true;
                     return targetadd;
                 }, 11),
                 new ProgramAccessingUnaryOperator("infer", (name, prog)=>{
                    if(name is not IslIdentifier iint) throw new SyntaxError($"Expected identifier in variable declaration, got {name.Type}");
-                   Debug($"Creating type-inferring (initially null) variable with name '{iint.Value}'");
+                   // Debug($"Creating type-inferring (initially null) variable with name '{iint.Value}'");
                    var vari = prog.CreateVariable(iint.Value, IslType.Null);
                    vari.InferType = true;
                    return vari;
                 }, 12),
                 new ProgramAccessingUnaryOperator("string", (name, prog)=>{
                    if(name is not IslIdentifier iint) throw new SyntaxError($"Expected identifier in variable declaration, got {name.Type}");
-                   Debug($"Creating string variable with name '{iint.Value}'");
+                   // Debug($"Creating string variable with name '{iint.Value}'");
                    return prog.CreateVariable(iint.Value, IslType.String);
                 }, 12),
                 new ProgramAccessingUnaryOperator("int", (name, prog)=>{
                    if(name is not IslIdentifier iint) throw new SyntaxError($"Expected identifier in variable declaration, got {name.Type}");
-                   Debug($"Creating int variable with name '{iint.Value}'");
+                   // Debug($"Creating int variable with name '{iint.Value}'");
                    return prog.CreateVariable(iint.Value, IslType.Int);
                 }, 12),
                 new ProgramAccessingUnaryOperator("float", (name, prog)=>{
                    if(name is not IslIdentifier iint) throw new SyntaxError($"Expected identifier in variable declaration, got {name.Type}");
-                   Debug($"Creating float variable with name '{iint.Value}'");
+                   // Debug($"Creating float variable with name '{iint.Value}'");
                    return prog.CreateVariable(iint.Value, IslType.Float);
                 }, 12),
                 new ProgramAccessingUnaryOperator("complex", (name, prog)=>{
                    if(name is not IslIdentifier iint) throw new SyntaxError($"Expected identifier in variable declaration, got {name.Type}");
-                   Debug($"Creating complex variable with name '{iint.Value}'");
+                   // Debug($"Creating complex variable with name '{iint.Value}'");
                    return prog.CreateVariable(iint.Value, IslType.Complex);
                 }, 12),
                 new ProgramAccessingUnaryOperator("bool", (name, prog)=>{
                    if(name is not IslIdentifier iint) throw new SyntaxError($"Expected identifier in variable declaration, got {name.Type}");
-                   Debug($"Creating boolean variable with name '{iint.Value}'");
+                   // Debug($"Creating boolean variable with name '{iint.Value}'");
                    return prog.CreateVariable(iint.Value, IslType.Bool);
                 }, 12),
                 new ProgramAccessingUnaryOperator("group", (name, prog)=>{
                    if(name is not IslIdentifier iint) throw new SyntaxError($"Expected identifier in variable declaration, got {name.Type}");
-                   Debug($"Creating group variable with name '{iint.Value}'");
+                   // Debug($"Creating group variable with name '{iint.Value}'");
                    return prog.CreateVariable(iint.Value, IslType.Group);
                 }, 12),
                 #endregion
                 #region Assignment
                 new ProgramAccessingBinaryOperator("=", (left, right, program) => {
-                    Debug($"Setting {left.Stringify()} to {right.Stringify()}");
+                    // Debug($"Setting {left.Stringify()} to {right.Stringify()}");
                     CheckVar(left, program, out var lvar);
                     AssignVar(lvar, right);
                     return lvar;
@@ -202,42 +202,42 @@ namespace ISL.Interpreter
                 #region Communication
                 new ProgramAccessingUnaryOperator("out", (target, prog) => {
                     if (target is not IslVariable targetvar) throw new TypeError($"Can only output a variable.");
-                    Debug($"Will output {targetvar.Stringify()} on program end");
+                    // Debug($"Will output {targetvar.Stringify()} on program end");
                     prog.OutputVariable(targetvar.Name);
                     return targetvar;
                 }, 10),
                 new ProgramAccessingUnaryOperator("in", (target, prog) => {
                     //Just grab everything
                     if (target is IslIdentifier iide && iide.Value == "everything") {
-                        Debug($"Taking all inputs as (read-only) locals");
+                        // Debug($"Taking all inputs as (read-only) locals");
                         foreach(var item in prog.Ins)
                         {
                             var vari = prog.CreateVariable(item.Key, item.Value.Type, item.Value);
                             vari.ReadOnly = true;
-                            Debug($"  Input {item.Key} as {vari.Stringify()}");
+                            // Debug($"  Input {item.Key} as {vari.Stringify()}");
                         }
                         return IslValue.Null;
                     }
                     //Specific variable assignment
                     if (target is not IslVariable targetvar) throw new TypeError($"Can only input to a variable.");
-                    Debug($"Taking input from {targetvar.Name} as (read-only) {targetvar.Stringify()}");
+                    // Debug($"Taking input from {targetvar.Name} as (read-only) {targetvar.Stringify()}");
                     if(!prog.Ins.TryGetValue(targetvar.Name, out var val)) throw new InvalidReferenceError($"No input with name {targetvar.Name} found.");
                     CheckAssignment(targetvar, val);
                     AssignVar(targetvar, val);
                     targetvar.ReadOnly = true;
-                    Debug($"Input {targetvar.Name} is {targetvar.Stringify()}");
+                    // Debug($"Input {targetvar.Name} is {targetvar.Stringify()}");
                     return targetvar;
                 }, 10),
                 #endregion
                 #region Collections
                 //Append item to a group or string
                 new ProgramAccessingBinaryOperator("<~", (left, right, prog) => {
-                    Debug($"Appending {right.Stringify()} to {left.Stringify()}");
+                    // Debug($"Appending {right.Stringify()} to {left.Stringify()}");
                     IslValue iv = IslValue.Null;
                     if(left is IslIdentifier iide) {
                         var v = prog.GetVariableImperative(iide.Value);
-                        Debug(" being nice and getting variable for you");
-                        Debug(" got "+v.Stringify());
+                        // Debug(" being nice and getting variable for you");
+                        // Debug(" got "+v.Stringify());
                         iv = v.Value;
                     }
                     else iv = left;
@@ -246,7 +246,7 @@ namespace ISL.Interpreter
                     throw new TypeError($"Cannot append to a {iv.Type}");
                 }, -5),
                 new BinaryOperator("at", (left, right) => {
-                    Debug($"Getting value from {left.Stringify()} at index {left.Stringify()}");
+                    // Debug($"Getting value from {left.Stringify()} at index {left.Stringify()}");
                     if (left is not IIslIndexable icol) throw new TypeError($"Cannot index a {left.Type}");
                     return icol.Index(right);
                 }, -1),
@@ -257,7 +257,7 @@ namespace ISL.Interpreter
         private IslVariable AssignmentOperation(IslVariable vari, IslValue value, int operation)
         {
             var op = Operators[operation];
-            Debug($"Assignment operator (with base operation at {operation}) on {vari.Name} with {value.Stringify()}");
+            // Debug($"Assignment operator (with base operation at {operation}) on {vari.Name} with {value.Stringify()}");
             IslValue input = vari.ImpliedType ? TryCast(value, vari.VarType) : value;
             IslValue res = (
                 op is CompoundOperator co
@@ -275,7 +275,7 @@ namespace ISL.Interpreter
         private IslValue TryCast(IslValue islValue, IslType type)
         {
             if (islValue.Type == type) return islValue;
-            Debug($"Casting {islValue.Stringify()} to {type}");
+            // Debug($"Casting {islValue.Stringify()} to {type}");
             if (islValue is not IIslCastable icast) throw new TypeError($"Type {islValue.Type} is not castable!");
             return icast.Cast(type);
         }
@@ -295,13 +295,13 @@ namespace ISL.Interpreter
             if (vari.ReadOnly) throw new AccessError($"Variable {vari.Name} cannot be set - it is read-only.");
             if (vari.InferType)
             {
-                Debug($"Inferring type of {vari.Stringify()} as {value.Type}");
+                // Debug($"Inferring type of {vari.Stringify()} as {value.Type}");
                 vari.ChangeType(value.Type);
                 vari.InferType = false;
             }
             if (vari.ImpliedType && value.Type != vari.VarType)
             {
-                Debug($"Type of {value.Stringify()} implied to be {vari.VarType}, casting {value.Type} -> {vari.VarType}");
+                // Debug($"Type of {value.Stringify()} implied to be {vari.VarType}, casting {value.Type} -> {vari.VarType}");
                 if (value is not IIslCastable rcast) throw new TypeError($"Type {value.Type} is not castable, so cannot be assigned to a type-implied variable.");
                 vari.Value = TryCast(value, vari.VarType);
                 return;

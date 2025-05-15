@@ -5,7 +5,7 @@ using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
 {
-    internal class IslComplex : IslValue, ITypedObject<IslComplex, Complex>, IIslAddable, IIslDivisible, IIslMultiplicable, IIslSubtractable, IIslExponentiable, IIslTriggable, IIslCastable, IIslEquatable
+    public class IslComplex : IslValue, ITypedObject<IslComplex, Complex>, IIslAddable, IIslDivisible, IIslMultiplicable, IIslSubtractable, IIslExponentiable, IIslTriggable, IIslCastable, IIslEquatable
     {
         public override IslType Type => IslType.Complex;
         public Complex Value { get; }

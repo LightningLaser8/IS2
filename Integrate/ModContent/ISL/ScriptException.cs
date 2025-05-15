@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ISL.Runtime.Errors;
 
 namespace Integrate.ModContent.ISL
 {
@@ -11,7 +12,7 @@ namespace Integrate.ModContent.ISL
     /// </summary>
     /// <param name="script"></param>
     /// <param name="error"></param>
-    public class ScriptException(Script script, global::ISL.Runtime.Errors.IslError error) : Exception($"{error.GetType().Name} in {script.Location}: {error.Message}", error)
+    public sealed class ScriptException(Script script, IslError error) : Exception($"{error.GetType().Name} in {script.Location}: {error.Message}", error)
     {
     }
 }

@@ -15,6 +15,76 @@ namespace Integrate
     /// </summary>
     public static class ModLoader
     {
+        #region Events
+        /// <summary>
+        /// Registers an event to be fired. <br/>Note: This can also be done in the project, Integrate doesn't have to handle this.
+        /// </summary>
+        /// <param name="ev"></param>
+        public static void AddEvent(Event ev)
+        {
+            events.Add(ev.Name, ev);
+        }
+        /// <summary>
+        /// Creates an event to be fired. <br/>Note: This can also be done in the project, Integrate doesn't have to handle this.
+        /// </summary>
+        /// <param name="ev"></param>
+        public static void AddEvent(string eventName)
+        {
+            events.Add(eventName, new Event(eventName));
+        }
+        /// <summary>
+        /// Fires an event globally.<br/>
+        /// The first mod registered will get the event first.
+        /// </summary>
+        /// <param name="eventName"></param>
+        public static IslExecutionResult FireEvent(string eventName)
+        {
+            var res = new IslExecutionResult();
+            var ev = events[eventName];
+            foreach (var mod in Mods)
+            {
+                res += ev.Fire(mod);
+            }
+            return res;
+        }
+        /// <summary>
+        /// Fires an event globally, using the specified inputs.<br/>
+        /// The first mod registered will get the event first.
+        /// </summary>
+        /// <param name="eventName"></param>
+        public static IslExecutionResult FireEvent(string eventName, Dictionary<string, object?> inputs)
+        {
+            var res = new IslExecutionResult();
+            var ev = events[eventName];
+            ev.SetInputs(inputs);
+            foreach (var mod in Mods)
+            {
+                res += ev.Fire(mod);
+            }
+            return res;
+        }
+        /// <summary>
+        /// Creates then fires an event globally, using the specified inputs.<br/>
+        /// The first mod registered will get the event first.
+        /// </summary>
+        /// <param name="eventName"></param>
+        public static IslExecutionResult Event(string eventName, Dictionary<string, object?> inputs)
+        {
+            if(!events.ContainsKey(eventName)) AddEvent(eventName);
+            return FireEvent(eventName, inputs);
+        }
+        /// <summary>
+        /// Creates then fires an event globally with no inputs.<br/>
+        /// The first mod registered will get the event first.
+        /// </summary>
+        /// <param name="eventName"></param>
+        public static void Event(string eventName)
+        {
+            if (!events.ContainsKey(eventName)) AddEvent(eventName);
+            FireEvent(eventName);
+        }
+        internal static Dictionary<string, Event> events = [];
+        #endregion
         #region Config
         public static void SetPrefix(bool value) => addsPrefix = value;
         internal static bool addsPrefix = false;
@@ -148,6 +218,11 @@ namespace Integrate
         }
         #endregion
         #region Loaders
+        /// <summary>
+        /// Loads a mod from a file path.
+        /// </summary>
+        /// <param name="path">The path to the base directory of the mod.</param>
+        /// <returns></returns>
         public static Mod Load(string path)
         {
             infoOut($"Loading mod '{path}'");
@@ -221,8 +296,14 @@ namespace Integrate
 
             infoOut($" Mod loaded: \n{mod.Describe()}");
             infoOut($"Mod loading complete.");
+            Mods.Add(mod);
             return mod;
         }
+        /// <summary>
+        /// Loads and implements a mod.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public static Mod Add(string path)
         {
             var mod = Load(path);
@@ -241,5 +322,10 @@ namespace Integrate
             return Path.GetFullPath(Path.Combine(basePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar), path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)));
         }
         #endregion
+
+        /// <summary>
+        /// Returns all loaded mods.
+        /// </summary>
+        public static ICollection<Mod> Mods { get; private set; } = [];
     }
 }

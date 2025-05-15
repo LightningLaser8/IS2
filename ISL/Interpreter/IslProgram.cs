@@ -69,6 +69,7 @@ namespace ISL.Interpreter
             {
                 result = point.Eval(this);
             }
+            Vars.Clear();
             CreateOutputs();
             return result;
         }
