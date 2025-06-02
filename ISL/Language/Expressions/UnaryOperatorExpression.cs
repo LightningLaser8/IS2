@@ -11,9 +11,7 @@ namespace ISL.Language.Expressions
         public Expression? affected;
         public override IslValue Eval(IslProgram program)
         {
-            if (Operation is ProgramAccessingUnaryOperator pao)
-                return pao.Operate.Invoke(affected?.Eval(program) ?? IslValue.Null, program);
-            return Operation.Operate.Invoke(affected?.Eval(program) ?? IslValue.Null);
+            return Operation.Operate.Invoke(affected ?? Null, program);
         }
         public override string ToString()
         {
@@ -22,9 +20,9 @@ namespace ISL.Language.Expressions
         public override Expression Simplify()
         {
             affected = affected?.Simplify();
-            if (affected is ConstantExpression a && Operation is not ProgramAccessingUnaryOperator)
+            if (affected is ConstantExpression a && Operation.IsFoldable)
             {
-                return ConstantExpression.For(Operation.Operate.Invoke(a.Eval()));
+                return ConstantExpression.For(Operation.Operate.Invoke(a, null));
             }
             return this;
         }
@@ -35,7 +33,8 @@ namespace ISL.Language.Expressions
         }
         public override void Validate()
         {
-            affected?.Validate();
+            if (Operation.ValidatesExprs)
+                affected?.Validate();
             if (affected is null) throw new SyntaxError($"Unary operator {value.Stringify()} requires an input, operand is missing!");
         }
         public override string Stringify() => $"{value.Stringify()} {affected?.Stringify()}";

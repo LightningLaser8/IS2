@@ -12,20 +12,18 @@ namespace ISL.Language.Expressions
 
         public override IslValue Eval(IslProgram program)
         {
-            if (Operation is ProgramAccessingNAryOperator pao)
-                return pao.Operate.Invoke([.. affected.Select(x => x.Eval(program))], program);
-            return Operation.Operate.Invoke([.. affected.Select(x => x.Eval(program))]);
+            return Operation.Operate.Invoke([.. affected], program);
         }
         public override string ToString()
         {
-            return $"(N-ary Operator) {value.Stringify()} on {{{string.Join(" and ", affected)}}}";
+            return $"(N-ary Operator order {Operation.Separators.Length + 1}) {value.Stringify()} on {{{string.Join(" and ", affected)}}}";
         }
         public override Expression Simplify()
         {
             affected = [.. affected.Select(x => x.Simplify())];
-            if (affected.All(x => x is ConstantExpression) && Operation is not ProgramAccessingNAryOperator)
+            if (affected.All(x => x is ConstantExpression) && Operation.IsFoldable)
             {
-                return ConstantExpression.For(Operation.Operate.Invoke([.. affected.Select(x => x is ConstantExpression c ? c.Eval() : IslValue.Null)]));
+                return ConstantExpression.For(Operation.Operate.Invoke([.. affected], null));
             }
             return this;
         }
@@ -35,7 +33,8 @@ namespace ISL.Language.Expressions
         }
         public override void Validate()
         {
-            affected.ForEach(x => x.Validate());
+            if (Operation.ValidatesExprs)
+                affected.ForEach(x => x.Validate());
             if (affected.Count > Operation.Separators.Length + 1) throw new SyntaxError($"Too many expressions! Expected {Operation.Separators.Length + 1}, got {affected.Count}");
             if (affected.Count < Operation.Separators.Length + 1) throw new SyntaxError($"Not enough expressions! Expected {Operation.Separators.Length + 1}, got {affected.Count}");
         }

@@ -1,5 +1,5 @@
-﻿using System.Text.RegularExpressions;
-using ISL.Runtime.Errors;
+﻿using ISL.Runtime.Errors;
+using System.Text.RegularExpressions;
 
 namespace ISL.Interpreter
 {
@@ -7,7 +7,6 @@ namespace ISL.Interpreter
     {
         private void RemoveComments()
         {
-            source = source.ReplaceLineEndings("\n");
             source = Regexes.comments.Replace(source, "");
             Debug("Line comments removed.");
             source = Regexes.blockComments.Replace(source, "");
@@ -20,19 +19,7 @@ namespace ISL.Interpreter
             string currentToken = "";
             for (int i = 0; i < source.Length; i++)
             {
-                //Check for splitting operators
-                if (HasOperator(currentToken, true) && !isString)
-                {
-                    if (currentToken != "")
-                    {
-                        tokens.Add(currentToken);
-                        Debug("Split on operator: " + currentToken);
-                        currentToken = "";
-                    }
-                }
-                //Add character
                 char c = source[i];
-
                 if (char.IsWhiteSpace(c) && !isString)
                 {
                     if (currentToken != "")
@@ -72,6 +59,15 @@ namespace ISL.Interpreter
                     }
                     tokens.Add(",");
                 }
+                else if (HasOperator(currentToken, true) && !isString)
+                {
+                    if (currentToken != "")
+                    {
+                        tokens.Add(currentToken);
+                        Debug("Split on operator: " + currentToken);
+                        currentToken = $"{c}";
+                    }
+                }
                 else if (HasBracket(c) && !isString)
                 {
                     if (currentToken != "")
@@ -95,7 +91,7 @@ namespace ISL.Interpreter
         }
         private void ProcessMetadata()
         {
-            Debug("Source: \n" + source.ReplaceLineEndings(@"\n"));
+            Debug("Source: \n" + source.Replace("\n", "\\n"));
             MatchCollection matches = Regexes.metadata.Matches(source);
             if (matches.Count == 0)
             {
@@ -120,7 +116,7 @@ namespace ISL.Interpreter
                 metas.Add(naem, "");
                 return;
             }
-            string vals = string.Join(' ', content[1..]);
+            string vals = string.Join('c', content[1..]);
             Debug($"  Tag '{naem}' has value '{vals}'");
             if (metas.ContainsKey(naem)) throw new SyntaxError("There is already a definition for tag " + naem);
             metas.Add(naem, vals);

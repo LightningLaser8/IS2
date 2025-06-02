@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
+﻿using Integrate.Metadata;
+using Integrate.ModContent.ISL;
+using System.Diagnostics;
 using System.Dynamic;
 using System.Text.Json;
-using Integrate.Metadata;
-using Integrate.ModContent.ISL;
 
 namespace Integrate.Loader
 {

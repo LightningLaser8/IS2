@@ -1,12 +1,12 @@
-﻿using System.Diagnostics;
-using System.Dynamic;
-using System.Reflection;
-using System.Text.Json;
-using Integrate.Loader;
+﻿using Integrate.Loader;
 using Integrate.Metadata;
 using Integrate.ModContent;
 using Integrate.ModContent.ISL;
 using Integrate.Registry;
+using System.Diagnostics;
+using System.Dynamic;
+using System.Reflection;
+using System.Text.Json;
 
 namespace Integrate
 {
@@ -70,7 +70,7 @@ namespace Integrate
         /// <param name="eventName"></param>
         public static IslExecutionResult Event(string eventName, Dictionary<string, object?> inputs)
         {
-            if(!events.ContainsKey(eventName)) AddEvent(eventName);
+            if (!events.ContainsKey(eventName)) AddEvent(eventName);
             return FireEvent(eventName, inputs);
         }
         /// <summary>

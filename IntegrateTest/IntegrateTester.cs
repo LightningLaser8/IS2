@@ -1,8 +1,7 @@
-﻿using System.Diagnostics;
-using Integrate;
+﻿using Integrate;
 using Integrate.ModContent.ISL;
 using Integrate.Registry;
-using static System.Net.Mime.MediaTypeNames;
+using System.Diagnostics;
 
 internal class IntegrateTester
 {
@@ -122,11 +121,11 @@ internal class IntegrateTester
             await Task.Delay(3000);
             TestIslPerfEvents("No Listeners", "ev2", 100000);
             await Task.Delay(3000);
-            TestIslPerfEvents("One Script","ev3", 100000);
+            TestIslPerfEvents("One Script", "ev3", 100000);
             await Task.Delay(3000);
             TestIslPerfEvents("Two Scripts", "ev4", 100000);
         });
-    } 
+    }
     private static void PerfUnitTest(string method, Action<int> action, int tests)
     {
         double ctrl = PerfControlTest();
@@ -169,7 +168,7 @@ internal class IntegrateTester
             {
                 ["iteration"] = i
             });
-        }, tests); 
+        }, tests);
         PerfUnitTest("Parameterless Event", i =>
         {
             ModLoader.Event(eventName);

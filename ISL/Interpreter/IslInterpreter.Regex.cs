@@ -6,7 +6,7 @@ namespace ISL.Interpreter
     {
         public sealed partial class Regexes
         {
-            [GeneratedRegex(@"^//.*$", RegexOptions.Multiline)]
+            [GeneratedRegex(@"^//.*\n?$", RegexOptions.Multiline)]
             private static partial Regex CreateCommentRegex();
             /// <summary>
             /// Regex to match comments in the source code.
@@ -14,7 +14,7 @@ namespace ISL.Interpreter
             internal static readonly Regex comments = CreateCommentRegex();
 
 
-            [GeneratedRegex(@"/\*.*\*/", RegexOptions.Singleline)]
+            [GeneratedRegex(@"/\*.*/\*", RegexOptions.Singleline)]
             private static partial Regex CreateBlockCommentRegex();
             /// <summary>
             /// Regex to match block comments in the source code.

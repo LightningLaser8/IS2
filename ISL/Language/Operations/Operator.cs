@@ -1,10 +1,11 @@
-﻿using ISL.Language.Types;
+﻿using ISL.Interpreter;
+using ISL.Language.Types;
 
 namespace ISL.Language.Operations
 {
-    internal class Operator(string id, Func<IslValue> operate)
+    internal class Operator(string id, Func<IslProgram, IslValue> operate)
     {
-        public Operator(string id, Func<IslValue> operate, int precedence) : this(id, operate)
+        public Operator(string id, Func<IslProgram, IslValue> operate, int precedence) : this(id, operate)
         {
             Precedence = precedence;
         }
@@ -19,7 +20,12 @@ namespace ISL.Language.Operations
         /// <summary>
         /// Performs the operation.
         /// </summary>
-        public Func<IslValue> Operate { get; set; } = operate;
-        public bool AutoSplit { get; set; } = false;
+        public Func<IslProgram, IslValue> Operate { get; init; } = operate;
+        public bool AutoSplit { get; init; } = false;
+        /// <summary>
+        /// Controls whether or not this operation supports constant folding.
+        /// </summary>
+        public bool IsFoldable { get; init; } = true;
+        public bool ValidatesExprs { get; init; } = true;
     }
 }

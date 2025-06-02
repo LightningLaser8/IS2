@@ -12,9 +12,7 @@ namespace ISL.Language.Expressions
         public Expression? affectedR;
         public override IslValue Eval(IslProgram program)
         {
-            if (Operation is ProgramAccessingBinaryOperator pao)
-                return pao.Operate.Invoke(affectedL?.Eval(program) ?? IslValue.Null, affectedR?.Eval(program) ?? IslValue.Null, program);
-            return Operation.Operate.Invoke(affectedL?.Eval(program) ?? IslValue.Null, affectedR?.Eval(program) ?? IslValue.Null);
+            return Operation.Operate.Invoke(affectedL ?? Null, affectedR ?? Null, program);
         }
         public override string ToString()
         {
@@ -24,9 +22,9 @@ namespace ISL.Language.Expressions
         {
             affectedL = affectedL?.Simplify();
             affectedR = affectedR?.Simplify();
-            if (affectedL is ConstantExpression al && affectedR is ConstantExpression ar && Operation is not ProgramAccessingBinaryOperator)
+            if (affectedL is ConstantExpression al && affectedR is ConstantExpression ar && Operation.IsFoldable)
             {
-                return ConstantExpression.For(Operation.Operate.Invoke(al.Eval(), ar.Eval()));
+                return ConstantExpression.For(Operation.Operate.Invoke(al, ar, null));
             }
             return this;
         }
@@ -36,8 +34,11 @@ namespace ISL.Language.Expressions
         }
         public override void Validate()
         {
-            affectedL?.Validate();
-            affectedR?.Validate();
+            if (Operation.ValidatesExprs)
+            {
+                affectedL?.Validate();
+                affectedR?.Validate();
+            }
             if (affectedL is null) throw new SyntaxError($"Binary operator {value.Stringify()} requires 2 inputs, left operand is missing!");
             if (affectedR is null) throw new SyntaxError($"Binary operator {value.Stringify()} requires 2 inputs, right operand is missing!");
         }

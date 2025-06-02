@@ -1,7 +1,7 @@
-﻿using System.CommandLine;
-using ISL;
+﻿using ISL;
 using ISL.Interpreter;
 using ISL.Language.Types;
+using System.CommandLine;
 namespace ISLTest
 {
     internal class IslTestRuntime

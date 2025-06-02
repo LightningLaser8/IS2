@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using ISL;
 using ISL.Interpreter;
 using ISL.Language.Types;
@@ -10,6 +7,9 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using Windows.UI;
 using WinRT.Interop;
@@ -139,7 +139,7 @@ namespace ISLGui
 
         private void SyntaxHighlightingTriggered(object sender, Microsoft.UI.Xaml.Controls.TextChangedEventArgs e)
         {
-            if(InputScroller is null)
+            if (InputScroller is null)
             {
                 InputScroller = GetScrollViewerOf(TextInput);
                 if (InputScroller is not null) InputScroller.ViewChanged += InputScroller_ViewChanged;
@@ -321,7 +321,7 @@ namespace ISLGui
         {
             var child = VisualTreeHelper.GetChild(textBox, 0);
             var grid = (Grid)child;
-            if(grid is null) return null;
+            if (grid is null) return null;
             for (var i = 0; i <= VisualTreeHelper.GetChildrenCount(grid) - 1; i++)
             {
                 object obj = VisualTreeHelper.GetChild(grid, i);

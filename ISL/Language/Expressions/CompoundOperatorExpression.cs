@@ -26,17 +26,9 @@ namespace ISL.Language.Expressions
         {
             Resolve();
             if (isNotBinary)
-            {
-                if (Operation.UnaryOperator is ProgramAccessingUnaryOperator pao)
-                    return pao.Operate.Invoke(affectedRequired?.Eval(program) ?? IslValue.Null, program);
-                return Operation.UnaryOperator.Operate.Invoke(affectedRequired?.Eval(program) ?? IslValue.Null);
-            }
+                return Operation.UnaryOperator.Operate.Invoke(affectedRequired ?? Null, program);
             else
-            {
-                if (Operation.BinaryOperator is ProgramAccessingBinaryOperator pao)
-                    return pao.Operate.Invoke(affectedOptional?.Eval(program) ?? IslValue.Null, affectedRequired?.Eval(program) ?? IslValue.Null, program);
-                return Operation.BinaryOperator.Operate.Invoke(affectedOptional?.Eval(program) ?? IslValue.Null, affectedRequired?.Eval(program) ?? IslValue.Null);
-            }
+                return Operation.BinaryOperator.Operate.Invoke(affectedOptional ?? Null, affectedRequired ?? Null, program);
         }
         public override Expression Simplify()
         {
@@ -45,16 +37,16 @@ namespace ISL.Language.Expressions
             affectedRequired = affectedRequired?.Simplify();
             if (isNotBinary)
             {
-                if (affectedRequired is ConstantExpression ar && Operation.UnaryOperator is not ProgramAccessingUnaryOperator)
+                if (affectedRequired is ConstantExpression ar && Operation.UnaryOperator.IsFoldable)
                 {
-                    return ConstantExpression.For(Operation.UnaryOperator.Operate.Invoke(ar.Eval()));
+                    return ConstantExpression.For(Operation.UnaryOperator.Operate.Invoke(ar, null));
                 }
             }
             else
             {
-                if (affectedOptional is ConstantExpression al && affectedRequired is ConstantExpression ar && Operation.BinaryOperator is not ProgramAccessingBinaryOperator)
+                if (affectedOptional is ConstantExpression al && affectedRequired is ConstantExpression ar && Operation.BinaryOperator.IsFoldable)
                 {
-                    return ConstantExpression.For(Operation.BinaryOperator.Operate.Invoke(al.Eval(), ar.Eval()));
+                    return ConstantExpression.For(Operation.BinaryOperator.Operate.Invoke(al, ar, null));
                 }
             }
             return this;
@@ -69,8 +61,11 @@ namespace ISL.Language.Expressions
         public override void Validate()
         {
             Resolve();
-            affectedOptional?.Validate();
-            affectedRequired?.Validate();
+            if (Operation.ValidatesExprs)
+            {
+                affectedOptional?.Validate();
+                affectedRequired?.Validate();
+            }
             if (affectedRequired is null) throw new SyntaxError($"Operator {value.Stringify()} requires at least one input, (right) operand is missing!");
         }
         public override Operator? GetOp()

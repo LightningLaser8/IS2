@@ -1,7 +1,9 @@
-﻿using ISL.Language.Operations;
+﻿using ISL.Language.Expressions;
+using ISL.Language.Operations;
 using ISL.Language.Types;
 using ISL.Language.Variables;
 using ISL.Runtime.Errors;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ISL.Interpreter
 {
@@ -20,95 +22,112 @@ namespace ISL.Interpreter
         {
             Operators = [
                 #region Basic maths
-                new BinaryOperator("+", (left, right) => {
+                new BinaryOperator("+", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     // Debug($"Adding {left.Stringify()} and {right.Stringify()}");
-                    if (left is not IIslAddable leftadd) throw new TypeError($"Invalid left-hand (augend) type {left.Type} in addition.");
-                    if (right is not IIslAddable rightadd) throw new TypeError($"Invalid right-hand (addend) type {right.Type} in addition.");
-                    return leftadd.Add(right);
+                    if (lefte is not IIslAddable leftadd) throw new TypeError($"Invalid left-hand (augend) type {lefte.Type} in addition.");
+                    if (righte is not IIslAddable rightadd) throw new TypeError($"Invalid right-hand (addend) type {righte.Type} in addition.");
+                    return leftadd.Add(righte);
                 }),
-                new CompoundOperator("-", new BinaryOperator((left, right) => {
+                new CompoundOperator("-", new BinaryOperator((left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     // Debug($"Subtracting {right.Stringify()} from {left.Stringify()}");
-                    if (left is not IIslSubtractable leftadd) throw new TypeError($"Invalid left-hand (minuend) type {left.Type} in subtraction.");
-                    if (right is not IIslSubtractable rightadd) throw new TypeError($"Invalid right-hand (subtrahend) type {right.Type} in subtraction.");
-                    return leftadd.Subtract(right);
-                }), new UnaryOperator("-", (target) => {
+                    if (lefte is not IIslSubtractable leftadd) throw new TypeError($"Invalid left-hand (minuend) type {lefte.Type} in subtraction.");
+                    if (righte is not IIslSubtractable rightadd) throw new TypeError($"Invalid right-hand (subtrahend) type {righte.Type} in subtraction.");
+                    return leftadd.Subtract(righte);
+                }), new UnaryOperator("-", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
                     // Debug($"Negating {target.Stringify()}");
-                    if (target is not IIslSubtractable leftadd) throw new TypeError($"Invalid target type {target.Type} in negation.");
-                    return new IslInt(0).Subtract(target);
+                    if (target is not IIslSubtractable leftadd) throw new TypeError($"Invalid target type {targete.Type} in negation.");
+                    return new IslInt(0).Subtract(targete);
                 })),
-                new BinaryOperator("*", (left, right) => {
+                new BinaryOperator("*", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     // Debug($"Multiplying {left.Stringify()} by {right.Stringify()}");
-                    if (left is not IIslMultiplicable leftadd) throw new TypeError($"Invalid left-hand (multiplicand) type {left.Type} in multiplication.");
-                    if (right is not IIslMultiplicable rightadd) throw new TypeError($"Invalid right-hand (multiplier) type {right.Type} in multiplication.");
-                    return leftadd.Multiply(right);
+                    if (lefte is not IIslMultiplicable leftadd) throw new TypeError($"Invalid left-hand (multiplicand) type {lefte.Type} in multiplication.");
+                    if (righte is not IIslMultiplicable rightadd) throw new TypeError($"Invalid right-hand (multiplier) type {righte.Type} in multiplication.");
+                    return leftadd.Multiply(righte);
                 }, 1),
-                new BinaryOperator("/", (left, right) => {
+                new BinaryOperator("/", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     // Debug($"Dividing {left.Stringify()} by {right.Stringify()}");
-                    if (left is not IIslDivisible leftadd) throw new TypeError($"Invalid left-hand (dividend) type {left.Type} in division.");
-                    if (right is not IIslDivisible rightadd) throw new TypeError($"Invalid right-hand (divisor) type {right.Type} in division.");
-                    return leftadd.Divide(right);
+                    if (lefte is not IIslDivisible leftadd) throw new TypeError($"Invalid left-hand (dividend) type {lefte.Type} in division.");
+                    if (righte is not IIslDivisible rightadd) throw new TypeError($"Invalid right-hand (divisor) type {righte.Type} in division.");
+                    return leftadd.Divide(righte);
                 }, 1),
-                new BinaryOperator("%", (left, right) => {
+                new BinaryOperator("%", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     // Debug($"Modulating {left.Stringify()} by(?) {right.Stringify()}");
-                    if (left is not IIslModulatable leftadd) throw new TypeError($"Invalid left-hand (dividend) type {left.Type} in modulation.");
-                    if (right is not IIslModulatable rightadd) throw new TypeError($"Invalid right-hand (divisor) type {right.Type} in modulation.");
-                    return leftadd.Modulate(right);
+                    if (lefte is not IIslModulatable leftadd) throw new TypeError($"Invalid left-hand (dividend) type {lefte.Type} in modulation.");
+                    if (righte is not IIslModulatable rightadd) throw new TypeError($"Invalid right-hand (divisor) type {righte.Type} in modulation.");
+                    return leftadd.Modulate(righte);
                 }, 1),
-                new BinaryOperator("**", (left, right) => {
+                new BinaryOperator("**", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     // Debug($"Raising {left.Stringify()} to the power of {right.Stringify()}");
-                    if (left is not IIslExponentiable leftadd) throw new TypeError($"Invalid left-hand (base) type {left.Type} in exponentiation.");
-                    if (right is not IIslExponentiable rightadd) throw new TypeError($"Invalid right-hand (power) type {right.Type} in exponentiation.");
-                    return leftadd.Exponentiate(right);
+                    if (lefte is not IIslExponentiable leftadd) throw new TypeError($"Invalid left-hand (base) type {lefte.Type} in exponentiation.");
+                    if (righte is not IIslExponentiable rightadd) throw new TypeError($"Invalid right-hand (power) type {righte.Type} in exponentiation.");
+                    return leftadd.Exponentiate(righte);
                 }, 2),
                 #endregion
                 #region Trigonometry
-                new UnaryOperator("sin", (target) => {
+                new UnaryOperator("sin", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
                     // Debug($"Sining {target.Stringify()}");
-                    if (target is not IIslTriggable targetadd) throw new TypeError($"Invalid target type {target.Type} in trigonometric function.");
+                    if (targete is not IIslTriggable targetadd) throw new TypeError($"Invalid target type {targete.Type} in trigonometric function.");
                     return targetadd.Sin();
                 }, 3),
-                new UnaryOperator("cos", (target) => {
+                new UnaryOperator("cos", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
                     // Debug($"Cosing {target.Stringify()}");
-                    if (target is not IIslTriggable targetadd) throw new TypeError($"Invalid target type {target.Type} in trigonometric function.");
+                    if (targete is not IIslTriggable targetadd) throw new TypeError($"Invalid target type {targete.Type} in trigonometric function.");
                     return targetadd.Cos();
                 }, 3),
-                new UnaryOperator("tan", (target) => {
+                new UnaryOperator("tan", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
                     // Debug($"Tanning {target.Stringify()}");
-                    if (target is not IIslTriggable targetadd) throw new TypeError($"Invalid target type {target.Type} in trigonometric function.");
+                    if (targete is not IIslTriggable targetadd) throw new TypeError($"Invalid target type {targete.Type} in trigonometric function.");
                     return targetadd.Tan();
                 }, 3),
                 #endregion
                 #region Logical operators
-                new UnaryOperator("!", (target) => {
+                new UnaryOperator("!", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
                     // Debug($"Inverting {target.Stringify()}");
-                    if (target is not IIslInvertable targetadd) throw new TypeError($"Invalid target type {target.Type} in inversion.");
+                    if (targete is not IIslInvertable targetadd) throw new TypeError($"Invalid target type {targete.Type} in inversion.");
                     return targetadd.Invert();
                 }, 5) { AutoSplit = true },
-                new BinaryOperator("==", (left, right) => {
+                new BinaryOperator("==", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     // Debug($"Checking equality of ({left.Type}) {left.Stringify()} and ({right.Type}) {right.Stringify()}");
                     bool equal = false;
-                    if(left is IIslEquatable lconst && right is IIslEquatable rconst) equal = lconst.EqualTo(right);
+                    if(lefte is IIslEquatable lconst && righte is IIslEquatable rconst) equal = lconst.EqualTo(righte);
                     return equal ? IslBool.True : IslBool.False;
                 }, -1),
-                new NAryOperator("#", ["?", ":"], (exprs) => {
-                    if(exprs[0] is IslBool) return exprs[0] == IslBool.True ? exprs[1] : exprs[2];
-                    throw new TypeError("Condition in ternary conditional must evaluate to a Boolean, got "+exprs[0].Type);
+                new NAryOperator("#", ["?", ":"], (exprs, prog) => {
+                    var targete = GetValueForExpression(exprs[0], prog);
+                    ThrowIfProgramNull(prog);
+                    if(targete is IslBool) return targete == IslBool.True ? exprs[1].Eval(prog) : exprs[2].Eval(prog);
+                    throw new TypeError("Condition in ternary conditional must evaluate to a Boolean, got "+targete.Type);
                 }),
                 #endregion
                 #region Binary manipulation
-                new UnaryOperator("binmant", (target) => {
+                new UnaryOperator("binmant", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
                     // Debug($"Getting mantissa of {target.Stringify()}");
-                    if (target is not IslFloat targetadd) throw new TypeError($"Invalid target type {target.Type} in mantissa extraction.");
+                    if (targete is not IIslFloatPropertyExtractable targetadd) throw new TypeError($"Invalid target type {targete.Type} in mantissa extraction.");
                     return targetadd.Mantissa();
                 }, 5),
-                new UnaryOperator("binexp", (target) => {
+                new UnaryOperator("binexp", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
                     // Debug($"Getting exponent of {target.Stringify()}");
-                    if (target is not IslFloat targetadd) throw new TypeError($"Invalid target type {target.Type} in exponent extraction.");
+                    if (targete is not IIslFloatPropertyExtractable targetadd) throw new TypeError($"Invalid target type {targete.Type} in exponent extraction.");
                     return targetadd.Exponent();
                 }, 5),
                 #endregion
                 #region Variables
-                new UnaryOperator("const", (target) => {
+                /*
+                new UnaryOperator("const", (target, ) => {
                     if (target is not IslVariable targetadd) throw new TypeError($"Can only freeze type of a variable.");
                     // Debug($"Making {targetadd.Name} read-only");
                     if(targetadd.InferType) throw new TypeError("Cannot freeze a type-inferred variable!");
@@ -159,60 +178,73 @@ namespace ISL.Interpreter
                    // Debug($"Creating group variable with name '{iint.Value}'");
                    return prog.CreateVariable(iint.Value, IslType.Group);
                 }, 12),
+                */
                 #endregion
                 #region Assignment
-                new ProgramAccessingBinaryOperator("=", (left, right, program) => {
+                new BinaryOperator("=", (left, right, program) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, program);
+                    ThrowIfProgramNull(program);
                     // Debug($"Setting {left.Stringify()} to {right.Stringify()}");
-                    CheckVar(left, program, out var lvar);
-                    AssignVar(lvar, right);
+                    CheckVar(lefte, program, out var lvar);
+                    AssignVar(lvar, righte);
                     return lvar;
-                }, -5),
+                }, -5) { IsFoldable = false },
                 // + - * / % **
-                new ProgramAccessingBinaryOperator("+=", (left, right, program) => {
-                    CheckVar(left, program, out var lvar);
-                    return AssignmentOperation(lvar, right, 0);
-                }, -5),
-                new ProgramAccessingBinaryOperator("-=", (left, right, program) => {
-                    CheckVar(left, program, out var lvar);
-                    return AssignmentOperation(lvar, right, 1);
-                }, -5),
-                new ProgramAccessingBinaryOperator("*=", (left, right, program) => {
-                    CheckVar(left, program, out var lvar);
-                    return AssignmentOperation(lvar, right, 2);
-                }, -5),
-                new ProgramAccessingBinaryOperator("/=", (left, right, program) => {
-                    CheckVar(left, program, out var lvar);
-                    return AssignmentOperation(lvar, right, 3);
-                }, -5),
-                new ProgramAccessingBinaryOperator("%=", (left, right, program) => {
-                    CheckVar(left, program, out var lvar);
-                    return AssignmentOperation(lvar, right, 4);
-                }, -5),
-                new ProgramAccessingBinaryOperator("**=", (left, right, program) => {
-                    CheckVar(left, program, out var lvar);
-                    return AssignmentOperation(lvar, right, 5);
-                }, -5),
+                new BinaryOperator("+=", (left, right, program) => {
+                    ThrowIfProgramNull(program);
+                    CheckVar(left.Eval(program), program, out var lvar);
+                    return AssignmentOperation(lvar, right, program, 0);
+                }, -5) { IsFoldable = false },
+                new BinaryOperator("-=", (left, right, program) => {
+                    ThrowIfProgramNull(program);
+                    CheckVar(left.Eval(program), program, out var lvar);
+                    return AssignmentOperation(lvar, right, program, 1);
+                }, -5) { IsFoldable = false },
+                new BinaryOperator("*=", (left, right, program) => {
+                    ThrowIfProgramNull(program);
+                    CheckVar(left.Eval(program), program, out var lvar);
+                    return AssignmentOperation(lvar, right, program, 2);
+                }, -5) { IsFoldable = false },
+                new BinaryOperator("/=", (left, right, program) => {
+                    ThrowIfProgramNull(program);
+                    CheckVar(left.Eval(program), program, out var lvar);
+                    return AssignmentOperation(lvar, right, program, 3);
+                }, -5) { IsFoldable = false },
+                new BinaryOperator("%=", (left, right, program) => {
+                    ThrowIfProgramNull(program);
+                    CheckVar(left.Eval(program), program, out var lvar);
+                    return AssignmentOperation(lvar, right, program, 4);
+                }, -5) { IsFoldable = false },
+                new BinaryOperator("**=", (left, right, program) => {
+                    ThrowIfProgramNull(program);
+                    CheckVar(left.Eval(program), program, out var lvar);
+                    return AssignmentOperation(lvar, right, program, 5);
+                }, -5) { IsFoldable = false },
                 #endregion
                 #region Casting
-                new BinaryOperator("->", (left, right) => {
-                    if(right is not IslIdentifier ride) throw new TypeError($"Must cast to a type identifier, got {right.Type}");
-                    return TryCast(left, IslValue.GetTypeFromName(ride.Value));
+                new BinaryOperator("->", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
+                    if(righte is not IslIdentifier ride) throw new TypeError($"Must cast to a type identifier, got {righte.Type}");
+                    return TryCast(lefte, IslValue.GetTypeFromName(ride.Value));
                 }, -4),
-                new BinaryOperator("~>", (left, right) => {
-                    if(right is not IslIdentifier ride) throw new TypeError($"Must cast to a type identifier, got {right.Type}");
-                    return ForgivingCast(left, IslValue.GetTypeFromName(ride.Value));
+                new BinaryOperator("~>", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
+                    if(righte is not IslIdentifier ride) throw new TypeError($"Must cast to a type identifier, got {righte.Type}");
+                    return ForgivingCast(lefte, IslValue.GetTypeFromName(ride.Value));
                 }, -4),
                 #endregion
                 #region Communication
-                new ProgramAccessingUnaryOperator("out", (target, prog) => {
-                    if (target is not IslVariable targetvar) throw new TypeError($"Can only output a variable.");
+                new UnaryOperator("out", (target, prog) => {
+                    ThrowIfProgramNull(prog);
+                    if (target is not VariableDeclaration targetvar) throw new TypeError($"Can only output a (newly-declared) variable.");
                     // Debug($"Will output {targetvar.Stringify()} on program end");
-                    prog.OutputVariable(targetvar.Name);
-                    return targetvar;
-                }, 10),
-                new ProgramAccessingUnaryOperator("in", (target, prog) => {
+                    prog.OutputVariable(targetvar.name);
+                    return targetvar.Eval(prog);
+                }, 10) { IsFoldable = false },
+                new UnaryOperator("in", (target, prog) => {
+                    ThrowIfProgramNull(prog);
                     //Just grab everything
-                    if (target is IslIdentifier iide && iide.Value == "everything") {
+                    if (target is IdentifierExpression iide && iide.Eval().Value == "everything") {
                         // Debug($"Taking all inputs as (read-only) locals");
                         foreach(var item in prog.Ins)
                         {
@@ -223,54 +255,83 @@ namespace ISL.Interpreter
                         return IslValue.Null;
                     }
                     //Specific variable assignment
-                    if (target is not IslVariable targetvar) throw new TypeError($"Can only input to a variable.");
+                    if (target is not VariableDeclaration targetvar) throw new TypeError($"Can only input to a variable declaration.");
                     // Debug($"Taking input from {targetvar.Name} as (read-only) {targetvar.Stringify()}");
-                    if(!prog.Ins.TryGetValue(targetvar.Name, out var val)) throw new InvalidReferenceError($"No input with name {targetvar.Name} found.");
-                    CheckAssignment(targetvar, val);
-                    AssignVar(targetvar, val);
-                    targetvar.ReadOnly = true;
+                    if(!prog.Ins.TryGetValue(targetvar.name, out var val)) throw new InvalidReferenceError($"No input with name {targetvar.name} found.");
+                    CheckAssignment(targetvar.IsTypeInferred, targetvar.IsTypeImplied, targetvar.varType, val);
+                    targetvar.initialValue = val;
+                    targetvar.IsReadOnly = true;
                     // Debug($"Input {targetvar.Name} is {targetvar.Stringify()}");
-                    return targetvar;
-                }, 10),
+                    return targetvar.Eval(prog);
+                }, 10) { IsFoldable = false },
                 #endregion
                 #region Collections
                 //Append item to a group or string
-                new ProgramAccessingBinaryOperator("<~", (left, right, prog) => {
+                new BinaryOperator("<~", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
+                    ThrowIfProgramNull(prog);
                     // Debug($"Appending {right.Stringify()} to {left.Stringify()}");
                     IslValue iv = IslValue.Null;
-                    if(left is IslIdentifier iide) {
+                    if(lefte is IslIdentifier iide) {
                         var v = prog.GetVariableImperative(iide.Value);
                         // Debug(" being nice and getting variable for you");
                         // Debug(" got "+v.Stringify());
                         iv = v.Value;
                     }
-                    else iv = left;
-                    if(iv is ICollection<IslValue> icol) { icol.Add(right); return iv; }
+                    else iv = lefte;
+                    if(iv is ICollection<IslValue> icol) { icol.Add(righte); return iv; }
                     if(iv is IslString istr) { return istr.Add(iv); }
                     throw new TypeError($"Cannot append to a {iv.Type}");
-                }, -5),
-                new BinaryOperator("at", (left, right) => {
+                }, -5) { IsFoldable = false },
+                new BinaryOperator("at", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     // Debug($"Getting value from {left.Stringify()} at index {left.Stringify()}");
-                    if (left is not IIslIndexable icol) throw new TypeError($"Cannot index a {left.Type}");
-                    return icol.Index(right);
+                    if (lefte is not IIslIndexable icol) throw new TypeError($"Cannot index a {lefte.Type}");
+                    return icol.Index(righte);
                 }, -1),
                 #endregion
             ];
         }
-        #region Checks
-        private IslVariable AssignmentOperation(IslVariable vari, IslValue value, int operation)
+        #region Checks and Utility
+        private static (IslValue, IslValue) GetValuesForExpressions(Expression left, Expression right, IslProgram? program)
+        {
+            if (program is null)
+            {
+                if (left is ConstantExpression lce && right is ConstantExpression rce) return (lce.Eval(), rce.Eval());
+                throw new IslError("A program reference is required to evaluate non-constant expressions");
+            }
+            else return (left.Eval(program), right.Eval(program));
+        }
+        private static IslValue GetValueForExpression(Expression expr, IslProgram? program)
+        {
+            if (program is null)
+            {
+                if (expr is ConstantExpression ce) return ce.Eval();
+                throw new IslError("A program reference is required to evaluate non-constant expressions");
+            }
+            else return expr.Eval(program);
+        }
+        private static void ThrowIfProgramNull([NotNull] IslProgram? program)
+        {
+            if (program is null)
+            {
+                throw new IslError("A program reference is required for evaluation");
+            }
+        }
+        private IslVariable AssignmentOperation(IslVariable vari, Expression value, IslProgram program, int operation)
         {
             var op = Operators[operation];
+            var val = value.Eval(program);
             // Debug($"Assignment operator (with base operation at {operation}) on {vari.Name} with {value.Stringify()}");
-            IslValue input = vari.ImpliedType ? TryCast(value, vari.VarType) : value;
+            IslValue input = vari.ImpliedType ? TryCast(val, vari.VarType) : val;
             IslValue res = (
                 op is CompoundOperator co
-                ? co.BinaryOperator.Operate(vari.Value, input)
+                ? co.BinaryOperator.Operate(new VariableExpression() { variable = vari.Name }, ConstantExpression.For(input), program)
                 : op is UnaryOperator uo
-                ? uo.Operate(vari.Value)
+                ? uo.Operate(new VariableExpression() { variable = vari.Name }, program)
                 : op is BinaryOperator bo
-                ? bo.Operate(vari.Value, input)
-                : op.Operate()
+                ? bo.Operate(new VariableExpression() { variable = vari.Name }, ConstantExpression.For(input), program)
+                : op.Operate(program)
                 );
             if (vari.ImpliedType) res = TryCast(res, vari.VarType);
             AssignVar(vari, res);
@@ -311,6 +372,10 @@ namespace ISL.Interpreter
         private static void CheckAssignment(IslVariable vari, IslValue value)
         {
             if (value.Type != vari.VarType && !vari.InferType && !vari.ImpliedType) throw new TypeError($"Cannot mix types in assignment (setting {vari.VarType} to a {value.Type})");
+        }
+        private static void CheckAssignment(bool inferType, bool impliedType, IslType varType, IslValue value)
+        {
+            if (value.Type != varType && !inferType && !impliedType) throw new TypeError($"Cannot mix types in assignment (setting {varType} to a {value.Type})");
         }
         private void AssignVar(IslVariable vari, IslValue value)
         {

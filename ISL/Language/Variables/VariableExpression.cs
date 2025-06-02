@@ -6,7 +6,8 @@ using ISL.Runtime.Errors;
 namespace ISL.Language.Variables
 {
     /// <summary>
-    /// After <see cref="ConstantExpression"/>, the logical next step.
+    /// After <see cref="ConstantExpression"/>, the logical next step.<br/>
+    /// Returns the value of a variable.
     /// </summary>
     internal class VariableExpression : Expression
     {
@@ -14,8 +15,7 @@ namespace ISL.Language.Variables
         public override IslValue Eval(IslProgram program)
         {
             if (variable.Length == 0) throw new InvalidReferenceError("Variable expression refers to nothing!");
-            if (!program.Vars.TryGetValue(variable, out IslVariable? value)) throw new InvalidReferenceError($"Variable '{variable}' doesn't exist!");
-            return value.Value;
+            return program.GetVariableImperative(variable).Value;
         }
         public override Expression Simplify()
         {

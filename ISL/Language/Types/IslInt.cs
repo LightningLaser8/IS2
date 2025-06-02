@@ -1,6 +1,6 @@
-﻿using System.Numerics;
-using ISL.Language.Operations;
+﻿using ISL.Language.Operations;
 using ISL.Runtime.Errors;
+using System.Numerics;
 
 namespace ISL.Language.Types
 {

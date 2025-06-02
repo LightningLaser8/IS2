@@ -1,5 +1,5 @@
-﻿using System.Dynamic;
-using Integrate.Registry;
+﻿using Integrate.Registry;
+using System.Dynamic;
 
 namespace Integrate.ModContent
 {

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using ISL.Language.Types;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using ISL.Language.Types;
 
 namespace Integrate.ModContent.ISL
 {

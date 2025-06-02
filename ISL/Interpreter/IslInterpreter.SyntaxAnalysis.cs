@@ -204,27 +204,6 @@ namespace ISL.Interpreter
                     }
                     else Debug($" > skipped (precedence {coe.Operation.Precedence} does not match target {precedence})");
                 }
-                if (expr is NAryOperatorExpression noe)
-                {
-                    if (noe.Operation.Precedence == precedence)
-                    {
-                        int grabs = noe.Operation.Separators.Length * 2 + 1;
-                        Debug(" > n-ary operator " + noe.ToString() + " at " + currentIndex.ToString() + " wanting " + grabs + " exprs");
-                        //Find next non-null
-                        for (int i = 0; i < grabs; i++)
-                        {
-                            int target = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
-                            if (target != -1)
-                            {
-                                noe.affected.Add(expressions[target]);
-                                Debug("   ate " + expressions[target].Stringify());
-                                expressions[target] = Expression.Null;
-                            }
-                        }
-                        noe.affected.RemoveAll(x => x is TokenExpression te && noe.Operation.Separators.Contains(te.value.Value));
-                    }
-                    else Debug($" > skipped (precedence {noe.Operation.Precedence} does not match target {precedence})");
-                }
             }
             expressions.RemoveAll((expr) => expr == Expression.Null);
         }

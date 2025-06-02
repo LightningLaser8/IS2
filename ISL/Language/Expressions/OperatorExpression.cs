@@ -10,7 +10,7 @@ namespace ISL.Language.Expressions
         public Operator? Operation { get; set; }
         public override IslValue Eval(IslProgram program)
         {
-            return Operation?.Operate.Invoke() ?? IslValue.Null;
+            return Operation?.Operate.Invoke(program) ?? IslValue.Null;
         }
         public override string ToString()
         {

@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using ISL.Language.Operations;
+﻿using ISL.Language.Operations;
 using ISL.Runtime.Errors;
+using System.Collections;
 
 namespace ISL.Language.Types.Collections
 {
