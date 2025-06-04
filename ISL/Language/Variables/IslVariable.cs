@@ -5,6 +5,7 @@ namespace ISL.Language.Variables
 {
     public class IslVariable(string name, IslType type) : IslValue
     {
+        internal bool Initialised { get; set; } = false;
         public bool ReadOnly { get; set; } = false;
         public bool InferType { get; set; } = false;
         public bool ImpliedType { get; set; } = false;
@@ -15,7 +16,7 @@ namespace ISL.Language.Variables
 
         public override string Stringify()
         {
-            return $"[{Name}] ({(ReadOnly ? "readonly " : "")}{VarType}) {Value.Stringify()}";
+            return $"(Variable) [{(ReadOnly ? "readonly " : "")}{(ImpliedType?"T ->":"")}{VarType} \"{Name}\"] {Value.Stringify()}";
         }
 
         public override object? ToCLR()
@@ -25,7 +26,7 @@ namespace ISL.Language.Variables
 
         internal void ChangeType(IslType type)
         {
-            if (ReadOnly) throw new AccessError("Variable cannot be cast - it is read-only.");
+            if (ReadOnly && !Initialised) throw new AccessError("Variable cannot be cast - it is read-only.");
             if (InferType) VarType = type;
         }
     }

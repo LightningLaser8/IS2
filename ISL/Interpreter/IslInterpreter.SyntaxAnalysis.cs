@@ -1,6 +1,9 @@
 ﻿using ISL.Language.Expressions;
 using ISL.Language.Expressions.Combined;
 using ISL.Language.Keywords;
+using ISL.Language.Types;
+using ISL.Language.Types.Classes;
+using ISL.Language.Variables;
 using ISL.Runtime.Errors;
 
 namespace ISL.Interpreter
@@ -79,6 +82,7 @@ namespace ISL.Interpreter
             }
             precedences.Sort();
             precedences.Reverse();
+            MakeVariableDeclarations(expressions);
             if (precedences.Count == 0)
             {
                 Debug("  No operators present.");
@@ -86,7 +90,7 @@ namespace ISL.Interpreter
             }
             else
             {
-                Debug($"  Precedences: [{string.Join(", ", precedences)}");
+                Debug($"  Precedences: [{string.Join(", ", precedences)}]");
                 Debug("Create Expression Tree:");
                 foreach (int precedence in precedences)
                     CreateTreeLevel(precedence, expressions);
@@ -146,12 +150,7 @@ namespace ISL.Interpreter
                     {
                         Debug(" > unary operator " + uoe.ToString() + " at " + currentIndex.ToString());
                         //Find next non-null
-                        int target = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
-                        if (target != -1)
-                        {
-                            uoe.affected = expressions[target];
-                            expressions[target] = Expression.Null;
-                        }
+                        EvalUnaryOperator(uoe, currentIndex, expressions);
                     }
                     else Debug($" > skipped (precedence {uoe.Operation.Precedence} does not match target {precedence})");
                 }
@@ -203,6 +202,106 @@ namespace ISL.Interpreter
                         }
                     }
                     else Debug($" > skipped (precedence {coe.Operation.Precedence} does not match target {precedence})");
+                }
+            }
+            expressions.RemoveAll((expr) => expr == Expression.Null);
+        }
+
+        private void EvalUnaryOperator(UnaryOperatorExpression unary, int currentIndex, List<Expression> expressions, int depth = 0)
+        {
+            Debug($"{new string(' ', depth)} >> simplifying {unary.Operation.id}");
+            int target = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
+            if (target != -1)
+            {
+                var texp = expressions[target];
+                expressions[target] = Expression.Null;
+                unary.affected = texp;
+                Debug($"{new string(' ', depth)}  | now affecting {texp}");
+                if (texp is UnaryOperatorExpression ue)
+                {
+                    Debug($"{new string(' ', depth)}  > found another unary op ({unary.Operation.id}), which may or may not be impossible to evaluate without this bit");
+                    EvalUnaryOperator(ue, target, expressions, depth + 1);
+                }
+                Debug($"{new string(' ', depth)} << {unary}");
+            }
+        }
+
+        private void MakeVariableDeclarations(List<Expression> expressions)
+        {
+            Debug($" Variable Declaration Loop:");
+            int currentIndex = expressions.Count;
+            while (true)
+            {
+                Debug($"  index from {(currentIndex == expressions.Count ? "end" : currentIndex)}");
+                currentIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
+                if (currentIndex == -1)
+                {
+                    Debug("  program ended");
+                    break; //Stop if program done
+                }
+                else Debug($"  next expression at {currentIndex}");
+                var expr = expressions[currentIndex];
+                Debug($"  index {currentIndex} is {expr}");
+
+
+
+                if (expr is IdentifierExpression ie)
+                {
+                    var (native, present) = HasType(ie.value);
+                    if (present)
+                    {
+                        Debug($" > found {(native ? "native" : "user-defined")} type {expr}");
+                        int nameIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
+                        if (nameIndex == -1)
+                        {
+                            Debug("  ok, type doesn't have an identifier");
+                            Debug("  i may break this in the future");
+                        }
+                        else
+                        {
+                            Debug($"  var name at {nameIndex}");
+                            var naem = expressions[nameIndex];
+                            Debug($"  creating declaration for {naem}");
+                            if (naem is not IdentifierExpression ide) throw new SyntaxError("Expected identifier or nothing after type name");
+                            if (!native)
+                            {
+                                // this option shouldn't exist at "compile" time
+                                continue;
+                            }
+                            var val = GetNativeType(ie.value)();
+                            var declaration = new VariableDeclarationExpr() { name = ide.value, varType = val.Type, initialValue = val, IsTypeInferred = val is IslNull };
+                            expressions[currentIndex] = declaration;
+
+                            Debug($"  created declaration for {expressions[currentIndex]}");
+                            expressions[nameIndex] = Expression.Null;
+
+                            //imply/const
+                            int modifierIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
+                            if (modifierIndex == -1)
+                            {
+                                Debug("  ok, type doesn't have any modifiers, that's fine");
+                            }
+                            else
+                            {
+                                if (expressions[modifierIndex] is IdentifierExpression ide2)
+                                {
+                                    if (ide2.value == "imply")
+                                    {
+                                        expressions[modifierIndex] = Expression.Null;
+                                        if (declaration.IsTypeInferred) throw new SyntaxError("Cannot both infer and imply type of a variable!");
+                                        declaration.IsTypeImplied = true;
+                                    }
+                                    else if (ide2.value == "const")
+                                    {
+                                        expressions[modifierIndex] = Expression.Null;
+                                        if (declaration.IsTypeInferred || declaration.IsTypeImplied) throw new SyntaxError("Cannot make an inferred or implied variable read-only.");
+                                        declaration.IsReadOnly = true;
+                                    }
+                                }
+                            }
+                            continue;
+                        }
+                    }
                 }
             }
             expressions.RemoveAll((expr) => expr == Expression.Null);
@@ -343,7 +442,7 @@ namespace ISL.Interpreter
             return -1;
         }
 
-        private int FindNextNonNullExpression(int from, EvaluationDirection direction, List<Expression> expressions)
+        private static int FindNextNonNullExpression(int from, EvaluationDirection direction, List<Expression> expressions)
         {
             int search = from;
             Expression expr = Expression.Null;

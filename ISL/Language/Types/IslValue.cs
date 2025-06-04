@@ -1,4 +1,5 @@
-﻿using ISL.Language.Types.Collections;
+﻿using ISL.Language.Types.Classes;
+using ISL.Language.Types.Collections;
 using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
@@ -24,13 +25,14 @@ namespace ISL.Language.Types
                 IslType.String => new IslString(""),
                 IslType.Bool => IslBool.False,
                 IslType.Group => new IslGroup(),
-                IslType.Object => throw new NotImplementedException(),
-                IslType.Class => throw new NotImplementedException(),
+                IslType.Object => new IslObject(),
+                IslType.Class => new IslClass(),
                 IslType.Identifier => new IslIdentifier(),
-                IslType.Token => throw new NotImplementedException(),
+                IslType.Token => throw new TypeError("I'm not sure what's going on here, you just tried to cast to a token."),
                 _ => throw new NotImplementedException(),
             };
         }
+        [Obsolete("Replaced with IslInterpreter.GetNativeType(string name)")]
         public static IslType GetTypeFromName(string typename)
         {
             return typename switch
@@ -51,5 +53,19 @@ namespace ISL.Language.Types
         /// </summary>
         /// <returns></returns>
         public abstract object? ToCLR();
+        public static IslValue FromCLR(object? clr)
+        {
+            return clr switch
+            {
+                null => Null,
+                int i => new IslInt(i),
+                float f => new IslFloat(f),
+                System.Numerics.Complex c => new IslComplex(c),
+                string s => new IslString(s),
+                bool b => b ? IslBool.True : IslBool.False,
+                List<IslValue> => new IslGroup(),
+                _ => throw new NotImplementedException(),
+            };
+        }
     }
 }

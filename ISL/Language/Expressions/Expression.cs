@@ -8,10 +8,10 @@ namespace ISL.Language.Expressions
 {
     internal abstract class Expression
     {
-        public static Expression From(string token, IslInterpreter compiler)
+        public static Expression From(string token, IslInterpreter interpreter)
         {
 
-            foreach (var bracket in compiler.Brackets)
+            foreach (var bracket in interpreter.Brackets)
             {
                 if (new string(bracket.Open, 1) == token)
                 {
@@ -22,7 +22,7 @@ namespace ISL.Language.Expressions
                 }
             }
 
-            foreach (var kw in compiler.Keywords)
+            foreach (var kw in interpreter.Keywords)
             {
                 if (kw.identifier == token)
                 {
@@ -30,7 +30,7 @@ namespace ISL.Language.Expressions
                 }
             }
 
-            foreach (var op in compiler.Operators)
+            foreach (var op in interpreter.Operators)
             {
                 if (op.id == token)
                 {
@@ -42,7 +42,7 @@ namespace ISL.Language.Expressions
                 }
             }
 
-            foreach (var tok in compiler.Tokens)
+            foreach (var tok in interpreter.Tokens)
             {
                 if (tok == token)
                 {

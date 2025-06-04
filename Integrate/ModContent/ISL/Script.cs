@@ -1,6 +1,7 @@
 ﻿using ISL;
 using ISL.Interpreter;
 using ISL.Language.Types;
+using ISL.Runtime.Errors;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 

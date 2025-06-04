@@ -6,7 +6,7 @@ namespace ISL.Interpreter
 {
     internal partial class IslInterpreter
     {
-        public Keyword[] Keywords = [];
+        internal Keyword[] Keywords = [];
 
         private void InitKeywords()
         {

@@ -51,7 +51,9 @@ namespace ISL.Interpreter
         private readonly List<Expression> codePoints = [];
 
         public Dictionary<string, IslValue> LastOutputs => outputs;
+#pragma warning disable IDE0306 // Simplify collection initialization
         public Dictionary<string, object?> LastCLROutputs => new(outputs.Select(kvp => new KeyValuePair<string, object?>(kvp.Key, kvp.Value.ToCLR())));
+#pragma warning restore IDE0306 // Simplify collection initialization
         private Dictionary<string, IslValue> outputs = [];
         public IslValue LastResult => result;
         private IslValue result = IslValue.Null;

@@ -6,7 +6,7 @@ namespace ISL.Interpreter
 {
     internal partial class IslInterpreter
     {
-        public BracketType[] Brackets = [];
+        internal BracketType[] Brackets = [];
         public bool HasBracket(char brkt)
         {
             foreach (var bracket in Brackets)

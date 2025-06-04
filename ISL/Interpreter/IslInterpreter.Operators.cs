@@ -9,7 +9,7 @@ namespace ISL.Interpreter
 {
     internal partial class IslInterpreter
     {
-        public Operator[] Operators = [];
+        internal Operator[] Operators = [];
         public bool HasOperator(string token, bool mustBeAutoSplit = false)
         {
             foreach (var op in Operators)
@@ -125,8 +125,8 @@ namespace ISL.Interpreter
                     return targetadd.Exponent();
                 }, 5),
                 #endregion
-                #region Variables
-                /*
+                #region Variables (Legacy)
+                /* // Legacy variable code
                 new UnaryOperator("const", (target, ) => {
                     if (target is not IslVariable targetadd) throw new TypeError($"Can only freeze type of a variable.");
                     // Debug($"Making {targetadd.Name} read-only");
@@ -225,18 +225,18 @@ namespace ISL.Interpreter
                 new BinaryOperator("->", (left, right, prog) => {
                     var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     if(righte is not IslIdentifier ride) throw new TypeError($"Must cast to a type identifier, got {righte.Type}");
-                    return TryCast(lefte, IslValue.GetTypeFromName(ride.Value));
+                    return TryCast(lefte, GetNativeType(ride.Value)().Type);
                 }, -4),
                 new BinaryOperator("~>", (left, right, prog) => {
                     var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     if(righte is not IslIdentifier ride) throw new TypeError($"Must cast to a type identifier, got {righte.Type}");
-                    return ForgivingCast(lefte, IslValue.GetTypeFromName(ride.Value));
+                    return ForgivingCast(lefte, GetNativeType(ride.Value)().Type);
                 }, -4),
                 #endregion
                 #region Communication
                 new UnaryOperator("out", (target, prog) => {
                     ThrowIfProgramNull(prog);
-                    if (target is not VariableDeclaration targetvar) throw new TypeError($"Can only output a (newly-declared) variable.");
+                    if (target is not VariableDeclarationExpr targetvar) throw new TypeError($"Can only output a (newly-declared) variable.");
                     // Debug($"Will output {targetvar.Stringify()} on program end");
                     prog.OutputVariable(targetvar.name);
                     return targetvar.Eval(prog);
@@ -255,7 +255,7 @@ namespace ISL.Interpreter
                         return IslValue.Null;
                     }
                     //Specific variable assignment
-                    if (target is not VariableDeclaration targetvar) throw new TypeError($"Can only input to a variable declaration.");
+                    if (target is not VariableDeclarationExpr targetvar) throw new TypeError($"Can only input to a variable declaration.");
                     // Debug($"Taking input from {targetvar.Name} as (read-only) {targetvar.Stringify()}");
                     if(!prog.Ins.TryGetValue(targetvar.name, out var val)) throw new InvalidReferenceError($"No input with name {targetvar.name} found.");
                     CheckAssignment(targetvar.IsTypeInferred, targetvar.IsTypeImplied, targetvar.varType, val);
@@ -355,7 +355,7 @@ namespace ISL.Interpreter
                 }
             }
         }
-        private static IslValue TryCast(IslValue islValue, IslType type, bool forgiving = false)
+        private static IslValue TryCast(IslValue islValue, IslType type)
         {
             if (islValue.Type == type) return islValue;
             // Debug($"Casting {islValue.Stringify()} to {type}");
@@ -371,16 +371,17 @@ namespace ISL.Interpreter
         }
         private static void CheckAssignment(IslVariable vari, IslValue value)
         {
-            if (value.Type != vari.VarType && !vari.InferType && !vari.ImpliedType) throw new TypeError($"Cannot mix types in assignment (setting {vari.VarType} to a {value.Type})");
+            CheckAssignment(vari.InferType, vari.ImpliedType, vari.VarType, value);
         }
         private static void CheckAssignment(bool inferType, bool impliedType, IslType varType, IslValue value)
         {
             if (value.Type != varType && !inferType && !impliedType) throw new TypeError($"Cannot mix types in assignment (setting {varType} to a {value.Type})");
         }
-        private void AssignVar(IslVariable vari, IslValue value)
+        private static void AssignVar(IslVariable vari, IslValue value)
         {
             CheckAssignment(vari, value);
-            if (vari.ReadOnly) throw new AccessError($"Variable {vari.Name} cannot be set - it is read-only.");
+            if (vari.ReadOnly && vari.Initialised) throw new AccessError($"Variable {vari.Name} cannot be set - it is read-only.");
+            if (!vari.Initialised) vari.Initialised = true;
             if (vari.InferType)
             {
                 // Debug($"Inferring type of {vari.Stringify()} as {value.Type}");
@@ -390,7 +391,7 @@ namespace ISL.Interpreter
             if (vari.ImpliedType && value.Type != vari.VarType)
             {
                 // Debug($"Type of {value.Stringify()} implied to be {vari.VarType}, casting {value.Type} -> {vari.VarType}");
-                if (value is not IIslCastable rcast) throw new TypeError($"Type {value.Type} is not castable, so cannot be assigned to a type-implied variable.");
+                if (value is not IIslCastable) throw new TypeError($"Type {value.Type} is not castable, so cannot be assigned to a type-implied variable.");
                 vari.Value = TryCast(value, vari.VarType);
                 return;
             }

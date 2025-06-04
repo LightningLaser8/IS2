@@ -208,11 +208,11 @@ namespace Integrate
         {
             var clone = new ExpandoObject();
 
-            var _original = (IDictionary<string, object>)original;
-            var _clone = (IDictionary<string, object>)clone;
+            var _original = original as IDictionary<string, object>;
+            var _clone = clone as IDictionary<string, object>;
 
             foreach (var kvp in _original)
-                _clone.Add(kvp.Key, kvp.Value is ExpandoObject ? DeepCopy((ExpandoObject)kvp.Value) : kvp.Value);
+                _clone.Add(kvp.Key, kvp.Value is ExpandoObject @object ? DeepCopy(@object) : kvp.Value);
 
             return clone;
         }
