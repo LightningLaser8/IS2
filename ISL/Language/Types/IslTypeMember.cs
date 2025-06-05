@@ -1,5 +1,4 @@
 ﻿using ISL.Interpreter;
-using ISL.Language.Types.Classes;
 
 namespace ISL.Language.Types
 {

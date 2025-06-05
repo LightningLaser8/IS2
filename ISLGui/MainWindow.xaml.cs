@@ -50,9 +50,12 @@ namespace ISLGui
             islHighlighter.SetSyntaxColor(TokenType.Getter, Color.FromArgb(255, 214, 157, 235));
             islHighlighter.SetSyntaxColor(TokenType.Operator, Color.FromArgb(255, 128, 128, 128));
             islHighlighter.SetSyntaxColor(TokenType.SpecialOperator, Color.FromArgb(255, 71, 141, 210));
+            islHighlighter.SetSyntaxColor(TokenType.NativeType, Color.FromArgb(255, 134, 198, 142));
+            islHighlighter.SetSyntaxColor(TokenType.Class, Color.FromArgb(255, 78, 188, 129));
             islHighlighter.SetSyntaxColor(TokenType.Keyword, Color.FromArgb(255, 188, 155, 223));
             islHighlighter.SetSyntaxColor(TokenType.Comment, Color.FromArgb(255, 73, 107, 35));
             islHighlighter.SetSyntaxColor(TokenType.MetaTag, Color.FromArgb(255, 100, 230, 255));
+            islHighlighter.SetSyntaxColor(TokenType.Function, Color.FromArgb(255, 220, 218, 155));
             //Add events
             manager.FileButtonClicked += Manager_FileButtonClicked;
             manager.FileButtonDeleted += Manager_FileButtonDeleted;
@@ -124,7 +127,7 @@ namespace ISLGui
             // Users expect to have a filtered view of their folders depending on the scenario.
             // For example, when choosing a documents folder, restrict the filetypes to documents for your application.
             openPicker.FileTypeFilter.Add(".isl");
-            InitializeWithWindow.Initialize(openPicker, WinRT.Interop.WindowNative.GetWindowHandle(this));
+            InitializeWithWindow.Initialize(openPicker, WindowNative.GetWindowHandle(this));
             var winFile = await openPicker.PickSingleFileAsync();
             if (winFile is not null && winFile.FileType == ".isl")
             {
@@ -137,7 +140,7 @@ namespace ISLGui
             return manager.File;
         }
 
-        private void SyntaxHighlightingTriggered(object sender, Microsoft.UI.Xaml.Controls.TextChangedEventArgs e)
+        private void SyntaxHighlightingTriggered(object sender, TextChangedEventArgs e)
         {
             if (InputScroller is null)
             {
@@ -150,7 +153,7 @@ namespace ISLGui
         {
             string source = TextInput.Text;
             TextOutput.Inlines.Clear();
-            var toks = islHighlighter.Tokenise(source);
+            var toks = Highlighter.Tokenise(source);
             var runs = islHighlighter.Runify(toks);
             runs.ForEach(x => TextOutput.Inlines.Add(x));
             UpdateFileInfo();
@@ -244,7 +247,7 @@ namespace ISLGui
         {
             try
             {
-                return iint.CreateProgram(TextInput.Text, DebugToggle.IsOn);
+                return iint.CreateProgram(TextInput.Text);
             }
             catch { }
             finally
@@ -267,7 +270,6 @@ namespace ISLGui
 
             //Run
             var finalResult = prog.SafeExecute();
-            RuntimeDebugOutput.Text = iint.CompilerDebug;
             if (finalResult is IslErrorMessage im) ErrorOutput.Text = im.Value;
 
             //Outputs

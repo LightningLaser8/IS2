@@ -67,5 +67,6 @@ namespace ISL.Language.Expressions
 
         public abstract string Stringify();
         public virtual void Validate() { }
+        public virtual void Reset() { }
     }
 }

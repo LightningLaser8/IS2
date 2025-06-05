@@ -8,17 +8,15 @@ namespace ISL.Language.Expressions
     internal class GetterExpression : Expression
     {
         public Expression? NameProvider { get; internal set; }
-        public override string ToString()
-        {
-            return $"\\ {NameProvider} \\";
-        }
+        public override string ToString() => $"\\ {NameProvider} \\";
+
         public override IslValue Eval(IslProgram program)
         {
             var res = NameProvider!.Eval(program);
             if (res is IslVariable ivar)
                 return ivar.Value;
             if (res is IslIdentifier iide)
-                return program.GetVariableImperative(iide).Value;
+                return program.CurrentScope.GetVariableImperative(iide).Value;
             throw new TypeError("Cannot get value of a " + res.Type);
         }
 

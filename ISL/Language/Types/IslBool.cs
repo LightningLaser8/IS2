@@ -3,7 +3,7 @@ using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
 {
-    public class IslBool : IslValue, ITypedObject<IslBool, bool>, IIslInvertable, IIslCastable, IIslEquatable
+    public class IslBool : IslValue, ITypedObject<IslBool, bool>, IIslInvertable, IIslConvertible, IIslEquatable
     {
         public override IslType Type => IslType.Bool;
         public bool Value { get; } = false;
@@ -48,7 +48,7 @@ namespace ISL.Language.Types
             return Value;
         }
 
-        public IslValue Cast(IslType type)
+        public IslValue Convert(IslType type)
         {
             if (type == IslType.Int) return new IslInt(Value ? 1 : 0);
             if (type == IslType.Float) return new IslFloat(Value ? 1 : 0);

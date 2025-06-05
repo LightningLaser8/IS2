@@ -65,10 +65,10 @@
                 </StackPanel>
             </Button>
         </StackPanel>
+        <!-- Code Editor -->
         <Grid x:Name="CodeEditor" Grid.Row="1" Grid.Column="1" Width="Auto" Height="Auto" Background="#131313" Margin="0,20,10,20">
-            <!-- IsReadOnly="True" AcceptsReturn="True" IsSpellCheckEnabled="False" -->
             <ScrollViewer x:Name="SyntaxScroller" VerticalScrollBarVisibility="Hidden">
-                <TextBlock AllowFocusOnInteraction="False" IsHitTestVisible="False" x:Name="TextOutput" Foreground="white" FontFamily="Consolas" Padding="1,0,0,0">
+                <TextBlock AllowFocusOnInteraction="False" IsHitTestVisible="False" x:Name="TextOutput" Foreground="white" FontFamily="Consolas" Padding="6,5,5,5">
                     <TextBlock.Resources>
                         <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#131313" />
                         <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#131313" />
@@ -77,7 +77,7 @@
                 </TextBlock>
             </ScrollViewer>
             <TextBox Text='out string _ = "Hello World"' TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="False"
-    SelectionHighlightColor="#424242" TextChanged="SyntaxHighlightingTriggered" x:Name="TextInput" Foreground="Transparent" Background="Transparent" Opacity="0.5" FontFamily="Consolas" Padding="0" Margin="0" EffectiveViewportChanged="TextInput_EffectiveViewportChanged">
+    SelectionHighlightColor="#68acacac" TextChanged="SyntaxHighlightingTriggered" x:Name="TextInput" Opacity="0.5" FontFamily="Consolas" Padding="5" Margin="0" EffectiveViewportChanged="TextInput_EffectiveViewportChanged">
                 <TextBox.Resources>
                     <SolidColorBrush x:Key="TextControlForeground" Color="Transparent" />
                     <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="Transparent" />
@@ -87,6 +87,7 @@
                 </TextBox.Resources>
             </TextBox>
         </Grid>
+        <!-- Setup Configurator -->
         <StackPanel Orientation="Vertical" x:Name="SetupConfigurator" Grid.Row="1" Grid.Column="1" Width="Auto" Height="Auto" Background="#131313" Margin="0,20,10,20" Padding="10,10,10,10">
             <StackPanel Orientation="Horizontal" >
                 <TextBlock Text="In Variables" FontSize="20" FontWeight="Bold"/>
@@ -98,10 +99,12 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <ComboBox x:Name="InVarType" PlaceholderText="Variable Type..." Margin="5">
-                    <x:String>Bool</x:String>
-                    <x:String>Int</x:String>
-                    <x:String>Float</x:String>
-                    <x:String>String</x:String>
+                    <x:String>bool</x:String>
+                    <x:String>int</x:String>
+                    <x:String>float</x:String>
+                    <x:String>complex</x:String>
+                    <x:String>string</x:String>
+                    <x:String>group</x:String>
                 </ComboBox>
                 <TextBox x:Name="InVarName" PlaceholderText="Variable Name..." Margin="5" MinWidth="100" MaxWidth="200"/>
                 <TextBlock Text=" = " VerticalAlignment="Center"/>
@@ -110,6 +113,7 @@
             </StackPanel>
             <ListView x:Name="InVars" HorizontalAlignment="Stretch" MinHeight="6" MaxHeight="300" Background="#242424"/>
         </StackPanel>
+        <!-- Run/Output window -->
         <ScrollViewer VerticalScrollBarVisibility="Auto" x:Name="RunWindow" Grid.Row="1" Grid.Column="1" Width="Auto" Height="Auto" >
             <StackPanel Orientation="Vertical" Background="#131313" Margin="0,20,10,20" Padding="10,10,10,10">
                 <Button Click="RunTriggered" FontSize="20" ToolTipService.ToolTip="Run the currently selected script.">
@@ -137,15 +141,11 @@
           VerticalScrollBarVisibility="Auto" Background="#242424" Margin="5">
                         <TextBlock x:Name="DebugOutput" FontFamily="Consolas" Padding="10" TextWrapping="Wrap"/>
                     </ScrollViewer>
-                    <ScrollViewer MaxHeight="150" Width="Auto" 
-          VerticalScrollBarVisibility="Auto" Background="#242424" Margin="5">
-                        <TextBlock x:Name="RuntimeDebugOutput" FontFamily="Consolas" Padding="10" TextWrapping="Wrap"/>
-                    </ScrollViewer>
-                    <ScrollViewer MaxHeight="30" Width="Auto" 
-          VerticalScrollBarVisibility="Auto" Background="#240000" Margin="5">
-                        <TextBlock x:Name="ErrorOutput" FontFamily="Consolas" Padding="10,0,10,0" Foreground="red" TextWrapping="Wrap"/>
-                    </ScrollViewer>
                 </StackPanel>
+                <ScrollViewer MaxHeight="30" Width="Auto" 
+          VerticalScrollBarVisibility="Auto" Background="#240000" Margin="5">
+                    <TextBlock x:Name="ErrorOutput" FontFamily="Consolas" Padding="10,0,10,0" Foreground="red" TextWrapping="Wrap"/>
+                </ScrollViewer>
             </StackPanel>
         </ScrollViewer>
 

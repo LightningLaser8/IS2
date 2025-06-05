@@ -7,7 +7,7 @@ internal class IntegrateTester
 {
     static readonly Stopwatch clk = new();
     static readonly string defModPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Integrate\Mods\";
-    private static async Task Main(string[] args)
+    private static async Task Main()
     {
         Setup();
         CreateRegistry("blocks");
@@ -116,7 +116,7 @@ internal class IntegrateTester
     {
         await AsyncTest("ISL Performance:", async () =>
         {
-            Console.WriteLine(" Control is a function call with a simple int assignment then tostring");
+            Console.WriteLine(" Tests performance with ISL scripts from the Integrate test mod, which needs to be installed separately");
             Console.WriteLine(" GC having a field day here");
             await Task.Delay(3000);
             TestIslPerfEvents("No Listeners", "ev2", 100000);
@@ -192,9 +192,21 @@ internal class IntegrateTester
         Console.ForegroundColor = ConsoleColor.Green;
         Console.Write(" => ");
         Console.ForegroundColor = ConsoleColor.DarkGreen;
-        Console.Write(results.TotalMilliseconds / control);
+        Console.Write(control / results.TotalMilliseconds);
         Console.ForegroundColor = ConsoleColor.White;
         Console.Write(" unweighted performance index" + Environment.NewLine);
+        Console.ResetColor();
+
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.Write(" => ");
+        Console.ForegroundColor = ConsoleColor.DarkGreen;
+        Console.Write(tests / results.TotalSeconds);
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.Write(" events per second (");
+        Console.ForegroundColor = ConsoleColor.DarkGreen;
+        Console.Write(tests / 60 / results.TotalSeconds);
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.Write(" events per frame)" + Environment.NewLine);
         Console.ResetColor();
 
     }

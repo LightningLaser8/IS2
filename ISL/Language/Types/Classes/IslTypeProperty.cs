@@ -8,9 +8,10 @@ namespace ISL.Language.Types.Classes
         public IslType ReturnType = IslType.Null;
         private readonly IslFunction fn = new();
 
-        public override IslValue Get(IslProgram program, IslObject instance) {
+        public override IslValue Get(IslProgram program, IslObject instance)
+        {
             var resolved = fn.Call(program, [instance]);
-            if(resolved.Type != ReturnType) throw new TypeError($"Function returned an incorrect type (got {resolved.Type}, expected {ReturnType})");
+            if (resolved.Type != ReturnType) throw new TypeError($"Function returned an incorrect type (got {resolved.Type}, expected {ReturnType})");
             return resolved;
         }
 

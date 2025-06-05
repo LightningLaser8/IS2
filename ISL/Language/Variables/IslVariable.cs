@@ -11,12 +11,11 @@ namespace ISL.Language.Variables
         public bool ImpliedType { get; set; } = false;
         public string Name { get; } = name;
         public IslValue Value { get; set; } = DefaultForType(type);
-        public override IslType Type { get; protected set; } = IslType.Variable;
+        public override IslType Type => IslType.Variable;
         public IslType VarType { get; protected set; } = type;
-
         public override string Stringify()
         {
-            return $"(Variable) [{(ReadOnly ? "readonly " : "")}{(ImpliedType?"T ->":"")}{VarType} \"{Name}\"] {Value.Stringify()}";
+            return $"(Variable) [{(ReadOnly ? "readonly " : "")}{(ImpliedType ? "T ->" : "")}{VarType} \"{Name}\"] {Value.Stringify()}";
         }
 
         public override object? ToCLR()

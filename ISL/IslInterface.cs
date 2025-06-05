@@ -1,4 +1,5 @@
 ﻿using ISL.Interpreter;
+using ISL.Language.Types;
 using ISL.Runtime.Errors;
 
 namespace ISL
@@ -10,16 +11,12 @@ namespace ISL
     {
         private readonly IslInterpreter interpreter = new();
         /// <summary>
-        /// Stores debug output of the compiler.
+        /// Stores debug output of the interpreter during creation of the last program.
         /// </summary>
         public string LastDebug => debug;
         private string debug = "";
         /// <summary>
-        /// Stores debug output of the compiler.
-        /// </summary>
-        public string CompilerDebug => interpreter.debug;
-        /// <summary>
-        /// Stores the last error the compiler threw. An empty string is the last run was successful.
+        /// Stores the last error the interpreter threw. An empty string is the last run was successful.
         /// </summary>
         public string ErrorMessage => error;
         private string error = "";
@@ -40,35 +37,45 @@ namespace ISL
         /// <exception cref="TypeError"></exception>
         /// <param name="source">The ISL code to run. Will throw a SyntaxError if invalid.</param>
         /// <returns>The result of the execution.</returns>
-        public IslProgram CreateProgram(string source, bool debug = false)
+        public IslProgram CreateProgram(string source)
         {
+            IslDebugOutput.Reset();
             IslProgram program;
-            interpreter.debugMode = debug;
             try
             {
                 program = interpreter.CreateProgram(source);
-                this.debug = interpreter.debug;
-                interpreter.debug = "";
+                this.debug = IslDebugOutput.Message;
+                IslDebugOutput.Reset();
                 errored = false;
                 error = "";
                 return program;
             }
             catch (IslError e)
             {
-                this.debug = interpreter.debug + "Error encountered!\n";
-                interpreter.debug = "";
+                this.debug = IslDebugOutput.Message + "Error encountered!\n";
+                IslDebugOutput.Reset();
                 errored = true;
                 error = e.GetType().Name + ": " + e.Message;
                 throw;
             }
             catch (Exception e)
             {
-                this.debug = interpreter.debug + "Internal error encountered!\n";
-                interpreter.debug = "";
+                this.debug = IslDebugOutput.Message + "Internal error encountered!\n";
+                IslDebugOutput.Reset();
                 errored = true;
                 error = e.Message;
                 throw;
             }
+        }
+
+
+        public static IslType GetNativeIslType(string token)
+        {
+            return IslInterpreter.GetNativeType(token)().Type;
+        }
+        public static IslValue GetNativeIslValue(string token)
+        {
+            return IslInterpreter.GetNativeType(token)();
         }
     }
 }

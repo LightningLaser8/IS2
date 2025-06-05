@@ -4,7 +4,7 @@ using System.Collections;
 
 namespace ISL.Language.Types.Collections
 {
-    internal class IslGroup : IslValue, ITypedObject<IslGroup, List<IslValue>>, ICollection<IslValue>, IIslAppendable, IIslIndexable
+    public class IslGroup : IslValue, ITypedObject<IslGroup, List<IslValue>>, ICollection<IslValue>, IIslAppendable, IIslIndexable
     {
         public override IslType Type => IslType.Group;
         public List<IslValue> Value { get; init; } = [];
@@ -15,7 +15,7 @@ namespace ISL.Language.Types.Collections
 
         public static IslGroup FromString(string isl)
         {
-            throw new TypeError("Cannot create group from a literal directly");
+            return new() { Value = [.. isl.Split(", ", StringSplitOptions.TrimEntries).Select(x => new IslString(x)).Cast<IslValue>()] };
         }
 
         public IslValue this[int index]

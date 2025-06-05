@@ -35,7 +35,7 @@ namespace ISL.Interpreter
         public IslProgram CreateProgram(string sourceCode)
         {
             // Initialize the interpreter
-            source = sourceCode;
+            source = sourceCode.ReplaceLineEndings("\n");
             debug = "";
             if (source.Length == 0)
             {
@@ -43,30 +43,30 @@ namespace ISL.Interpreter
             }
 
             // Lexical analysis
-            Debug("\nLexical Analysis: \n");
+            IslDebugOutput.Debug("\nLexical Analysis: \n");
             RemoveComments();
             if (source.Length == 0)
             {
                 throw new SyntaxError("Only comments input!");
             }
-            Debug("Getting metadata:");
+            IslDebugOutput.Debug("Getting metadata:");
             ProcessMetadata();
             Tokenise();
             if (tokens.Count > 0)
-                Debug("  " + tokens.Count.ToString() + " tokens:\n" +
+                IslDebugOutput.Debug("  " + tokens.Count.ToString() + " tokens:\n" +
                     "  " + string.Join(", ", tokens.Select(x => $"'{x}'")));
-            else Debug("No tokens.");
+            else IslDebugOutput.Debug("No tokens.");
             // Syntax analysis
             // Code generation
-            Debug("\nSyntax Analysis and Code Generation:\n");
+            IslDebugOutput.Debug("\nSyntax Analysis and Code Generation:\n");
             Parse();
-            Debug("  >> " + expressions.Count.ToString() + " code points: \n  " + string.Join(", ", expressions.Select(x => x.ToString())));
+            IslDebugOutput.Debug("  >> " + expressions.Count.ToString() + " code points: \n  " + string.Join(", ", expressions.Select(x => x.ToString())));
             // Code Optimisation
-            Debug("\nCode Optimisation:\n");
+            IslDebugOutput.Debug("\nCode Optimisation:\n");
             Optimise();
-            Debug("  >- " + code.Count.ToString() + " final code points: \n  " + string.Join(", ", code.Select(x => x.ToString())));
-            Debug("\n  > Final (Human-Readable) Code:\n " + string.Join(";\n", code.Select(x => x.Stringify())) + ";");
-            Debug("\nCompilation Complete!\n");
+            IslDebugOutput.Debug("  >- " + code.Count.ToString() + " final code points: \n  " + string.Join(", ", code.Select(x => x.ToString())));
+            IslDebugOutput.Debug("\n  > Final (Human-Readable) Code:\n " + string.Join(";\n", code.Select(x => x.Stringify())) + ";");
+            IslDebugOutput.Debug("\nCompilation Complete!\n");
 
             var program = new IslProgram(CloneList(code), CloneDict(metas));
 

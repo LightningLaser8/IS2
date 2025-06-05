@@ -2,7 +2,6 @@
 using ISL.Language.Expressions.Combined;
 using ISL.Language.Keywords;
 using ISL.Language.Types;
-using ISL.Language.Types.Classes;
 using ISL.Language.Variables;
 using ISL.Runtime.Errors;
 
@@ -19,39 +18,23 @@ namespace ISL.Interpreter
             {
                 return Expression.From(x, this);
             }));
-            Debug("Bracketise:");
+            IslDebugOutput.Debug("Bracketise:");
             //Put shit in brackets
             Bracketise(expressions);
 
             Treeify(expressions);
-            Debug(" Validate Expression Syntax:");
+            IslDebugOutput.Debug(" Validate Expression Syntax:");
             ValidateCodeBlock(expressions);
-            expressions.ForEach(ex => { Debug($"  validating {ex}"); ex.Validate(); });
-            Debug("Syntax Analysis / Code Gen Finished!");
+            expressions.ForEach(ex => { IslDebugOutput.Debug($"  validating {ex}"); ex.Validate(); });
+            IslDebugOutput.Debug("Syntax Analysis / Code Gen Finished!");
         }
-        internal static void ValidateCodeBlockStatic(List<Expression> expressions)
+        internal static void ValidateCodeBlock(List<Expression> expressions)
         {
             bool wasSemi = true;
             for (int i = 0; i < expressions.Count; i++)
             {
                 Expression ex = expressions[i];
-                if (wasSemi && ex is TokenExpression te && te.value == ";") throw new SyntaxError("Unexpected ;");
-                if (!wasSemi && ex is not TokenExpression) throw new SyntaxError("Expected ;, got expression");
-                wasSemi = (ex is TokenExpression t2e && t2e.value == ";");
-                if (wasSemi)
-                {
-                    expressions.RemoveAt(i);
-                    i--;
-                }
-            }
-        }
-        internal void ValidateCodeBlock(List<Expression> expressions)
-        {
-            bool wasSemi = true;
-            for (int i = 0; i < expressions.Count; i++)
-            {
-                Expression ex = expressions[i];
-                Debug("  token or expression " + ex.ToString() + (wasSemi ? ", wants expression here" : ", wants semicolon here"));
+                IslDebugOutput.Debug("  token or expression " + ex.ToString() + (wasSemi ? ", wants expression here" : ", wants semicolon here"));
                 if (wasSemi && ex is TokenExpression te && te.value == ";") throw new SyntaxError("Unexpected ;");
                 if (!wasSemi && ex is not TokenExpression) throw new SyntaxError("Expected ;, got expression");
                 wasSemi = (ex is TokenExpression t2e && t2e.value == ";");
@@ -65,7 +48,7 @@ namespace ISL.Interpreter
 
         private void Treeify(List<Expression> expressions)
         {
-            Debug("Operator Precedence:");
+            IslDebugOutput.Debug("Operator Precedence:");
 
             //Get precedence
             List<int> precedences = [];
@@ -85,16 +68,16 @@ namespace ISL.Interpreter
             MakeVariableDeclarations(expressions);
             if (precedences.Count == 0)
             {
-                Debug("  No operators present.");
-                Debug("  No tree creation required.");
+                IslDebugOutput.Debug("  No operators present.");
+                IslDebugOutput.Debug("  No tree creation required.");
             }
             else
             {
-                Debug($"  Precedences: [{string.Join(", ", precedences)}]");
-                Debug("Create Expression Tree:");
+                IslDebugOutput.Debug($"  Precedences: [{string.Join(", ", precedences)}]");
+                IslDebugOutput.Debug("Create Expression Tree:");
                 foreach (int precedence in precedences)
                     CreateTreeLevel(precedence, expressions);
-                Debug("  Tree Created.");
+                IslDebugOutput.Debug("  Tree Created.");
             }
             MakeKeywordsGrabExpressions(expressions);
             MakeKeywordsBackReference(expressions);
@@ -109,64 +92,64 @@ namespace ISL.Interpreter
 
                 if (expr is BracketExpression cexp)
                 {
-                    Debug($"  Found {cexp.bracket.Open} at {i}, looking for {cexp.bracket.Close}");
+                    IslDebugOutput.Debug($"  Found {cexp.bracket.Open} at {i}, looking for {cexp.bracket.Close}");
                     int end = FindClosingBracket(i + 1, level, cexp.bracket.Open, cexp.bracket.Close, expressions);
                     if (end == -1) throw new SyntaxError("Expected closing " + cexp.bracket.Close);
-                    Debug($"  Found closing {cexp.bracket.Close} at {end}");
+                    IslDebugOutput.Debug($"  Found closing {cexp.bracket.Close} at {end}");
                     expressions[end] = Expression.Null;
                     var captured = expressions[(i + 1)..end];
                     Bracketise(captured, level);
-                    Debug("Treeifying captured expressions:");
+                    IslDebugOutput.Debug("Treeifying captured expressions:");
                     Treeify(captured);
                     var packaged = cexp.bracket.Create.Invoke(captured);
-                    Debug("Removing expressions:");
+                    IslDebugOutput.Debug("Removing expressions:");
                     expressions[i] = packaged;
                     if (expressions.Count > 0) expressions.RemoveRange(i + 1, end - i);
-                    Debug($"  Brackets enclose {packaged}");
+                    IslDebugOutput.Debug($"  Brackets enclose {packaged}");
                 }
             }
         }
-        private void CreateTreeLevel(int precedence, List<Expression> expressions)
+        private static void CreateTreeLevel(int precedence, List<Expression> expressions)
         {
-            Debug($" Precedence level {precedence}:");
+            IslDebugOutput.Debug($" Precedence level {precedence}:");
             int currentIndex = -1;
             while (true)
             {
-                Debug($"  index from {(currentIndex == -1 ? "start" : currentIndex)}");
+                IslDebugOutput.Debug($"  index from {(currentIndex == -1 ? "start" : currentIndex)}");
                 currentIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
                 if (currentIndex == -1)
                 {
-                    Debug("  program ended");
+                    IslDebugOutput.Debug("  program ended");
                     break; //Stop if program done
                 }
-                else Debug($"  next non-null was {currentIndex}");
+                else IslDebugOutput.Debug($"  next non-null was {currentIndex}");
                 var expr = expressions[currentIndex];
-                Debug($"  index {currentIndex} is {expr}");
+                IslDebugOutput.Debug($"  index {currentIndex} is {expr}");
 
 
                 if (expr is UnaryOperatorExpression uoe)
                 {
                     if (uoe.Operation.Precedence == precedence)
                     {
-                        Debug(" > unary operator " + uoe.ToString() + " at " + currentIndex.ToString());
+                        IslDebugOutput.Debug(" > unary operator " + uoe.ToString() + " at " + currentIndex.ToString());
                         //Find next non-null
                         EvalUnaryOperator(uoe, currentIndex, expressions);
                     }
-                    else Debug($" > skipped (precedence {uoe.Operation.Precedence} does not match target {precedence})");
+                    else IslDebugOutput.Debug($" > skipped (precedence {uoe.Operation.Precedence} does not match target {precedence})");
                 }
 
                 if (expr is BinaryOperatorExpression boe)
                 {
                     if (boe.Operation.Precedence == precedence)
                     {
-                        Debug(" > binary operator " + boe.ToString() + " at " + currentIndex.ToString());
+                        IslDebugOutput.Debug(" > binary operator " + boe.ToString() + " at " + currentIndex.ToString());
                         //Find next non-null
                         int targetR = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
                         if (targetR != -1)
                         {
                             boe.affectedR = expressions[targetR];
                             expressions[targetR] = Expression.Null;
-                            Debug("  found right operand " + boe.affectedR.ToString() + " at " + targetR.ToString());
+                            IslDebugOutput.Debug("  found right operand " + boe.affectedR.ToString() + " at " + targetR.ToString());
                         }
                         //Find last non-null
                         int targetL = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
@@ -174,23 +157,23 @@ namespace ISL.Interpreter
                         {
                             boe.affectedL = expressions[targetL];
                             expressions[targetL] = Expression.Null;
-                            Debug("  found left operand " + boe.affectedL.ToString() + " at " + targetL.ToString());
+                            IslDebugOutput.Debug("  found left operand " + boe.affectedL.ToString() + " at " + targetL.ToString());
                         }
                     }
-                    else Debug($" > skipped (precedence {boe.Operation.Precedence} does not match target {precedence})");
+                    else IslDebugOutput.Debug($" > skipped (precedence {boe.Operation.Precedence} does not match target {precedence})");
                 }
                 if (expr is CompoundOperatorExpression coe)
                 {
                     if (coe.Operation.Precedence == precedence)
                     {
-                        Debug($" > unary/binary operator {coe} at {currentIndex}, assume binary");
+                        IslDebugOutput.Debug($" > unary/binary operator {coe} at {currentIndex}, assume binary");
                         //Find next non-null
                         int targetR = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
                         if (targetR != -1)
                         {
                             coe.affectedRequired = expressions[targetR];
                             expressions[targetR] = Expression.Null;
-                            Debug("  found right operand " + coe.affectedRequired.ToString() + " at " + targetR.ToString());
+                            IslDebugOutput.Debug("  found right operand " + coe.affectedRequired.ToString() + " at " + targetR.ToString());
                         }
                         //Find last non-null
                         int targetL = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
@@ -198,50 +181,50 @@ namespace ISL.Interpreter
                         {
                             coe.affectedOptional = expressions[targetL];
                             expressions[targetL] = Expression.Null;
-                            Debug("  found left operand " + coe.affectedOptional.ToString() + " at " + targetL.ToString());
+                            IslDebugOutput.Debug("  found left operand " + coe.affectedOptional.ToString() + " at " + targetL.ToString());
                         }
                     }
-                    else Debug($" > skipped (precedence {coe.Operation.Precedence} does not match target {precedence})");
+                    else IslDebugOutput.Debug($" > skipped (precedence {coe.Operation.Precedence} does not match target {precedence})");
                 }
             }
             expressions.RemoveAll((expr) => expr == Expression.Null);
         }
 
-        private void EvalUnaryOperator(UnaryOperatorExpression unary, int currentIndex, List<Expression> expressions, int depth = 0)
+        private static void EvalUnaryOperator(UnaryOperatorExpression unary, int currentIndex, List<Expression> expressions, int depth = 0)
         {
-            Debug($"{new string(' ', depth)} >> simplifying {unary.Operation.id}");
+            IslDebugOutput.Debug($"{new string(' ', depth)} >> simplifying {unary.Operation.id}");
             int target = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
             if (target != -1)
             {
                 var texp = expressions[target];
                 expressions[target] = Expression.Null;
                 unary.affected = texp;
-                Debug($"{new string(' ', depth)}  | now affecting {texp}");
+                IslDebugOutput.Debug($"{new string(' ', depth)}  | now affecting {texp}");
                 if (texp is UnaryOperatorExpression ue)
                 {
-                    Debug($"{new string(' ', depth)}  > found another unary op ({unary.Operation.id}), which may or may not be impossible to evaluate without this bit");
+                    IslDebugOutput.Debug($"{new string(' ', depth)}  > found another unary op ({unary.Operation.id}), which may or may not be impossible to evaluate without this bit");
                     EvalUnaryOperator(ue, target, expressions, depth + 1);
                 }
-                Debug($"{new string(' ', depth)} << {unary}");
+                IslDebugOutput.Debug($"{new string(' ', depth)} << {unary}");
             }
         }
 
         private void MakeVariableDeclarations(List<Expression> expressions)
         {
-            Debug($" Variable Declaration Loop:");
+            IslDebugOutput.Debug($" Variable Declaration Loop:");
             int currentIndex = expressions.Count;
             while (true)
             {
-                Debug($"  index from {(currentIndex == expressions.Count ? "end" : currentIndex)}");
+                IslDebugOutput.Debug($"  index from {(currentIndex == expressions.Count ? "end" : currentIndex)}");
                 currentIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
                 if (currentIndex == -1)
                 {
-                    Debug("  program ended");
+                    IslDebugOutput.Debug("  program ended");
                     break; //Stop if program done
                 }
-                else Debug($"  next expression at {currentIndex}");
+                else IslDebugOutput.Debug($"  next expression at {currentIndex}");
                 var expr = expressions[currentIndex];
-                Debug($"  index {currentIndex} is {expr}");
+                IslDebugOutput.Debug($"  index {currentIndex} is {expr}");
 
 
 
@@ -250,36 +233,36 @@ namespace ISL.Interpreter
                     var (native, present) = HasType(ie.value);
                     if (present)
                     {
-                        Debug($" > found {(native ? "native" : "user-defined")} type {expr}");
+                        IslDebugOutput.Debug($" > found {(native ? "native" : "user-defined")} type {expr}");
                         int nameIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
                         if (nameIndex == -1)
                         {
-                            Debug("  ok, type doesn't have an identifier");
-                            Debug("  i may break this in the future");
+                            IslDebugOutput.Debug("  ok, type doesn't have an identifier");
+                            IslDebugOutput.Debug("  i may break this in the future");
                         }
                         else
                         {
-                            Debug($"  var name at {nameIndex}");
+                            IslDebugOutput.Debug($"  var name at {nameIndex}");
                             var naem = expressions[nameIndex];
-                            Debug($"  creating declaration for {naem}");
+                            IslDebugOutput.Debug($"  creating declaration for {naem}");
                             if (naem is not IdentifierExpression ide) throw new SyntaxError("Expected identifier or nothing after type name");
-                            if (!native)
+                            if (naem is TokenExpression)
                             {
-                                // this option shouldn't exist at "compile" time
+                                //Stops shit like 'String [' showing up in debug
                                 continue;
                             }
                             var val = GetNativeType(ie.value)();
                             var declaration = new VariableDeclarationExpr() { name = ide.value, varType = val.Type, initialValue = val, IsTypeInferred = val is IslNull };
                             expressions[currentIndex] = declaration;
 
-                            Debug($"  created declaration for {expressions[currentIndex]}");
+                            IslDebugOutput.Debug($"  created declaration for {expressions[currentIndex]}");
                             expressions[nameIndex] = Expression.Null;
 
                             //imply/const
                             int modifierIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
                             if (modifierIndex == -1)
                             {
-                                Debug("  ok, type doesn't have any modifiers, that's fine");
+                                IslDebugOutput.Debug("  ok, type doesn't have any modifiers, that's fine");
                             }
                             else
                             {
@@ -307,38 +290,38 @@ namespace ISL.Interpreter
             expressions.RemoveAll((expr) => expr == Expression.Null);
         }
 
-        private void MakeKeywordsGrabExpressions(List<Expression> expressions)
+        private static void MakeKeywordsGrabExpressions(List<Expression> expressions)
         {
-            Debug($" Keyword Loop:");
+            IslDebugOutput.Debug($" Keyword Loop:");
             int currentIndex = expressions.Count;
             while (true)
             {
-                Debug($"  index from {(currentIndex == expressions.Count ? "end" : currentIndex)}");
+                IslDebugOutput.Debug($"  index from {(currentIndex == expressions.Count ? "end" : currentIndex)}");
                 currentIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
                 if (currentIndex == -1)
                 {
-                    Debug("  program ended");
+                    IslDebugOutput.Debug("  program ended");
                     break; //Stop if program done
                 }
-                else Debug($"  next expression at {currentIndex}");
+                else IslDebugOutput.Debug($"  next expression at {currentIndex}");
                 var expr = expressions[currentIndex];
-                Debug($"  index {currentIndex} is {expr}");
+                IslDebugOutput.Debug($"  index {currentIndex} is {expr}");
 
                 if (expr is KeywordExpression kwe)
                 {
-                    Debug($" > found keyword {expr}");
-                    Debug($"   search index from {(currentIndex == -1 ? "start" : currentIndex)}");
+                    IslDebugOutput.Debug($" > found keyword {expr}");
+                    IslDebugOutput.Debug($"   search index from {(currentIndex == -1 ? "start" : currentIndex)}");
                     for (byte i = 0; i < kwe.Keyword.ArgumentCount; i++)
                     {
                         int searchIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
                         if (searchIndex == -1)
                         {
-                            Debug("  oh no, keyword doesn't have enough expressions, let's error!");
+                            IslDebugOutput.Debug("  oh no, keyword doesn't have enough expressions, let's error!");
                             throw new SyntaxError($"Unexpected end of input!");
                         }
-                        else Debug($"  next argument at {searchIndex}");
+                        else IslDebugOutput.Debug($"  next argument at {searchIndex}");
                         kwe.Expressions.Add(expressions[searchIndex]);
-                        Debug($"  keyword ate {expressions[searchIndex]}");
+                        IslDebugOutput.Debug($"  keyword ate {expressions[searchIndex]}");
                         expressions[searchIndex] = Expression.Null;
                     }
 
@@ -346,39 +329,39 @@ namespace ISL.Interpreter
             }
             expressions.RemoveAll((expr) => expr == Expression.Null);
         }
-        private void MakeKeywordsBackReference(List<Expression> expressions)
+        private static void MakeKeywordsBackReference(List<Expression> expressions)
         {
-            Debug($" Add Backreferences:");
+            IslDebugOutput.Debug($" Add Backreferences:");
             int currentIndex = -1;
             while (true)
             {
-                Debug($"  index from {(currentIndex == -1 ? "start" : currentIndex)}");
+                IslDebugOutput.Debug($"  index from {(currentIndex == -1 ? "start" : currentIndex)}");
                 currentIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
                 if (currentIndex == -1)
                 {
-                    Debug("  program ended");
+                    IslDebugOutput.Debug("  program ended");
                     break; //Stop if program done
                 }
-                else Debug($"  next expression at {currentIndex}");
+                else IslDebugOutput.Debug($"  next expression at {currentIndex}");
                 var expr = expressions[currentIndex];
-                Debug($"  index {currentIndex} is {expr}");
+                IslDebugOutput.Debug($"  index {currentIndex} is {expr}");
 
                 if (expr is KeywordExpression kwe && kwe.Keyword is BackReferencingKeyword brk)
                 {
 
-                    Debug($" < keyword wants backreference");
-                    Debug($"  search index from {(currentIndex == -1 ? "start" : currentIndex)}");
+                    IslDebugOutput.Debug($" < keyword wants backreference");
+                    IslDebugOutput.Debug($"  search index from {(currentIndex == -1 ? "start" : currentIndex)}");
                     int lastkw = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
-                    Debug($"  keyword at {(lastkw == -1 ? "end" : lastkw)} ({expressions[lastkw]})");
+                    IslDebugOutput.Debug($"  keyword at {(lastkw == -1 ? "end" : lastkw)} ({expressions[lastkw]})");
                     if (lastkw == -1)
                     {
                         throw new SyntaxError($"Keyword {brk.identifier} must come directly after a statement or expression!");
                     }
                     if (expressions[lastkw] is TokenExpression tx && tx.value == ";")
                     {
-                        Debug("  skipped semicolon");
+                        IslDebugOutput.Debug("  skipped semicolon");
                         lastkw = FindNextNonNullExpression(lastkw, EvaluationDirection.Left, expressions);
-                        Debug($"  keyword at {(lastkw == -1 ? "end" : lastkw)} ({expressions[lastkw]})");
+                        IslDebugOutput.Debug($"  keyword at {(lastkw == -1 ? "end" : lastkw)} ({expressions[lastkw]})");
                     }
                     if (lastkw == -1)
                     {
@@ -388,12 +371,12 @@ namespace ISL.Interpreter
                     if (toGrab is not KeywordExpression kx) throw new SyntaxError($"Keyword {brk.identifier} must come directly after a keyword! (currently {toGrab}");
                     if (!brk.AllowedReferences.Contains(kx.Keyword.identifier)) throw new SyntaxError($"Keyword {brk.identifier} must come directly after one of these keywords: {string.Join(' ', brk.AllowedReferences)} (found {kx.Keyword.identifier})!");
                     kwe.Reference = kx;
-                    Debug($" ~ Keyword refs {kwe.Reference}{(ReferenceEquals(kwe, kwe.Reference) ? " (itself!)" : "")}");
+                    IslDebugOutput.Debug($" ~ Keyword refs {kwe.Reference}{(ReferenceEquals(kwe, kwe.Reference) ? " (itself!)" : "")}");
                 }
             }
             expressions.RemoveAll((expr) => expr == Expression.Null);
         }
-        private int FindClosingBracket(int currentIndex, int level, char openingToken, char closingToken, List<Expression> expressions)
+        private static int FindClosingBracket(int currentIndex, int level, char openingToken, char closingToken, List<Expression> expressions)
         {
             int currentLevel = level;
             for (int i = currentIndex; i < expressions.Count; i++)
@@ -401,17 +384,17 @@ namespace ISL.Interpreter
                 var expr = expressions[i];
                 if (expr is null) break; //If out of bounds (i.e. it's done)
 
-                Debug($"  Expression {expr}");
+                IslDebugOutput.Debug($"  Expression {expr}");
 
                 if (expr is TokenExpression ide)
                 {
                     if (ide.value == new string(closingToken, 1))
                     {
                         currentLevel--;
-                        Debug($"  Closing bracket {ide.value} | Level is now " + currentLevel);
+                        IslDebugOutput.Debug($"  Closing bracket {ide.value} | Level is now " + currentLevel);
                         if (currentLevel == level - 1)
                         {
-                            Debug($"  Found it!");
+                            IslDebugOutput.Debug($"  Found it!");
                             return i;
                         }
                         continue;
@@ -423,10 +406,10 @@ namespace ISL.Interpreter
                     if (brx.bracket.Open == brx.bracket.Close && brx.bracket.Close == closingToken)
                     {
                         currentLevel--;
-                        Debug($"  Closing bracket {closingToken} | Level is now " + currentLevel);
+                        IslDebugOutput.Debug($"  Closing bracket {closingToken} | Level is now " + currentLevel);
                         if (currentLevel == level - 1)
                         {
-                            Debug($"  Found it!");
+                            IslDebugOutput.Debug($"  Found it!");
                             return i;
                         }
                         continue;
@@ -434,7 +417,7 @@ namespace ISL.Interpreter
                     if (brx.bracket.Open == openingToken)
                     {
                         currentLevel++;
-                        Debug($"  Opening bracket {openingToken} | Level is now " + currentLevel);
+                        IslDebugOutput.Debug($"  Opening bracket {openingToken} | Level is now " + currentLevel);
                         continue;
                     }
                 }
@@ -454,12 +437,6 @@ namespace ISL.Interpreter
                 expr = expressions[search];
             }
             return search;
-        }
-
-        internal void Debug(string message)
-        {
-            if (debugMode) debug += message + "\n";
-            else debug = "Debug mode is disabled.\n";
         }
     }
     internal enum EvaluationDirection

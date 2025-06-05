@@ -3,7 +3,7 @@
     internal interface ITypedObject
     {
         /// <summary>
-        /// The enum type of this object. Don't use _* enum properties.
+        /// The native type of this object.
         /// </summary>
         public IslType Type { get; }
 

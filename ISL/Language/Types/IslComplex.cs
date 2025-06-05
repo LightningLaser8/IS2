@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace ISL.Language.Types
 {
-    public class IslComplex : IslValue, ITypedObject<IslComplex, Complex>, IIslAddable, IIslDivisible, IIslMultiplicable, IIslSubtractable, IIslExponentiable, IIslTriggable, IIslCastable, IIslEquatable
+    public class IslComplex : IslValue, ITypedObject<IslComplex, Complex>, IIslAddable, IIslDivisible, IIslMultiplicable, IIslSubtractable, IIslExponentiable, IIslTriggable, IIslConvertible, IIslEquatable
     {
         public override IslType Type => IslType.Complex;
         public Complex Value { get; }
@@ -109,7 +109,7 @@ namespace ISL.Language.Types
             return new IslComplex(Complex.Atan(Value));
         }
 
-        public IslValue Cast(IslType type)
+        public IslValue Convert(IslType type)
         {
             if (type == IslType.Int) return new IslInt((long)Value.Real);
             if (type == IslType.Float) return new IslFloat(Value.Real);

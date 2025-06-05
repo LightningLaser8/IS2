@@ -111,25 +111,13 @@ This makes it possible to inline almost everything in the language, substantiall
 `<col> <~ <value>` Appends \<value> to the end of \<col>. Returns the collection.  
 `<col> at <index>`, Returns the element at index \<index> of the collection \<col>. Can be used to search strings.
 
-##### Types:
+##### Type Conversion:
 
-`<value> -> <type>`, Returns \<value> cast to type \<type>. \<type> must be a capitalised type name, such as `String` or `Int`.
+`<value> -> <type>`, Returns \<value> as an instance of type \<type>. \<type> must be a valid type name, such as `string` or `int`. Will throw an error if the conversion is nonsense, such as `12.5 -> group`.  
+`<value> ~> <type>`, The same as `<value> -> <type>`, except invalid operations will not throw errors, and will instead use the default value for a variable of type \<type>. (e.g. `12.5 ~> group` returns `[]`, instead of throwing an error.)  
 
 ##### Variables:
 
-**Technically operators**  
-`string <name>` Creates and returns a string variable with name \<name>.  
-`int <name>` Creates and returns a 64-bit integer variable with name \<name>.  
-`float <name>` Creates and returns a double-precision floaring point number variable with name \<name>.  
-`complex <name>` Creates and returns a complex number variable with name \<name>.  
-`bool <name>` Creates and returns a Boolean variable with name \<name>.  
-`group <name>` Creates and returns a collection variable with name \<name>.  
-`infer <name>` Creates and returns a variable with name \<name>. The type is inferred on first assignment to the variable.  
-**The next 4 operators can only be used before a variable declaration, in this order (right to left):**  
-**`imply string v`, `out imply string v`, `out string v` are correct, but `imply out string v` is not.**
-
-`imply <declaration>` Modifies a variable to automatically cast values to its type on assignment. Cannot be used with `infer`.  
-`const <declaration>` Makes a variable read-only.  
 `out <declaration>` Sets a variable to be output on program end.  
 `in <declaration>` Sets a variable to an input of the same name.
 
@@ -137,8 +125,24 @@ This makes it possible to inline almost everything in the language, substantiall
 
 `( ... )` Bracket expression: Encapsulates an expression, causing it to be evaluated first.  
 `[ ... , ... ]` Collection expression: Combines multiple expressions into a group structure.  
-`{ ... }` Code block: Evaluates multiple expressions, and returns the result of the final one.  
-`\ ... \` Variable getter: Returns the value of the variable at the result of the contained expression.
+`{ ... }` Code block: Evaluates multiple expressions, and returns the result of the final one. Creates a new scope for variables.  
+`\ ... \` Variable getter: Returns the value of the variable at the result of the contained expression.  
+`<modifier?> <type> <name>` Variable declaration. Adds a variable with name \<name> and type \<type> to the current scope, optionally modified by \<modifier>.  
+
+##### Native Types:
+
+`string` A collection of characters.  
+`int` A 64-bit integral number.  
+`float` A double-precision floaring point number.  
+`complex` A complex number, where the real and imaginary parts are both `float`s.  
+`bool` A Boolean value (`true` or `false`).  
+`group`A generic untyped collection of values.  
+`infer` Nothing, until any value is set, at which point it becomes that type (`infer foo = 3` makes `foo` an `int`, as `3` is an `int`, so has the same effect as `int foo`).
+
+##### Modifiers
+
+`imply` Modifies a variable to automatically cast values to its type on assignment. Cannot be used with `infer`.  
+`const` Makes a variable read-only. Cannot be used with `infer` or `imply`.  
 
 #### Comments:
 
@@ -219,7 +223,7 @@ class Block {
   public long height;
   public double health;
   public override string ToString() =>
-    $Block {width}x{height}: {health}
+    $"Block {width}x{height}: {health}"
 }
 class Item {}
 /*
@@ -230,11 +234,11 @@ ModLoader.types.Add(item, typeof(Item));
 
 //Modloader Setup
 var content = new Registry(); //Use the non-generic ExpandoObject registry
-ModLoader.AddModdableRegistry(content, content
+ModLoader.AddModdableRegistry("content", content);
 ModLoader.SetPrefix(true);
 
 //Tests
-ModLoader.Add(./mod
+ModLoader.Add("./mod");
 content.ForEach(x => Console.WriteLine(ModLoader.Construct\<Block>(x).ToString()));
 ```
 
@@ -305,7 +309,10 @@ It consists of a _single array_, each entry being an object with these three pro
 The `scripts` version is defined similarly, but instead as an array of strings:
 
 ```json
-["./load.isl", "./player/damage.isl"]
+[
+  "./load.isl", 
+  "./player/damage.isl"
+]
 ```
 
 where each line is a path to a script file. The path may exclude the `.isl` file extension, in which case one will be appended for you.
@@ -423,19 +430,19 @@ public static readonly Registry\<Type> types
 ```c#
 public static object Construct(ExpandoObject source, Type type);
 
-public static T? Construct\<T>(ExpandoObject source) where T : class;
+public static T? Construct<T>(ExpandoObject source) where T : class;
 
-public static object Construct(string sourceName, Registry\<ExpandoObject> source, Type type);
+public static object Construct(string sourceName, Registry<ExpandoObject> source, Type type);
 
-public static T? Construct\<T>(string sourceName, Registry\<ExpandoObject> source) where T : class;
+public static T? Construct<T>(string sourceName, Registry<ExpandoObject> source) where T : class;
 
 public static object Construct(string sourceName, string registry, Type type);
 
-public static T? Construct\<T>(string sourceName, string registry) where T : class;
+public static T? Construct<T>(string sourceName, string registry) where T : class;
 
 public static object Construct(string sourceName, Type type);
 
-public static T? Construct\<T>(string sourceName) where T : class;
+public static T? Construct<T>(string sourceName) where T : class;
 ```
 
 ### Classes
@@ -450,7 +457,7 @@ public class Content
   public ExpandoObject constructible;
   public string JSON;
   public void Implement();
-  public T? Construct\<T>() where T : class, IConstructible, new();
+  public T? Construct<T>() where T : class, IConstructible, new();
 }
 ```
 
@@ -464,7 +471,7 @@ public class Content
 #### Integrate.ModContent.ModContent.ISL.Script
 
 ```c#
-public class Script(string source, string location = "\<anonymous>")
+public class Script(string source, string location = "<anonymous>")
 {
   public string Location;
   public string[] GetMetadata(string tag);
@@ -507,17 +514,17 @@ public class Mod
 #### Integrate.Registry.Registry
 
 ```c#
-public class Registry\<T> where T : notnull
+public class Registry<T> where T : notnull
 {
-    private readonly Dictionary\<string, T> content;
+    private readonly Dictionary<string, T> content;
     public int Size;
     public void Add(string name, T item);
     public bool Has(string name);
     public T Get(string name);
     public void Rename(string name, string newName);
     public void Alias(string name, string otherName);
-    public void ForEach(Action\<string, T> action);
-    public async void ForEachAsync(Action\<string, T> action);
+    public void ForEach(Action<string, T> action);
+    public async void ForEachAsync(Action<string, T> action);
     public T At(int index);
     public static bool IsValidName(string name);
 }

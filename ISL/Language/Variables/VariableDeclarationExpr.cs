@@ -20,7 +20,7 @@ namespace ISL.Language.Variables
         public IslValue initialValue = IslValue.Null;
         public override IslValue Eval(IslProgram program)
         {
-            var vari = initialValue == IslValue.Null ? program.CreateVariable(name, IsTypeImplied ? IslType.Null : varType) : program.CreateVariable(name, varType, initialValue);
+            var vari = initialValue == IslValue.Null ? program.CurrentScope.CreateVariable(name, IsTypeImplied ? IslType.Null : varType) : program.CurrentScope.CreateVariable(name, varType, initialValue);
             vari.ImpliedType = IsTypeImplied;
             vari.ReadOnly = IsReadOnly;
             vari.InferType = IsTypeInferred;
@@ -34,7 +34,7 @@ namespace ISL.Language.Variables
         {
             return Stringify();
         }
-        public override string Stringify() => $@"{(IsReadOnly ? "const " : IsTypeImplied ? "imply " : "")}{(IsTypeInferred ? $"infer" : varType)} {name}";
+        public override string Stringify() => $@"{(IsReadOnly ? "const " : IsTypeImplied ? "imply " : "")}{(IsTypeInferred ? "infer" : varType)} {name}";
         public override void Validate()
         {
             if (IsTypeImplied && IsTypeInferred) throw new SyntaxError("A variable declaration cannot be both type- implied and inferred");

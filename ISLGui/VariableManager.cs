@@ -1,5 +1,7 @@
-﻿using ISL.Interpreter;
+﻿using ISL;
+using ISL.Interpreter;
 using ISL.Language.Types;
+using ISL.Language.Types.Collections;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -18,7 +20,7 @@ namespace ISLGui
     }
     internal class VariableManager
     {
-        private List<InVariable> ins = [];
+        private readonly List<InVariable> ins = [];
         public void RemoveAllVars()
         {
             ins.Clear();
@@ -26,23 +28,17 @@ namespace ISLGui
         public void AddVariable(string type, string name, string value)
         {
             if (type is null || type.Length == 0) return;
-            var itype = IslValue.GetTypeFromName(type);
+            var def = IslInterface.GetNativeIslValue(type);
+            var itype = def.Type;
             if (name.Trim().Length == 0) return;
-            if (value.Trim().Length == 0) value = IslValue.DefaultForType(itype).Stringify();
-
+            if (value.Trim().Length == 0) value = def.Stringify();
             try
             {
                 ins.Add(new()
                 {
                     Name = name,
                     Type = itype,
-                    Value = (
-                    type == "String" ? IslString.FromString('"' + value + '"')
-                    : type == "Int" ? IslInt.FromString(value)
-                    : type == "Float" ? IslFloat.FromString(value)
-                    : type == "Bool" ? IslBool.FromString(value)
-                    : IslValue.Null
-                    )
+                    Value = AnyFromString(value, itype)
                 });
             }
             catch (Exception e)
@@ -140,5 +136,20 @@ namespace ISLGui
         }
         public delegate void VariableButtonEventHandler(InVariable var);
         public event VariableButtonEventHandler VarButtonClicked = (v) => { };
+
+        public static IslValue AnyFromString(string str, IslType type)
+        {
+            return type switch
+            {
+                IslType.Null => IslValue.Null,
+                IslType.Int => IslInt.FromString(str),
+                IslType.Float => IslFloat.FromString(str),
+                IslType.Complex => IslComplex.FromString(str),
+                IslType.String => IslString.FromString($"\"{str}\""),
+                IslType.Group => IslGroup.FromString(str),
+                IslType.Bool => IslBool.FromString(str),
+                _ => throw new NotImplementedException(),
+            };
+        }
     }
 }

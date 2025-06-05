@@ -15,7 +15,7 @@ namespace ISL.Language.Variables
         public override IslValue Eval(IslProgram program)
         {
             if (variable.Length == 0) throw new InvalidReferenceError("Variable expression refers to nothing!");
-            return program.GetVariableImperative(variable).Value;
+            return program.CurrentScope.GetVariableImperative(variable).Value;
         }
         public override Expression Simplify()
         {

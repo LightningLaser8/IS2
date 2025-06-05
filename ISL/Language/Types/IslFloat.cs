@@ -7,7 +7,7 @@ namespace ISL.Language.Types
     /// <summary>
     /// Represents a 64-bit floating-point number in ISL.
     /// </summary>
-    public class IslFloat : IslValue, ITypedObject<IslFloat, double>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslDivisible, IIslExponentiable, IIslModulatable, IIslFloatPropertyExtractable, IIslTriggable, IIslEquatable, IIslCastable
+    public class IslFloat : IslValue, ITypedObject<IslFloat, double>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslDivisible, IIslExponentiable, IIslModulatable, IIslFloatPropertyExtractable, IIslTriggable, IIslEquatable, IIslConvertible
     {
         public override IslType Type => IslType.Float;
 
@@ -159,7 +159,7 @@ namespace ISL.Language.Types
             return new IslInt(ExtractBits().exponent);
         }
 
-        public IslValue Cast(IslType type)
+        public IslValue Convert(IslType type)
         {
             if (type == IslType.Int) return new IslInt((long)Value);
             if (type == IslType.Complex) return new IslComplex(Value);
@@ -187,7 +187,7 @@ namespace ISL.Language.Types
             // bit to the front of the mantissa
             else
             {
-                mantissa = mantissa | (1L << 52);
+                mantissa |= (1L << 52);
             }
 
             // Bias the exponent. It's actually biased by 1023, but we're

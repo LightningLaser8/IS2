@@ -11,9 +11,7 @@ namespace ISLTest
         static IslInterface? @interface;
         static IslProgram? program;
         static string debugOutput = " ";
-        static string runOutput = " ";
         static bool debug = false;
-        static bool verboseDebug = false;
         static bool saveProgram = false;
         static bool cacheProgram = false;
         static string output = "";
@@ -102,7 +100,7 @@ namespace ISLTest
             fileCommand.SetHandler((file, debug) =>
             {
                 IslTestRuntime.debug = (int)debug > 0;
-                IslTestRuntime.verboseDebug = (int)debug > 1;
+                IslTestRuntime.debug = (int)debug > 1;
                 FileMode(file!);
             },
             fileOption, debugOption);
@@ -110,7 +108,7 @@ namespace ISLTest
             directCommand.SetHandler((debug, save, cache, outp) =>
             {
                 IslTestRuntime.debug = (int)debug > 0;
-                IslTestRuntime.verboseDebug = (int)debug > 1;
+                IslTestRuntime.debug = (int)debug > 1;
                 saveProgram = save;
                 cacheProgram = cache;
                 output = Path.Combine(AppDataPath, outp.Name);
@@ -131,9 +129,9 @@ namespace ISLTest
             var interpreter = new IslInterface();
             try
             {
-                var prog = interpreter.CreateProgram(source, debug);
+                var prog = interpreter.CreateProgram(source);
                 Console.WriteLine("---------------------------\n");
-                if (verboseDebug)
+                if (debug)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.Write(string.Join('\n', interpreter.LastDebug.Split('\n').Select(x => "  " + x)) + "\n");
@@ -144,7 +142,7 @@ namespace ISLTest
                 if (debug)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.Write(string.Join('\n', interpreter.CompilerDebug.Split('\n').Select(x => "  " + x)) + "\n");
+                    Console.Write("Runtime debug has been removed for performance reasons.\n");
                     Console.ResetColor();
                     Console.WriteLine("---------------------------\n");
                 }
@@ -163,7 +161,7 @@ namespace ISLTest
             }
             catch (Exception e)
             {
-                if (verboseDebug)
+                if (debug)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.Write(string.Join('\n', interpreter.LastDebug.Split('\n').Select(x => "  " + x)) + "\n");
@@ -186,6 +184,11 @@ namespace ISLTest
         {
             string source = "";
             WriteInstructions();
+
+
+            WriteSeparator($" default for type {IslInterface.GetNativeIslValue("object")} ");
+
+
             bool repeat = true;
             while (repeat)
             {
@@ -233,7 +236,7 @@ namespace ISLTest
                         {
                             try
                             {
-                                program = @interface.CreateProgram(source, debug);
+                                program = @interface.CreateProgram(source);
                             }
                             catch (Exception e)
                             {
@@ -247,7 +250,6 @@ namespace ISLTest
                             program.AddInput("saves", saveProgram);
                             program.AddInput("caches", cacheProgram);
                             program.SafeExecute();
-                            runOutput = @interface.CompilerDebug;
                         }
                         ShowResult(debug);
                         if (saveProgram) SaveProgram(source);
@@ -388,15 +390,10 @@ namespace ISLTest
             }
             if (debug)
             {
-                if (debugOutput.Length > 0 && verboseDebug)
+                if (debugOutput.Length > 0 && debug)
                 {
                     WriteSeparator("  -   ------ Debug -----   - ");
                     WriteISLOutput(debugOutput);
-                }
-                if (runOutput.Length > 0)
-                {
-                    WriteSeparator("  -   ---- Run Debug ---   - ");
-                    WriteISLOutput(runOutput);
                 }
             }
             if (program is null)

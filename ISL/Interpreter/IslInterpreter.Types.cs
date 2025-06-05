@@ -1,12 +1,7 @@
-﻿using ISL.Language.Operations;
-using ISL.Language.Types;
+﻿using ISL.Language.Types;
 using ISL.Language.Types.Classes;
+using ISL.Language.Types.Collections;
 using ISL.Runtime.Errors;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ISL.Interpreter
 {
@@ -21,8 +16,10 @@ namespace ISL.Interpreter
             ["complex"] = () => new IslComplex(),
             ["bool"] = () => IslBool.False,
             ["infer"] = () => new IslNull(),
+            ["group"] = () => new IslGroup(),
             //not fully implemented
             ["func"] = () => new IslFunction(),
+            //very not implemented
             ["class"] = () => new IslClass()
         };
 

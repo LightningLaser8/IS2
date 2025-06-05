@@ -4,7 +4,7 @@ using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
 {
-    public class IslString : IslValue, ITypedObject<IslString, string>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslCastable, IIslEquatable, IIslIndexable, IIslAppendable
+    public class IslString : IslValue, ITypedObject<IslString, string>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslConvertible, IIslEquatable, IIslIndexable, IIslAppendable
     {
         public override IslType Type => IslType.String;
 
@@ -60,7 +60,7 @@ namespace ISL.Language.Types
             throw new TypeError($"Cannot multiply a {this.Type} by a {value.Type}");
         }
 
-        public IslValue Cast(IslType type)
+        public IslValue Convert(IslType type)
         {
             if (type == IslType.Int) return IslInt.FromString(Value);
             if (type == IslType.Float) return IslFloat.FromString(Value);

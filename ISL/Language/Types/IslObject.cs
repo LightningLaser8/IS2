@@ -1,10 +1,5 @@
 ﻿using ISL.Interpreter;
 using ISL.Language.Types.Classes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ISL.Language.Types
 {
@@ -26,11 +21,11 @@ namespace ISL.Language.Types
         }
         public IslValue Get(IslProgram program, string name)
         {
-            return this.Class.Get(program, name, this);
+            return Class.Get(program, name, this);
         }
         public IslValue Set(IslProgram program, string name, IslValue newValue)
         {
-            return this.Class.Set(program, name, newValue, this);
+            return Class.Set(program, name, newValue, this);
         }
     }
 }

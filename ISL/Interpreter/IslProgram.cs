@@ -38,22 +38,23 @@ namespace ISL.Interpreter
         }
         private readonly Dictionary<string, string> meta = [];
 
-        internal IslProgram(List<Expression> code, Dictionary<string, string> meta)
+        internal IslProgram(List<Expression> code, Dictionary<string, string> meta) : this(code)
         {
-            codePoints = code;
             this.meta = meta;
         }
-        internal IslProgram(List<Expression> code)
+        internal IslProgram(List<Expression> code) : this()
         {
             codePoints = code;
         }
-        public IslProgram() { }
+        public IslProgram()
+        {
+            CurrentScope = GlobalScope;
+        }
         private readonly List<Expression> codePoints = [];
 
         public Dictionary<string, IslValue> LastOutputs => outputs;
-#pragma warning disable IDE0306 // Simplify collection initialization
         public Dictionary<string, object?> LastCLROutputs => new(outputs.Select(kvp => new KeyValuePair<string, object?>(kvp.Key, kvp.Value.ToCLR())));
-#pragma warning restore IDE0306 // Simplify collection initialization
+
         private Dictionary<string, IslValue> outputs = [];
         public IslValue LastResult => result;
         private IslValue result = IslValue.Null;
@@ -71,8 +72,8 @@ namespace ISL.Interpreter
             {
                 result = point.Eval(this);
             }
-            Vars.Clear();
             CreateOutputs();
+            GlobalScope.Reset();
             return result;
         }
         /// <summary>
@@ -83,7 +84,7 @@ namespace ISL.Interpreter
         {
             try
             {
-                result = this.Execute();
+                result = Execute();
                 return result;
             }
             catch (IslError e)
@@ -124,54 +125,25 @@ namespace ISL.Interpreter
 
         private void CreateOutputs()
         {
-#pragma warning disable IDE0306 // Simplify collection initialization, literally impossible here
-            outputs = new(Vars.Where(kvp => Outs.Contains(kvp.Key)).Select(kvp2 => new KeyValuePair<string, IslValue>(kvp2.Key, kvp2.Value.Value)));
-#pragma warning restore IDE0306
+            outputs = Outs.Select(x => new KeyValuePair<string, IslValue>(x.Name, x.Value)).ToDictionary();
+            //new(GlobalScope.Vars.Where(kvp => Outs.Contains(kvp.Key)).Select(kvp2 => new KeyValuePair<string, IslValue>(kvp2.Key, kvp2.Value.Value)));
         }
 
         internal Dictionary<string, IslValue> Ins { get; } = [];
-        internal Dictionary<string, IslVariable> Vars { get; } = [];
-        internal List<string> Outs { get; } = [];
-        internal void OutputVariable(string name)
+        //internal Dictionary<string, IslVariable> Vars { get; } = [];
+
+        public IslVariableScope GlobalScope { get; init; } = new();
+        internal IslVariableScope CurrentScope { get; set; }
+        internal List<IslVariable> Outs { get; } = [];
+        internal void OutputVariable(IslVariable ivar)
         {
-            Outs.Add(name);
+            Outs.Add(ivar);
         }
-        public IslVariable CreateVariable(string name, IslType type, IslValue value)
-        {
-            IslVariable vari = new(name, type)
-            {
-                Value = value
-            };
-            if (Vars.ContainsKey(name)) throw new InvalidReferenceError(name + " already exists! It's a " + GetVariable(name)?.VarType);
-            Vars.Add(name, vari);
-            return vari;
-        }
-        public IslVariable CreateVariable(string name, IslType type)
-        {
-            IslVariable vari = new(name, type);
-            if (Vars.ContainsKey(name)) throw new InvalidReferenceError(name + " already exists! It's a " + GetVariable(name)?.VarType);
-            Vars.Add(name, vari);
-            return vari;
-        }
-        public IslValue SetVariable(string name, IslValue value)
-        {
-            var vari = GetVariableImperative(name);
-            vari.Value = value;
-            return value;
-        }
-        public void DeleteVariable(string name)
-        {
-            Vars.Remove(name);
-        }
-        public IslVariable? GetVariable(string name)
-        {
-            Vars.TryGetValue(name, out var islVariable);
-            return islVariable;
-        }
-        public IslVariable GetVariableImperative(string name)
-        {
-            if (!Vars.TryGetValue(name, out var islVariable)) throw new InvalidReferenceError($"Variable '{name}' doesn't exist.");
-            return islVariable;
-        }
+        public IslVariable CreateVariable(string name, IslType type, IslValue value) => GlobalScope.CreateVariable(name, type, value);
+        public IslVariable CreateVariable(string name, IslType type) => GlobalScope.CreateVariable(name, type);
+        public IslValue SetVariable(string name, IslValue value) => GlobalScope.SetVariable(name, value);
+        public void DeleteVariable(string name) => GlobalScope.DeleteVariable(name);
+        public IslVariable? GetVariable(string name) => GlobalScope.GetVariable(name);
+        public IslVariable GetVariableImperative(string name) => GlobalScope.GetVariableImperative(name);
     }
 }

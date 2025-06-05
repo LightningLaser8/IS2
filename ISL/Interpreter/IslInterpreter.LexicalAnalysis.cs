@@ -8,9 +8,9 @@ namespace ISL.Interpreter
         private void RemoveComments()
         {
             source = Regexes.comments.Replace(source, "");
-            Debug("Line comments removed.");
+            IslDebugOutput.Debug("Line comments removed.");
             source = Regexes.blockComments.Replace(source, "");
-            Debug("Block comments removed.");
+            IslDebugOutput.Debug("Block comments removed.");
         }
         private void Tokenise()
         {
@@ -25,7 +25,7 @@ namespace ISL.Interpreter
                     if (currentToken != "")
                     {
                         tokens.Add(currentToken);
-                        Debug("Split on space: " + currentToken);
+                        IslDebugOutput.Debug("Split on space: " + currentToken);
                         currentToken = "";
                     }
                 }
@@ -34,7 +34,7 @@ namespace ISL.Interpreter
                     if (currentToken != "")
                     {
                         tokens.Add(isString ? '"' + currentToken + '"' : currentToken);
-                        Debug("Split on quote: " + currentToken);
+                        IslDebugOutput.Debug("Split on quote: " + currentToken);
                         currentToken = "";
                     }
                     isString = !isString;
@@ -44,7 +44,7 @@ namespace ISL.Interpreter
                     if (currentToken != "")
                     {
                         tokens.Add(currentToken);
-                        Debug("Split on semicolon: " + currentToken);
+                        IslDebugOutput.Debug("Split on semicolon: " + currentToken);
                         currentToken = "";
                     }
                     tokens.Add(";");
@@ -54,7 +54,7 @@ namespace ISL.Interpreter
                     if (currentToken != "")
                     {
                         tokens.Add(currentToken);
-                        Debug("Split on comma: " + currentToken);
+                        IslDebugOutput.Debug("Split on comma: " + currentToken);
                         currentToken = "";
                     }
                     tokens.Add(",");
@@ -64,7 +64,7 @@ namespace ISL.Interpreter
                     if (currentToken != "")
                     {
                         tokens.Add(currentToken);
-                        Debug("Split on operator: " + currentToken);
+                        IslDebugOutput.Debug("Split on operator: " + currentToken);
                         currentToken = $"{c}";
                     }
                 }
@@ -73,7 +73,7 @@ namespace ISL.Interpreter
                     if (currentToken != "")
                     {
                         tokens.Add(currentToken);
-                        Debug("Split on bracket: " + c);
+                        IslDebugOutput.Debug("Split on bracket: " + c);
                         currentToken = "";
                     }
                     tokens.Add(new string(c, 1));
@@ -86,25 +86,25 @@ namespace ISL.Interpreter
             if (currentToken != "")
             {
                 tokens.Add(currentToken);
-                Debug("Split on program end: " + currentToken);
+                IslDebugOutput.Debug("Split on program end: " + currentToken);
             }
         }
         private void ProcessMetadata()
         {
-            Debug("Source: \n" + source.Replace("\n", "\\n"));
+            IslDebugOutput.Debug("Source: \n" + source.Replace("\n", "\\n"));
             MatchCollection matches = Regexes.metadata.Matches(source);
             if (matches.Count == 0)
             {
-                Debug("  No tags.");
+                IslDebugOutput.Debug("  No tags.");
                 return;
             }
             foreach (Match match in matches)
             {
-                Debug("  Metadata tag: " + match.ToString());
+                IslDebugOutput.Debug("  Metadata tag: " + match.ToString());
                 DealWithMeta(match.ToString()[1..^1]);
             }
             source = Regexes.metadata.Replace(source, "");
-            Debug("  Removed tags from source code.\n  Source is now: \n  " + source.Replace("\n", "\\n"));
+            IslDebugOutput.Debug("  Removed tags from source code.\n  Source is now: \n  " + source);
         }
 
         private void DealWithMeta(string contents)
@@ -116,8 +116,8 @@ namespace ISL.Interpreter
                 metas.Add(naem, "");
                 return;
             }
-            string vals = string.Join('c', content[1..]);
-            Debug($"  Tag '{naem}' has value '{vals}'");
+            string vals = string.Join(' ', content[1..]);
+            IslDebugOutput.Debug($"  Tag '{naem}' has value '{vals}'");
             if (metas.ContainsKey(naem)) throw new SyntaxError("There is already a definition for tag " + naem);
             metas.Add(naem, vals);
         }

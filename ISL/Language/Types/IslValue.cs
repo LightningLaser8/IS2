@@ -10,7 +10,7 @@ namespace ISL.Language.Types
     public abstract class IslValue : ITypedObject
     {
         public static IslNull Null { get; } = new IslNull();
-        public virtual IslType Type { get; protected set; } = IslType.Null;
+        public virtual IslType Type => IslType.Null;
 
         public abstract string Stringify();
 
@@ -28,11 +28,12 @@ namespace ISL.Language.Types
                 IslType.Object => new IslObject(),
                 IslType.Class => new IslClass(),
                 IslType.Identifier => new IslIdentifier(),
+                IslType.Function => new IslFunction(),
                 IslType.Token => throw new TypeError("I'm not sure what's going on here, you just tried to cast to a token."),
                 _ => throw new NotImplementedException(),
             };
         }
-        [Obsolete("Replaced with IslInterpreter.GetNativeType(string name)")]
+        [Obsolete("Replace with 'IslInterpreter.GetNativeType(...)().Type' or 'IslInterface.GetNativeIslType(...)'")]
         public static IslType GetTypeFromName(string typename)
         {
             return typename switch
