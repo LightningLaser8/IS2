@@ -20,7 +20,7 @@ namespace ISL.Interpreter
             Brackets = [
                 new BracketType('(', ')', (expr) => {
                     if(expr.Count > 1) throw new SyntaxError("Round brackets ( .. ) can only contain one expression!");
-                    return new PackagedExpression() { expression = expr[0] };
+                    return new BracketedExpression() { expression = expr[0] };
                 }),
                 new BracketType('[', ']', (expr) => {
                     return new CollectionExpression() { expressions = expr };

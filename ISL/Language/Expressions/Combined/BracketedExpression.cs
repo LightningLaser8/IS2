@@ -6,7 +6,7 @@ namespace ISL.Language.Expressions.Combined
     /// <summary>
     /// An expression wrapped by some brackets.
     /// </summary>
-    internal class PackagedExpression : Expression
+    internal class BracketedExpression : Expression
     {
         public required Expression expression;
         public override IslValue Eval(IslProgram program)
@@ -20,12 +20,14 @@ namespace ISL.Language.Expressions.Combined
         }
         public override string ToString()
         {
-            return $"(( {expression} ))";
+            return $"( {expression} )";
         }
         public override void Validate()
         {
             expression.Validate();
         }
-        public override string Stringify() => $"{this}";
+        public override string Stringify() => ToString();
+
+        public override bool Equals(Expression? other) => expression.Equals(other);
     }
 }

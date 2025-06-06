@@ -41,5 +41,6 @@ namespace ISL.Language.Variables
             if (IsTypeImplied && IsReadOnly) throw new SyntaxError("A variable declaration cannot be type-implied and readonly");
             if (IsTypeInferred && IsReadOnly) throw new SyntaxError("A variable declaration cannot be type-inferred and readonly");
         }
+        public override bool Equals(Expression? other) => other is VariableDeclarationExpr ib && ib.name == name; //Name's all that matters
     }
 }

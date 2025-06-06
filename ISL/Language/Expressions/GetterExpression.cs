@@ -32,5 +32,7 @@ namespace ISL.Language.Expressions
         }
 
         public override string Stringify() => $@"\{NameProvider?.Stringify()}\";
+
+        public override bool Equals(Expression? other) => other is GetterExpression ib && (ib.NameProvider?.Equals(NameProvider) ?? false);
     }
 }

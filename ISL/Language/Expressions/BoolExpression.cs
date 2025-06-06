@@ -15,5 +15,7 @@ namespace ISL.Language.Expressions
             return $"(Bool) {value.Stringify()}";
         }
         public override string Stringify() => value ? "true" : "false";
+
+        public override bool Equals(Expression? other) => other is BoolExpression ib && ib.value == value;
     }
 }

@@ -50,5 +50,6 @@ namespace ISL.Language.Expressions
             }
             return str;
         }
+        public override bool Equals(Expression? other) => other is NAryOperatorExpression no && no.affected.SequenceEqual(affected) && no.Operation == Operation;
     }
 }

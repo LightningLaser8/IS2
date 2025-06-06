@@ -6,7 +6,7 @@ using ISL.Language.Types;
 
 namespace ISL.Language.Expressions
 {
-    internal abstract class Expression
+    internal abstract class Expression : IEquatable<Expression>
     {
         public static Expression From(string token, IslInterpreter interpreter)
         {
@@ -68,5 +68,11 @@ namespace ISL.Language.Expressions
         public abstract string Stringify();
         public virtual void Validate() { }
         public virtual void Reset() { }
+
+        public virtual bool Equals(Expression? other) => false;
+
+        public override bool Equals(object? obj) => Equals(obj as Expression);
+
+        public override int GetHashCode() => base.GetHashCode();
     }
 }

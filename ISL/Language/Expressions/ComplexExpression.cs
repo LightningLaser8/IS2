@@ -15,5 +15,6 @@ namespace ISL.Language.Expressions
         }
 
         public override string Stringify() => $"{value.Value.Real} + {value.Value.Imaginary}i";
+        public override bool Equals(Expression? other) => other is ComplexExpression ib && ib.value == value;
     }
 }

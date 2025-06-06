@@ -13,5 +13,6 @@ namespace ISL.Language.Expressions
             return "(Null) null";
         }
         public override string Stringify() => $"null";
+        public override bool Equals(Expression? other) => other is NullExpression;
     }
 }

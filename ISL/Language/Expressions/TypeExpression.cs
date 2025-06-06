@@ -12,8 +12,9 @@ namespace ISL.Language.Expressions
 
         public override string ToString()
         {
-            return $"(Identifier) {value.Stringify()}";
+            return $"(Type Identifier) {value.Stringify()}";
         }
         public override string Stringify() => $"{value.Stringify()}";
+        public override bool Equals(Expression? other) => other is TypeExpression ib && ib.value == value;
     }
 }

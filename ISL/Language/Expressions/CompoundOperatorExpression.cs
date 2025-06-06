@@ -73,5 +73,11 @@ namespace ISL.Language.Expressions
             return resolved ? (isNotBinary ? Operation.UnaryOperator : Operation.BinaryOperator) : Operation;
         }
         public override string Stringify() => resolved ? (isNotBinary ? $"{value.Stringify()} {affectedRequired?.Stringify()}" : $"{affectedOptional?.Stringify()} {value.Stringify()} {affectedRequired?.Stringify()}") : $"({affectedOptional?.Stringify()})? {value.Stringify()} {affectedRequired?.Stringify()}";
+        public override bool Equals(Expression? other)
+            => other is CompoundOperatorExpression ib && ib.Operation == Operation && (ib.affectedOptional?.Equals(affectedOptional) ?? false) && (ib.affectedRequired?.Equals(affectedRequired) ?? false)
+            //Honestly, I don't think i really need this, but here it is anyway
+            || (resolved && !isNotBinary && other is BinaryOperatorExpression be && be.Operation == Operation.BinaryOperator && (be.affectedL?.Equals(affectedOptional) ?? false) && (be.affectedR?.Equals(affectedRequired) ?? false))
+            //Couldn't add binaries without unaries too
+            || (resolved && isNotBinary && other is UnaryOperatorExpression ue && ue.Operation == Operation.UnaryOperator && (ue.affected?.Equals(affectedRequired) ?? false));
     }
 }

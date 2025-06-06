@@ -11,6 +11,9 @@ namespace ISL.Language.Expressions.Combined
     internal class BracketExpression : Expression
     {
         public required BracketType bracket;
+
+        public override bool Equals(Expression? other) => other is BracketExpression be && be.bracket == bracket;
+
         public override IslValue Eval(IslProgram program)
         {
             throw new SyntaxError("Unresolved bracket expression!");

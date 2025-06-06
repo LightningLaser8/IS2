@@ -44,5 +44,6 @@ namespace ISL.Language.Expressions
         }
 
         public override string Stringify() => affectedL?.Stringify() + " " + value.Stringify() + " " + affectedR?.Stringify();
+        public override bool Equals(Expression? other) => other is BinaryOperatorExpression ib && ib.Operation == Operation && (ib.affectedL?.Equals(affectedL) ?? false) && (ib.affectedR?.Equals(affectedR) ?? false);
     }
 }

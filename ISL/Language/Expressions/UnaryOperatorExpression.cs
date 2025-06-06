@@ -27,10 +27,7 @@ namespace ISL.Language.Expressions
             return this;
         }
 
-        public override Operator? GetOp()
-        {
-            return this.Operation;
-        }
+        public override Operator? GetOp() => Operation;
         public override void Validate()
         {
             if (Operation.ValidatesExprs)
@@ -38,5 +35,6 @@ namespace ISL.Language.Expressions
             if (affected is null) throw new SyntaxError($"Unary operator {value.Stringify()} requires an input, operand is missing!");
         }
         public override string Stringify() => $"{value.Stringify()} {affected?.Stringify()}";
+        public override bool Equals(Expression? other) => other is UnaryOperatorExpression ib && ib.Operation == Operation && (ib.affected?.Equals(affected) ?? false);
     }
 }

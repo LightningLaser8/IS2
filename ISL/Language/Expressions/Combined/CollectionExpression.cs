@@ -47,5 +47,8 @@ namespace ISL.Language.Expressions.Combined
         {
             return $"[{string.Join(", ", expressions.Select(x => x.Stringify()))}]";
         }
+
+        public override bool Equals(Expression? other) => other is CollectionExpression ce && expressions.SequenceEqual(ce.expressions);
+        
     }
 }
