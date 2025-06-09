@@ -1,6 +1,7 @@
 using ISL;
 using ISL.Interpreter;
 using ISL.Language.Types;
+using ISL.Runtime.Errors;
 using Microsoft.UI;
 using Microsoft.UI.Text;
 using Microsoft.UI.Windowing;
@@ -44,15 +45,15 @@ namespace ISLGui
                 appWindow.SetIcon(@"Assets\infinity-icon.ico");
             }
             //Set highlight colors
-            islHighlighter.SetSyntaxColor(TokenType.Numeric, Color.FromArgb(255, 157, 182, 131));
+            islHighlighter.SetSyntaxColor(TokenType.Numeric, Color.FromArgb(255, 134, 198, 142));
             islHighlighter.SetSyntaxColor(TokenType.String, Color.FromArgb(255, 214, 157, 133));
-            islHighlighter.SetSyntaxColor(TokenType.Identifier, Color.FromArgb(255, 139, 212, 235));
+            islHighlighter.SetSyntaxColor(TokenType.Identifier, Color.FromArgb(255, 155, 220, 255));
             islHighlighter.SetSyntaxColor(TokenType.Getter, Color.FromArgb(255, 214, 157, 235));
             islHighlighter.SetSyntaxColor(TokenType.Operator, Color.FromArgb(255, 128, 128, 128));
             islHighlighter.SetSyntaxColor(TokenType.SpecialOperator, Color.FromArgb(255, 71, 141, 210));
-            islHighlighter.SetSyntaxColor(TokenType.NativeType, Color.FromArgb(255, 134, 198, 142));
+            islHighlighter.SetSyntaxColor(TokenType.NativeType, Color.FromArgb(255, 19, 163, 216));
             islHighlighter.SetSyntaxColor(TokenType.Class, Color.FromArgb(255, 78, 188, 129));
-            islHighlighter.SetSyntaxColor(TokenType.Keyword, Color.FromArgb(255, 188, 155, 223));
+            islHighlighter.SetSyntaxColor(TokenType.Keyword, Color.FromArgb(255, 198, 135, 255));
             islHighlighter.SetSyntaxColor(TokenType.Comment, Color.FromArgb(255, 73, 107, 35));
             islHighlighter.SetSyntaxColor(TokenType.MetaTag, Color.FromArgb(255, 100, 230, 255));
             islHighlighter.SetSyntaxColor(TokenType.Function, Color.FromArgb(255, 220, 218, 155));
@@ -249,7 +250,7 @@ namespace ISLGui
             {
                 return iint.CreateProgram(TextInput.Text);
             }
-            catch { }
+            catch (IslError) { }
             finally
             {
                 DebugOutput.Text = iint.LastDebug;

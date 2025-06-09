@@ -1,6 +1,11 @@
-﻿using ISL.Language.Keywords;
+﻿using ISL.Language.Expressions;
+using ISL.Language.Expressions.Combined;
+using ISL.Language.Keywords;
 using ISL.Language.Types;
+using ISL.Language.Types.Functions;
+using ISL.Language.Variables;
 using ISL.Runtime.Errors;
+using System.Xml.Linq;
 
 namespace ISL.Interpreter
 {
@@ -58,7 +63,30 @@ namespace ISL.Interpreter
                     }
                     IslDebugOutput.Debug($"Last condition ({ifstatement.Stringify()}) was True, skipping branch");
                     self.result = IslBool.False;
-                }, 1, [], ["if", "elseif"])
+                }, 1, [], ["if", "elseif"]),
+                //Basically just the => operator, but more like other languages
+                new ReturningKeyword("function", (self, labels, exprs, program) => {
+                    var nameAndParams = exprs[0];
+                    if(nameAndParams is not FunctionCallExpression fne) throw new SyntaxError("Function header must be an identifier followed by a valid parameter list");
+                    var parameters = fne.parameters;
+                    if(parameters is not CollectionExpression ce) throw new SyntaxError($"Parameter list of function must be a collection expression. (got {parameters.GetType().Name})");
+                    var body = exprs[1];
+                    List<string> paramNames = [];
+                    List<IslType> paramTypes = [];
+                    ce.expressions.ForEach(x => {
+                        if(x is not VariableDeclarationExpr vx)  throw new SyntaxError("Parameters in function declaration must be (valid) variable declarations.");
+                        paramNames.Add(vx.name);
+                        paramTypes.Add(vx.varType);
+                    });
+                    var fn = new IslFunction(new(paramNames, paramTypes), body);
+                    program.CurrentScope.CreateVariable(fne.function.Value, IslType.Function).Value = fn;
+                    return fn;
+                }, 2, []),
+                //return \return "return"\;
+                new Keyword("return", (self, labels, exprs, program) => {
+                    var ret = program.CurrentScope.GetVariable("return") ?? throw new SyntaxError("'Return' keyword cannot appear outside of a code block."); 
+                    ret.Value = exprs[0].Eval(program);
+                },1, [])
                 ];
         }
     }

@@ -12,7 +12,7 @@ namespace ISL.Language.Types
     internal abstract class IslTypeMember
     {
         public Accessibility Accessibility = Accessibility.Public;
-        public string Name = "";
+        public string AccessorKey = "";
         public abstract IslValue Get(IslProgram program, IslObject instance);
         public abstract IslValue Set(IslProgram program, IslObject instance, IslValue newVal);
     }

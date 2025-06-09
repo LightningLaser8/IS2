@@ -1,9 +1,13 @@
-﻿using ISL.Language.Operations;
+﻿using ISL.Language.Expressions;
+using ISL.Language.Operations;
 using ISL.Runtime.Errors;
 using System.Collections;
 
 namespace ISL.Language.Types.Collections
 {
+    /// <summary>
+    /// Generic untyped list of items
+    /// </summary>
     public class IslGroup : IslValue, ITypedObject<IslGroup, List<IslValue>>, ICollection<IslValue>, IIslAppendable, IIslIndexable
     {
         public override IslType Type => IslType.Group;
@@ -15,7 +19,11 @@ namespace ISL.Language.Types.Collections
 
         public static IslGroup FromString(string isl)
         {
-            return new() { Value = [.. isl.Split(", ", StringSplitOptions.TrimEntries).Select(x => new IslString(x)).Cast<IslValue>()] };
+            return new() { Value = [.. isl.Split(", ", StringSplitOptions.TrimEntries).Select(x => {
+                var expr = Expression.From(x);
+                if(expr is ConstantExpression ce) return ce.Eval();
+                return Null;
+            })] };
         }
 
         public IslValue this[int index]

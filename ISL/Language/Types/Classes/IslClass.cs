@@ -1,4 +1,5 @@
 ﻿using ISL.Interpreter;
+using ISL.Language.Types.Functions;
 using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types.Classes
@@ -18,10 +19,11 @@ namespace ISL.Language.Types.Classes
         public string Name = name;
         internal Dictionary<string, IslTypeMember> Members = [];
         internal IslFunction constructor = new();
+        public override IslType Type => IslType.Class;
 
         public override string Stringify()
         {
-            return $"(Class) {Name} [{string.Join(", ", Members)}]";
+            return $"{Name} [{string.Join(", ", Members.Select(x => $"{x.Key} = {x.Value}"))}]";
         }
         /// <summary>
         /// ISL-declared types can't be converted into CLR ones, just use the existing methods. This method will return this type.
@@ -43,7 +45,8 @@ namespace ISL.Language.Types.Classes
         }
         public IslObject Instantiate()
         {
-            return new IslObject() { Class = this };
+            var obj = new IslObject() { Class = this };
+            return obj;
         }
     }
 }

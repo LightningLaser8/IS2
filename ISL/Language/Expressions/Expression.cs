@@ -8,45 +8,47 @@ namespace ISL.Language.Expressions
 {
     internal abstract class Expression : IEquatable<Expression>
     {
-        public static Expression From(string token, IslInterpreter interpreter)
+        public static Expression From(string token, IslInterpreter? interpreter = null)
         {
-
-            foreach (var bracket in interpreter.Brackets)
+            if (interpreter is not null)
             {
-                if (new string(bracket.Open, 1) == token)
+                foreach (var bracket in interpreter.Brackets)
                 {
-                    return new BracketExpression()
+                    if (new string(bracket.Open, 1) == token)
                     {
-                        bracket = bracket
-                    };
+                        return new BracketExpression()
+                        {
+                            bracket = bracket
+                        };
+                    }
                 }
-            }
 
-            foreach (var kw in interpreter.Keywords)
-            {
-                if (kw.identifier == token)
+                foreach (var kw in interpreter.Keywords)
                 {
-                    return new KeywordExpression() { Keyword = kw };
+                    if (kw.identifier == token)
+                    {
+                        return new KeywordExpression() { Keyword = kw };
+                    }
                 }
-            }
 
-            foreach (var op in interpreter.Operators)
-            {
-                if (op.id == token)
+                foreach (var op in interpreter.Operators)
                 {
-                    if (op is NAryOperator nop) return new NAryOperatorExpression() { value = IslIdentifier.FromString(token), Operation = nop };
-                    if (op is CompoundOperator cop) return new CompoundOperatorExpression() { value = IslIdentifier.FromString(token), Operation = cop };
-                    if (op is BinaryOperator bop) return new BinaryOperatorExpression() { value = IslIdentifier.FromString(token), Operation = bop };
-                    if (op is UnaryOperator uop) return new UnaryOperatorExpression() { value = IslIdentifier.FromString(token), Operation = uop };
-                    return new OperatorExpression() { value = IslIdentifier.FromString(token), Operation = op };
+                    if (op.id == token)
+                    {
+                        if (op is NAryOperator nop) return new NAryOperatorExpression() { value = IslIdentifier.FromString(token), Operation = nop };
+                        if (op is CompoundOperator cop) return new CompoundOperatorExpression() { value = IslIdentifier.FromString(token), Operation = cop };
+                        if (op is BinaryOperator bop) return new BinaryOperatorExpression() { value = IslIdentifier.FromString(token), Operation = bop };
+                        if (op is UnaryOperator uop) return new UnaryOperatorExpression() { value = IslIdentifier.FromString(token), Operation = uop };
+                        return new OperatorExpression() { value = IslIdentifier.FromString(token), Operation = op };
+                    }
                 }
-            }
 
-            foreach (var tok in interpreter.Tokens)
-            {
-                if (tok == token)
+                foreach (var tok in interpreter.Tokens)
                 {
-                    return new TokenExpression() { value = token };
+                    if (tok == token)
+                    {
+                        return new TokenExpression() { value = token };
+                    }
                 }
             }
 

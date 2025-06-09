@@ -19,7 +19,7 @@ namespace ISL.Language.Types.Classes
 
         public override string ToString()
         {
-            return $"(field {FieldType}) {Name}";
+            return $"{FieldType} field";
         }
     }
 }

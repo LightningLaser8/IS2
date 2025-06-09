@@ -6,6 +6,7 @@ namespace ISL.Language.Expressions.Combined
 {
     /// <summary>
     /// Actually a statement, rather than an expression.
+    /// Can be returned from.
     /// </summary>
     internal class CodeBlockExpression : Expression
     {
@@ -15,13 +16,21 @@ namespace ISL.Language.Expressions.Combined
             //Create temporary scope
             IslVariableScope VariableScope = new(program.CurrentScope);
             program.CurrentScope = VariableScope;
+            //Create return variable
+            var ret = VariableScope.CreateVariable("return", IslType.Null);
+            ret.InferType = true;
 
             IslValue finalVal = IslValue.Null;
-            expressions.ForEach(x => finalVal = x.Eval(program));
+            foreach (var expr in expressions)
+            {
+                finalVal = expr.Eval(program);
+                if (ret.Value != IslValue.Null) break;
+            }
 
             //Restore the old scope
             program.CurrentScope = VariableScope.Parent!;
-            return finalVal;
+            //Give return value: either specified or auto
+            return ret.Value == IslValue.Null ? finalVal : ret.Value;
         }
 
         public override Expression Simplify()
@@ -33,10 +42,8 @@ namespace ISL.Language.Expressions.Combined
             IslInterpreter.ValidateCodeBlock(expressions);
             expressions.ForEach(x => x.Validate());
         }
-        public override string ToString()
-        {
-            return $"{{ {string.Join("; ", expressions.Select(x => x.ToString()))} }}";
-        }
+        public override string ToString() => $"(Code Block) {{ {string.Join("; ", expressions.Select(x => x.ToString()))} }}";
+        
         public override string Stringify() => $"{{{string.Join("; ", expressions.Select(x => x.Stringify()))}}}";
 
         public override bool Equals(Expression? other) => other is CodeBlockExpression ce && expressions.SequenceEqual(ce.expressions);

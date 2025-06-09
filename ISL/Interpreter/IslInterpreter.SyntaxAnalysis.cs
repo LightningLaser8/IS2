@@ -2,6 +2,7 @@
 using ISL.Language.Expressions.Combined;
 using ISL.Language.Keywords;
 using ISL.Language.Types;
+using ISL.Language.Types.Functions;
 using ISL.Language.Variables;
 using ISL.Runtime.Errors;
 
@@ -30,15 +31,15 @@ namespace ISL.Interpreter
         }
         internal static void ValidateCodeBlock(List<Expression> expressions)
         {
-            bool wasSemi = true;
+            bool needsSemicolon = false;
             for (int i = 0; i < expressions.Count; i++)
             {
                 Expression ex = expressions[i];
-                IslDebugOutput.Debug("  token or expression " + ex.ToString() + (wasSemi ? ", wants expression here" : ", wants semicolon here"));
-                if (wasSemi && ex is TokenExpression te && te.value == ";") throw new SyntaxError("Unexpected ;");
-                if (!wasSemi && ex is not TokenExpression) throw new SyntaxError("Expected ;, got expression");
-                wasSemi = (ex is TokenExpression t2e && t2e.value == ";");
-                if (wasSemi)
+                IslDebugOutput.Debug("  token or expression " + ex.ToString() + (needsSemicolon ? ", wants semicolon here" : ", wants expression here"));
+                //if (!needsSemicolon && ex is TokenExpression te && te.value == ";") throw new SyntaxError("Unexpected ;"); //Screw this, semicolon spam
+                if (needsSemicolon && ex is not TokenExpression && !(i > 0 && expressions[i - 1] is CodeBlockExpression)) throw new SyntaxError("Expected ;");
+                needsSemicolon = !(ex is TokenExpression t2e && t2e.value == ";");
+                if (!needsSemicolon)
                 {
                     expressions.RemoveAt(i);
                     i--;
@@ -94,7 +95,7 @@ namespace ISL.Interpreter
                 {
                     IslDebugOutput.Debug($"  Found {cexp.bracket.Open} at {i}, looking for {cexp.bracket.Close}");
                     int end = FindClosingBracket(i + 1, level, cexp.bracket.Open, cexp.bracket.Close, expressions);
-                    if (end == -1) throw new SyntaxError("Expected closing " + cexp.bracket.Close);
+                    if (end == -1 || i + 1 > expressions.Count) throw new SyntaxError("Expected closing " + cexp.bracket.Close);
                     IslDebugOutput.Debug($"  Found closing {cexp.bracket.Close} at {end}");
                     expressions[end] = Expression.Null;
                     var captured = expressions[(i + 1)..end];
@@ -211,7 +212,7 @@ namespace ISL.Interpreter
 
         private void MakeVariableDeclarations(List<Expression> expressions)
         {
-            IslDebugOutput.Debug($" Variable Declaration Loop:");
+            IslDebugOutput.Debug($" VarDec/FnCall Loop:");
             int currentIndex = expressions.Count;
             while (true)
             {
@@ -228,7 +229,7 @@ namespace ISL.Interpreter
 
 
 
-                if (expr is IdentifierExpression ie)
+                if (expr is IdentifierExpression ie && ie is not TokenExpression)
                 {
                     var (native, present) = HasType(ie.value);
                     if (present)
@@ -283,6 +284,28 @@ namespace ISL.Interpreter
                                 }
                             }
                             continue;
+                        }
+                    }
+                    else
+                    {
+                        IslDebugOutput.Debug($" > found general identifier {expr}");
+                        int nameIndex = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
+                        if (nameIndex == -1)
+                        {
+                            IslDebugOutput.Debug("  this is not a function call");
+                            IslDebugOutput.Debug("  i may break this in the future");
+                        }
+                        else
+                        {
+                            IslDebugOutput.Debug($"  parameter list at {nameIndex}");
+                            var paramlst = expressions[nameIndex];
+                            if (paramlst is not CollectionExpression cexp) continue;
+                            IslDebugOutput.Debug($"  creating function call for {ie} with {paramlst}");
+                            var declaration = new FunctionCallExpression() { function = ie.value, parameters = cexp };
+                            expressions[currentIndex] = declaration;
+
+                            IslDebugOutput.Debug($"  created function call for {ie.value.Value}");
+                            expressions[nameIndex] = Expression.Null;
                         }
                     }
                 }
@@ -352,11 +375,11 @@ namespace ISL.Interpreter
                     IslDebugOutput.Debug($" < keyword wants backreference");
                     IslDebugOutput.Debug($"  search index from {(currentIndex == -1 ? "start" : currentIndex)}");
                     int lastkw = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
-                    IslDebugOutput.Debug($"  keyword at {(lastkw == -1 ? "end" : lastkw)} ({expressions[lastkw]})");
                     if (lastkw == -1)
                     {
                         throw new SyntaxError($"Keyword {brk.identifier} must come directly after a statement or expression!");
                     }
+                    IslDebugOutput.Debug($"  keyword at {(lastkw == -1 ? "end" : lastkw)} ({expressions[lastkw]})");
                     if (expressions[lastkw] is TokenExpression tx && tx.value == ";")
                     {
                         IslDebugOutput.Debug("  skipped semicolon");

@@ -18,15 +18,13 @@ namespace ISL.Language.Expressions.Combined
         {
             return expression.Simplify();
         }
-        public override string ToString()
-        {
-            return $"( {expression} )";
-        }
+        public override string ToString() => $"(Bracketed) ( {expression} )";
+        
         public override void Validate()
         {
             expression.Validate();
         }
-        public override string Stringify() => ToString();
+        public override string Stringify() => $"( {expression} )";
 
         public override bool Equals(Expression? other) => expression.Equals(other);
     }

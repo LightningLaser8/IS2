@@ -22,6 +22,7 @@ namespace ISL.Language.Expressions.Combined
         {
             throw new SyntaxError("Unresolved bracket expression!");
         }
-        public override string Stringify() => $"{bracket.Open}";
+        public override string Stringify() => $"{bracket.Open} or {bracket.Close}";
+        public override string ToString() => $"{bracket.Open} or {bracket.Close}";
     }
 }

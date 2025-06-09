@@ -20,6 +20,7 @@ namespace ISL.Interpreter
             Brackets = [
                 new BracketType('(', ')', (expr) => {
                     if(expr.Count > 1) throw new SyntaxError("Round brackets ( .. ) can only contain one expression!");
+                    if(expr.Count == 0) return new BracketedExpression() { expression = Expression.Null };
                     return new BracketedExpression() { expression = expr[0] };
                 }),
                 new BracketType('[', ']', (expr) => {
@@ -27,10 +28,14 @@ namespace ISL.Interpreter
                 }),
                 new BracketType('\\', '\\', (expr) => {
                     if (expr.Count > 1) throw new SyntaxError("Variable getters \\ .. \\ can only contain one expression!");
+                    if(expr.Count == 0) return new GetterExpression();
                     return new GetterExpression() { NameProvider = expr[0] };
                 }),
                 new BracketType('{', '}', (expr) => {
                     return new CodeBlockExpression() { expressions = expr };
+                }),
+                new BracketType('⟨', '⟩', (expr) => {
+                    return new ClassCreationExpr() { expressions = expr };
                 }),
             ];
         }
@@ -40,7 +45,7 @@ namespace ISL.Interpreter
 /*          "{", "}",
             "[", "]",
             "(", ")",
-            "<", ">",
+            "<", ">", //kind of impossible
 
           Non-standard
 

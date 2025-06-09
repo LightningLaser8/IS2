@@ -20,7 +20,7 @@ namespace ISL.Language.Expressions.Combined
 
         public override string ToString()
         {
-            return $"(Generic Collection) {{{string.Join(", ", expressions.Select(x => x.Stringify()))}}}";
+            return $"(Generic Collection) [{string.Join(", ", expressions.Select(x => x.Stringify()))}]";
         }
         public override void Validate()
         {

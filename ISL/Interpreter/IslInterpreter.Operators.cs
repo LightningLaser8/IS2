@@ -1,6 +1,10 @@
 ﻿using ISL.Language.Expressions;
+using ISL.Language.Expressions.Combined;
 using ISL.Language.Operations;
 using ISL.Language.Types;
+using ISL.Language.Types.Classes;
+using ISL.Language.Types.Collections;
+using ISL.Language.Types.Functions;
 using ISL.Language.Variables;
 using ISL.Runtime.Errors;
 using System.Diagnostics.CodeAnalysis;
@@ -227,12 +231,12 @@ namespace ISL.Interpreter
                     var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     if(righte is not IslIdentifier ride) throw new TypeError($"Must convert to a type identifier, got {righte.Type}");
                     return TryConvert(lefte, GetNativeType(ride.Value)().Type);
-                }, -4),
+                }, 5),
                 new BinaryOperator("~>", (left, right, prog) => {
                     var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     if(righte is not IslIdentifier ride) throw new TypeError($"Must convert to a type identifier, got {righte.Type}");
                     return ForgivingConversion(lefte, ride.Value);
-                }, -4),
+                }, 5),
                 #endregion
                 #region Communication
                 new UnaryOperator("out", (target, prog) => {
@@ -291,6 +295,46 @@ namespace ISL.Interpreter
                     if (lefte is not IIslIndexable icol) throw new TypeError($"Cannot index a {lefte.Type}");
                     return icol.Index(righte);
                 }, -1),
+                #endregion
+                #region Functions
+                new BinaryOperator("=>", (parameters, body, program) => {
+                    ThrowIfProgramNull(program);
+                    //error checks
+                    if(parameters is not CollectionExpression ce) throw new SyntaxError($"Parameter list of function must be a collection expression. (got {parameters.GetType().Name})");
+                    List<string> paramNames = [];
+                    List<IslType> paramTypes = [];
+                    ce.expressions.ForEach(x => {
+                        if(x is not VariableDeclarationExpr vx)  throw new SyntaxError("Parameters in function declaration must be (valid) variable declarations.");
+                        paramNames.Add(vx.name);
+                        paramTypes.Add(vx.varType);
+                    });
+                    return new IslFunction(new(paramNames, paramTypes), body);
+                }, -1) { IsFoldable = false },
+                new Operator("this", (program) => {
+                    return program.CurrentScope.GetVariable("this") ?? throw new SyntaxError("'this' keyword cannot appear in this context.");
+                }),
+                #endregion
+                #region Objects
+                new UnaryOperator("new", (affected, program) => {
+                    ThrowIfProgramNull(program);
+                    var targetclass = affected.Eval(program);
+                    if(targetclass is IslIdentifier ie) targetclass = program.GetVariableImperative(ie.Value).Value;
+                    if(targetclass is not IslClass ic) throw new TypeError($"Cannot instantiate non-class type {targetclass.Type}");
+                    return ic.Instantiate();
+                }) { IsFoldable = false },
+                new BinaryOperator(".", (parameters, body, program) => {
+                    ThrowIfProgramNull(program);
+                    //error checks
+                    if(parameters is not CollectionExpression ce) throw new SyntaxError($"Parameter list of function must be a collection expression. (got {parameters.GetType().Name})");
+                    List<string> paramNames = [];
+                    List<IslType> paramTypes = [];
+                    ce.expressions.ForEach(x => {
+                        if(x is not VariableDeclarationExpr vx)  throw new SyntaxError("Parameters in function declaration must be (valid) variable declarations.");
+                        paramNames.Add(vx.name);
+                        paramTypes.Add(vx.varType);
+                    });
+                    return new IslFunction(new(paramNames, paramTypes), body);
+                }, -1) { IsFoldable = false },
                 #endregion
             ];
         }

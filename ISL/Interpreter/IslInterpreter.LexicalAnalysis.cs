@@ -12,6 +12,11 @@ namespace ISL.Interpreter
             source = Regexes.blockComments.Replace(source, "");
             IslDebugOutput.Debug("Block comments removed.");
         }
+        private void DestandardiseBrackets()
+        {
+            source = source.Replace("<<", "⟨");
+            source = source.Replace(">>", "⟩");
+        }
         private void Tokenise()
         {
             // Split the source code into tokens (basic implementation)

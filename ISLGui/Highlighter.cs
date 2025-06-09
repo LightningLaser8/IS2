@@ -12,11 +12,11 @@ namespace ISLGui
     internal partial class Highlighter
     {
         private readonly static string[] ops = ["+", "-", "*", "/", "%", "**", "==", "!", "=", "+=", "-=", "*=", "/=", "%=", "**=", "->", "<~", "#", "~>"];
-        private readonly static char[] toks = [';', ',', '?', ':'];
-        private readonly static string[] splittingOps = ["!"];
+        private readonly static char[] toks = [';', ',', '?', ':', '.'];
+        private readonly static string[] splittingOps = ["!", "."];
         private readonly static char[] bracks = ['(', ')', '[', ']', '{', '}', '\\'];
-        private readonly static string[] keywords = ["if", "else", "elseif"];
-        private readonly static string[] keyops = ["in", "out", "binmant", "binexp", "at", "sin", "cos", "tan"];
+        private readonly static string[] keywords = ["if", "else", "elseif", "function", "return"];
+        private readonly static string[] keyops = ["in", "out", "binmant", "binexp", "at", "sin", "cos", "tan", "=>", "this", "new", "<<", ">>"];
         private readonly static string[] vardecMods = ["imply", "const"];
         private readonly static string[] natives = ["infer", "bool", "int", "float", "string", "complex", "group", "object", "class", "func"];
         private static bool HasOperator(string token, bool needsSplit = false) => needsSplit ? splittingOps.Contains(token) : ops.Contains(token);
@@ -120,6 +120,7 @@ namespace ISLGui
                 token =>
                 {
                     var run = new Run { Text = token };
+                    token = token.Trim();
                     TokenType type = TokenType.Other;
                     if(NumberRegex().Match(token).Success) type = TokenType.Numeric;
                     else if(token.StartsWith("\"⬛//") || (token.StartsWith("\"⬛/*") && token.EndsWith("*/\""))) {
@@ -132,15 +133,15 @@ namespace ISLGui
                     }
                     else if(StringRegex().Match(token).Success) type = TokenType.String;
                     else if(token == "\\") type = TokenType.Getter;
-                    else if(ops.Contains(token)) type = TokenType.Operator;
+                    else if(ops.Contains(token) || splittingOps.Contains(token)) type = TokenType.Operator;
                     else if(token.Length == 1 && toks.Contains(token[0])) type = TokenType.Other;
                     else if(keyops.Contains(token)) type = TokenType.SpecialOperator;
                     else if(natives.Contains(token)) type = TokenType.NativeType;
                     else if(keywords.Contains(token)) type = TokenType.Keyword;
-                    //This stuff is content-unaware, but is how ISL sees it
+                    //This stuff is content-unaware, but is how ISL sees it (mostly)
                     else if(token.Length == 1 && bracks.Contains(token[0])){
                         type = TokenType.Bracket;
-                        if(prevType == TokenType.Identifier && token[0] == '(')
+                        if(prevType == TokenType.Identifier && token[0] == '[')
                         {
                             prevType = TokenType.Function;
                             prevRun.Foreground = new SolidColorBrush(GetSyntaxColor(TokenType.Function));
@@ -152,7 +153,7 @@ namespace ISLGui
 
                     else{
                         type = TokenType.Identifier;
-                        if(prevType == TokenType.NativeType && prevType2 == TokenType.Identifier)
+                        if(prevType == TokenType.NativeType && prevType2 == TokenType.Identifier && vardecMods.Contains(prev2))
                         {
                             prevRun2.Foreground = new SolidColorBrush(GetSyntaxColor(TokenType.SpecialOperator));
                         }
@@ -160,7 +161,7 @@ namespace ISLGui
 
                     run.Foreground = new SolidColorBrush(GetSyntaxColor(type));
 
-                    if(token.Trim().Length != 0) {
+                    if(token.Length != 0) {
                         prev2 = prev;
                         prevRun2 = prevRun;
                         prevType2 = prevType;

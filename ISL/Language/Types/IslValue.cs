@@ -1,5 +1,6 @@
 ﻿using ISL.Language.Types.Classes;
 using ISL.Language.Types.Collections;
+using ISL.Language.Types.Functions;
 using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types

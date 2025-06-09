@@ -12,7 +12,7 @@ namespace ISL.Language.Types
         internal IslValue DirectlySetData(string name, IslValue newVal) => data.TryAdd(name, newVal) ? newVal : data[name] = newVal;
         public override string Stringify()
         {
-            return $"<{string.Join(", ", data.Select(x => $"{x.Value.Type} {x.Key} = {x.Value.Stringify()}"))}>";
+            return $"<{string.Join(", ", Class.Members.Select(x => x.Value.ToString()))}>";
         }
 
         public override object? ToCLR()

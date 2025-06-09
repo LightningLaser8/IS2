@@ -51,6 +51,9 @@ namespace ISL.Interpreter
             }
             IslDebugOutput.Debug("Getting metadata:");
             ProcessMetadata();
+            IslDebugOutput.Debug("Replacing placeholders:");
+            DestandardiseBrackets();
+            IslDebugOutput.Debug("Tokenising:");
             Tokenise();
             if (tokens.Count > 0)
                 IslDebugOutput.Debug("  " + tokens.Count.ToString() + " tokens:\n" +
