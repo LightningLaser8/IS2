@@ -215,7 +215,7 @@ _Adding Integrate mods to your project_
 ```c#
 using System;
 using Integrate;
-using Integrate.Registry.Registry;
+using Integrate.Registry;
 //Game Setup
 class Entity {}
 class Block {
@@ -234,12 +234,12 @@ ModLoader.types.Add(item, typeof(Item));
 
 //Modloader Setup
 var content = new Registry(); //Use the non-generic ExpandoObject registry
-ModLoader.AddModdableRegistry("content", content);
+ModLoader.AddModdableRegistry(content, "content");
 ModLoader.SetPrefix(true);
 
 //Tests
 ModLoader.Add("./mod");
-content.ForEach(x => Console.WriteLine(ModLoader.Construct\<Block>(x).ToString()));
+content.ForEach(x => Console.WriteLine(ModLoader.Construct<Block>(x).ToString()));
 ```
 
 On execution, logs:
