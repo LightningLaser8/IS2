@@ -5,7 +5,7 @@
 
 ## Module: ISL
 
-IS2 is primarily a C## implementation of Integrate, but has made some improvements to its scripting language, ISL.  
+IS2 is primarily a C# implementation of Integrate, but has made some improvements to its scripting language, ISL.  
 Basic Hello World (even though it's fairly useless in a scripting language):
 
 ```
@@ -188,7 +188,7 @@ They all produce the result:
 
 ## Module: Integrate
 
-IS2 contains a C## version of Integrate, a JavaScript library for mod loading into serialisable registries.  
+IS2 contains a C# version of Integrate, a JavaScript library for mod loading into serialisable registries.  
 It can be used in conjunction with ISL to perform complex operations using scripts.
 
 ### Terminology
@@ -258,6 +258,7 @@ _The directory structure for Integrate mods_
 (mod root)
  |-> mod.json
  |-> definition file
+ |-> scripts file
  |=> (content)
  |=> (scripts)
 ```
@@ -271,6 +272,7 @@ Holds the basic information for the mod:
   "name": "example",
   "displayName": "Example Mod",
   "definitions": "./definitions.json",
+  "scripts": "./scripts.json",
   "tagline": "Basic mod to show functionality.",
   "description": "This mod exists only to show functionality of the modloader, and is not intended to be played with in any game. It is purely for demonstrative purposes.",
   "author": "LightningLaser8",
@@ -286,6 +288,7 @@ Holds the basic information for the mod:
 `version` defines the _mod's version_, should be used to detect updated mods in saves, for example.
 
 `definitions` gives the path _from the mod.json file_ to the definition file.
+`scripts` gives the path _from the mod.json file_ to the script definition file.
 
 #### Definition File
 
