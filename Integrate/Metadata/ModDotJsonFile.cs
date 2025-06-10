@@ -2,13 +2,13 @@
 {
     internal class ModDotJsonFile
     {
-        public readonly string DisplayName = "Mod";
-        public readonly string Name = "mod";
-        public readonly string Version = "1.0.0";
-        public readonly string Author = "the community";
-        public readonly string Tagline = "An Integrate Mod.";
-        public readonly string Description = "[Description goes here]";
-        public readonly string Definitions = "definitions.json";
-        public readonly string Scripts = "scripts.json";
+        public string DisplayName = "Mod";
+        public string Name = "mod";
+        public string Version = "1.0.0";
+        public string Author = "the community";
+        public string Tagline = "An Integrate Mod.";
+        public string Description = "[Description goes here]";
+        public string Definitions = "definitions.json";
+        public string Scripts = "scripts.json";
     }
 }

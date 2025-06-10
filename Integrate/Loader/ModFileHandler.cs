@@ -19,8 +19,20 @@ namespace Integrate.Loader
         {
             if (!File.Exists(path)) throw new FileNotFoundException("Mod has no 'mod.json' file in its base directory.");
             string contents = File.ReadAllText(path);
-            var json = JsonSerializer.Deserialize<ModDotJsonFile>(contents, JsonOptions) ?? new();
-            return json;
+            var json = JsonSerializer.Deserialize<ExpandoObject>(contents, JsonOptions) ?? new();
+            var dict = JsonElementsToCLR(json).ToDictionary();
+            var fle = new ModDotJsonFile();
+            Debug.WriteLine("found file "+string.Join(", ", json.ToDictionary()));
+            //Set values, ignore missing or invalid values
+            if (dict.TryGetValue("name", out var v) && v is string s) fle.Name = s;
+            if (dict.TryGetValue("displayName", out var v2) && v2 is string s2) fle.DisplayName = s2;
+            if (dict.TryGetValue("version", out var v3) && v3 is string s3) fle.Version = s3;
+            if (dict.TryGetValue("author", out var v4) && v4 is string s4) fle.Author = s4;
+            if (dict.TryGetValue("tagline", out var v5) && v5 is string s5) fle.Tagline = s5;
+            if (dict.TryGetValue("description", out var v6) && v6 is string s6) fle.Description = s6;
+            if (dict.TryGetValue("definitions", out var v7) && v7 is string s7) fle.Definitions = s7;
+            if (dict.TryGetValue("scripts", out var v8) && v8 is string s8) fle.Scripts = s8;
+            return fle;
         }
         internal static DefinitionDotJsonFile LoadDefinitionJsonFile(string path)
         {
