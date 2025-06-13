@@ -3,6 +3,7 @@ using Integrate.Metadata;
 using Integrate.ModContent;
 using Integrate.ModContent.ISL;
 using Integrate.Registry;
+using Microsoft.Win32;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Reflection;
@@ -133,6 +134,10 @@ namespace Integrate
         {
             return Construct(source, typeof(T)) as T;
         }
+        public static TOut? Construct<TOut, TConstructor>(ExpandoObject source) where TOut : class, IConstructible where TConstructor : IConstructor<TOut>
+        {
+            return TConstructor.Construct(source);
+        }
         public static object Construct(string sourceName, Registry<ExpandoObject> source, Type type)
         {
             return Construct(source.Get(sourceName), type);
@@ -141,6 +146,10 @@ namespace Integrate
         {
             return Construct(sourceName, source, typeof(T)) as T;
         }
+        public static TOut? Construct<TOut, TConstructor>(string sourceName, Registry<ExpandoObject> source) where TOut : class, IConstructible where TConstructor : IConstructor<TOut>
+        {
+            return TConstructor.Construct(source.Get(sourceName));
+        }
         public static object Construct(string sourceName, string registry, Type type)
         {
             return Construct(registries.Get(registry).Get(sourceName), type);
@@ -148,6 +157,10 @@ namespace Integrate
         public static T? Construct<T>(string sourceName, string registry) where T : class
         {
             return Construct(sourceName, registry, typeof(T)) as T;
+        }
+        public static TOut? Construct<TOut, TConstructor>(string sourceName, string registry) where TOut : class, IConstructible where TConstructor : IConstructor<TOut>
+        {
+            return TConstructor.Construct(registries.Get(registry).Get(sourceName));
         }
         public static object Construct(string sourceName, Type type)
         {
