@@ -1,6 +1,5 @@
 ﻿using ISL.Interpreter;
 using ISL.Language.Types.Functions;
-using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types.Classes
 {
@@ -33,19 +32,14 @@ namespace ISL.Language.Types.Classes
         {
             return this;
         }
-        public IslValue Get(IslProgram program, string name, IslObject instance)
-        {
-            if (!Members.TryGetValue(name, out IslTypeMember? value)) throw new InvalidReferenceError($"Class {Name} does not contain a definition for {name}");
-            return value.Get(program, instance);
-        }
-        public IslValue Set(IslProgram program, string name, IslValue newVal, IslObject instance)
-        {
-            if (!Members.TryGetValue(name, out IslTypeMember? value)) throw new InvalidReferenceError($"Class {Name} does not contain a definition for {name}");
-            return value.Set(program, instance, newVal);
-        }
-        public IslObject Instantiate()
+        public IslObject Instantiate(IslProgram prog)
         {
             var obj = new IslObject() { Class = this };
+            foreach (var keyValue in Members)
+            {
+                var member = keyValue.Value;
+                if (member is IslTypeField ifield) obj.AddProperty(keyValue.Key, ifield.FieldType, ifield.Value, ifield.readOnly, !ifield.isUninitialised);
+            }
             return obj;
         }
     }

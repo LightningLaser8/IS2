@@ -42,7 +42,7 @@ namespace ISL.Interpreter
                 }), new UnaryOperator("-", (target, prog) => {
                     var targete = GetValueForExpression(target, prog);
                     // IslDebugOutput.Debug($"Negating {target.Stringify()}");
-                    if (target is not IIslSubtractable leftadd) throw new TypeError($"Invalid target type {targete.Type} in negation.");
+                    if (targete is not IIslSubtractable leftadd) throw new TypeError($"Invalid target type {targete.Type} in negation.");
                     return new IslInt(0).Subtract(targete);
                 })),
                 new BinaryOperator("*", (left, right, prog) => {
@@ -128,6 +128,20 @@ namespace ISL.Interpreter
                     if (targete is not IIslFloatPropertyExtractable targetadd) throw new TypeError($"Invalid target type {targete.Type} in exponent extraction.");
                     return targetadd.Exponent();
                 }, 5),
+                new BinaryOperator("<*", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
+                    // IslDebugOutput.Debug($"Adding {left.Stringify()} and {right.Stringify()}");
+                    if (lefte is not IslInt leftadd) throw new TypeError($"Invalid left-hand type {lefte.Type} in left-shift (Can only shift ints).");
+                    if (righte is not IslInt rightadd) throw new TypeError($"Invalid right-hand type {righte.Type} in left-shift (Can only shift ints).");
+                    return new IslInt(leftadd.Value << (int)rightadd.Value);
+                }, 1),
+                new BinaryOperator("*>", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
+                    // IslDebugOutput.Debug($"Adding {left.Stringify()} and {right.Stringify()}");
+                    if (lefte is not IslInt leftadd) throw new TypeError($"Invalid left-hand type {lefte.Type} in right-shift (Can only shift ints).");
+                    if (righte is not IslInt rightadd) throw new TypeError($"Invalid right-hand type {righte.Type} in right-shift (Can only shift ints).");
+                    return new IslInt(leftadd.Value >> (int)rightadd.Value);
+                }, 1),
                 #endregion
                 #region Variables (Legacy)
                 /* // Legacy variable code
@@ -186,7 +200,7 @@ namespace ISL.Interpreter
                 #endregion
                 #region Assignment
                 new BinaryOperator("=", (left, right, program) => {
-                    var (lefte, righte) = GetValuesForExpressions(left, right, program);
+                    var (lefte, righte) = GetValuesForExpressions(left, right, program, true);
                     ThrowIfProgramNull(program);
                     // IslDebugOutput.Debug($"Setting {left.Stringify()} to {right.Stringify()}");
                     CheckVar(lefte, program, out var lvar);
@@ -311,51 +325,104 @@ namespace ISL.Interpreter
                     return new IslFunction(new(paramNames, paramTypes), body);
                 }, -1) { IsFoldable = false },
                 new Operator("this", (program) => {
-                    return program.CurrentScope.GetVariable("this") ?? throw new SyntaxError("'this' keyword cannot appear in this context.");
+                    return program.CurrentScope.GetVariable("this")?.Value ?? throw new SyntaxError("'this' keyword cannot appear in this context.");
                 }),
                 #endregion
                 #region Objects
                 new UnaryOperator("new", (affected, program) => {
                     ThrowIfProgramNull(program);
-                    var targetclass = affected.Eval(program);
-                    if(targetclass is IslIdentifier ie) targetclass = program.GetVariableImperative(ie.Value).Value;
+                    //If constructor invoked
+                    IslValue targetclass;
+                    if(affected is FunctionCallExpression fcx)
+                    {
+                        targetclass = program.GetVariableImperative(fcx.function).Value;
+                    }
+                    //If no constructor
+                    else 
+                    { 
+                        targetclass = affected.Eval(program);
+                        if(targetclass is IslIdentifier ie) targetclass = program.GetVariableImperative(ie.Value).Value;
+                    }
                     if(targetclass is not IslClass ic) throw new TypeError($"Cannot instantiate non-class type {targetclass.Type}");
-                    return ic.Instantiate();
+                    var obj = ic.Instantiate(program);
+                    if(affected is FunctionCallExpression fcx2)
+                    {
+                        var fn = obj.Class.constructor;
+                        var ps = fcx2.parameters.Eval(program);
+                        if(ps is not IslGroup ig) throw new TypeError("Parameter list must be an ISL group construct.");
+                        fn.ThisArg = obj;
+                        fn.Call(program, [..ig.Value]);
+                    }
+                    return obj;
                 }) { IsFoldable = false },
-                new BinaryOperator(".", (parameters, body, program) => {
-                    ThrowIfProgramNull(program);
+                new BinaryOperator(".", (obj, prop, program) => {
+                    var left = GetValueForExpression(obj, program);
+                    //Decimal point
+                    if(left is IslInt iint)
+                    {
+                        var right = GetValueForExpression(prop, program);
+                        return IslFloat.FromString("0."+right.ToString()).Add(iint);
+                    }
+                    //object property accessor
+                    if(left is not IslObject io) throw new TypeError($"Cannot get property of non-object using '.' (got {left.Type})");
+                    if(prop is FunctionCallExpression fce){
+                        ThrowIfProgramNull(program);
+                        var fn = io.GetProperty(fce.function).Value;
+                        var parameters = fce.parameters;
+                        if(fn is not IslFunction isf) throw new TypeError($"Property {fce.function} is not a function.");
+                        if(parameters is not CollectionExpression ce) throw new TypeError($"Parameter list in function call must be a collection expression (got {parameters.GetType().Name}).");
+                        isf.ThisArg = io;
+                        return isf.Call(program, [.. (ce.Eval(program) as IslGroup ?? []).Value]);
+                    }
+                    else {
+                    var right = GetValueForExpression(prop, program);
                     //error checks
-                    if(parameters is not CollectionExpression ce) throw new SyntaxError($"Parameter list of function must be a collection expression. (got {parameters.GetType().Name})");
-                    List<string> paramNames = [];
-                    List<IslType> paramTypes = [];
-                    ce.expressions.ForEach(x => {
-                        if(x is not VariableDeclarationExpr vx)  throw new SyntaxError("Parameters in function declaration must be (valid) variable declarations.");
-                        paramNames.Add(vx.name);
-                        paramTypes.Add(vx.varType);
-                    });
-                    return new IslFunction(new(paramNames, paramTypes), body);
-                }, -1) { IsFoldable = false },
+                    if(right is IslIdentifier ii){
+                        var prope = io.GetProperty(ii.Value);
+                        if(prope.Value is IslPropertyFunction iprp)
+                        {
+                            ThrowIfProgramNull(program);
+                            iprp.ThisArg = io;
+                            return iprp.Call(program);
+                        }
+                        return prope;
+                    }
+                    else throw new SyntaxError($"Property names must be identifiers or function calls.");
+                    }
+                }, 100) { IsFoldable = true, AutoSplit = true },
                 #endregion
             ];
         }
         #region Checks and Utility
-        private static (IslValue, IslValue) GetValuesForExpressions(Expression left, Expression right, IslProgram? program)
+        private static (IslValue, IslValue) GetValuesForExpressions(Expression left, Expression right, IslProgram? program, bool allowVarsL = false, bool allowVarsR = false)
         {
             if (program is null)
             {
                 if (left is ConstantExpression lce && right is ConstantExpression rce) return (lce.Eval(), rce.Eval());
                 throw new IslError("A program reference is required to evaluate non-constant expressions");
             }
-            else return (left.Eval(program), right.Eval(program));
+            else
+            {
+                var valueL = left.Eval(program);
+                var valueR = right.Eval(program);
+                if (!allowVarsL && valueL is IslVariable iv) valueL = iv.Value;
+                if (!allowVarsR && valueR is IslVariable iv2) valueR = iv2.Value;
+                return (valueL, valueR);
+            }
         }
-        private static IslValue GetValueForExpression(Expression expr, IslProgram? program)
+        private static IslValue GetValueForExpression(Expression expr, IslProgram? program, bool allowVars = false)
         {
             if (program is null)
             {
                 if (expr is ConstantExpression ce) return ce.Eval();
                 throw new IslError("A program reference is required to evaluate non-constant expressions");
             }
-            else return expr.Eval(program);
+            else
+            {
+                var value = expr.Eval(program);
+                if (value is IslVariable iv) value = iv.Value;
+                return value;
+            }
         }
         private static void ThrowIfProgramNull([NotNull] IslProgram? program)
         {
@@ -424,6 +491,7 @@ namespace ISL.Interpreter
         }
         private static void AssignVar(IslVariable vari, IslValue value)
         {
+            if (value is IslVariable iv) value = iv.Value;
             CheckAssignment(vari, value);
             if (vari.ReadOnly && vari.Initialised) throw new AccessError($"Variable {vari.Name} cannot be set - it is read-only.");
             if (!vari.Initialised) vari.Initialised = true;

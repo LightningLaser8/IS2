@@ -45,17 +45,17 @@ namespace ISLGui
                 appWindow.SetIcon(@"Assets\infinity-icon.ico");
             }
             //Set highlight colors
-            islHighlighter.SetSyntaxColor(TokenType.Numeric, Color.FromArgb(255, 134, 198, 142));
-            islHighlighter.SetSyntaxColor(TokenType.String, Color.FromArgb(255, 214, 157, 133));
-            islHighlighter.SetSyntaxColor(TokenType.Identifier, Color.FromArgb(255, 155, 220, 255));
+            islHighlighter.SetSyntaxColor(TokenType.Numeric, Color.FromArgb(255, 181, 206, 168));
+            islHighlighter.SetSyntaxColor(TokenType.String, Color.FromArgb(255, 206, 145, 120));
+            islHighlighter.SetSyntaxColor(TokenType.Identifier, Color.FromArgb(255, 156, 220, 254));
             islHighlighter.SetSyntaxColor(TokenType.Getter, Color.FromArgb(255, 214, 157, 235));
             islHighlighter.SetSyntaxColor(TokenType.Operator, Color.FromArgb(255, 128, 128, 128));
             islHighlighter.SetSyntaxColor(TokenType.SpecialOperator, Color.FromArgb(255, 71, 141, 210));
-            islHighlighter.SetSyntaxColor(TokenType.NativeType, Color.FromArgb(255, 19, 163, 216));
-            islHighlighter.SetSyntaxColor(TokenType.Class, Color.FromArgb(255, 78, 188, 129));
-            islHighlighter.SetSyntaxColor(TokenType.Keyword, Color.FromArgb(255, 198, 135, 255));
-            islHighlighter.SetSyntaxColor(TokenType.Comment, Color.FromArgb(255, 73, 107, 35));
-            islHighlighter.SetSyntaxColor(TokenType.MetaTag, Color.FromArgb(255, 100, 230, 255));
+            islHighlighter.SetSyntaxColor(TokenType.NativeType, Color.FromArgb(255, 71, 141, 210));
+            islHighlighter.SetSyntaxColor(TokenType.Class, Color.FromArgb(255, 71, 201, 176));
+            islHighlighter.SetSyntaxColor(TokenType.Keyword, Color.FromArgb(255, 216, 160, 223));
+            islHighlighter.SetSyntaxColor(TokenType.Comment, Color.FromArgb(255, 87, 166, 74));
+            islHighlighter.SetSyntaxColor(TokenType.MetaTag, Color.FromArgb(255, 119, 139, 172));
             islHighlighter.SetSyntaxColor(TokenType.Function, Color.FromArgb(255, 220, 218, 155));
             //Add events
             manager.FileButtonClicked += Manager_FileButtonClicked;

@@ -22,7 +22,7 @@ namespace Integrate.Loader
             var json = JsonSerializer.Deserialize<ExpandoObject>(contents, JsonOptions) ?? new();
             var dict = JsonElementsToCLR(json).ToDictionary();
             var fle = new ModDotJsonFile();
-            Debug.WriteLine("found file "+string.Join(", ", json.ToDictionary()));
+            Debug.WriteLine("found file " + string.Join(", ", json.ToDictionary()));
             //Set values, ignore missing or invalid values
             if (dict.TryGetValue("name", out var v) && v is string s) fle.Name = s;
             if (dict.TryGetValue("displayName", out var v2) && v2 is string s2) fle.DisplayName = s2;

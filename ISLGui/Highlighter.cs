@@ -11,12 +11,12 @@ namespace ISLGui
 {
     internal partial class Highlighter
     {
-        private readonly static string[] ops = ["+", "-", "*", "/", "%", "**", "==", "!", "=", "+=", "-=", "*=", "/=", "%=", "**=", "->", "<~", "#", "~>"];
+        private readonly static string[] ops = ["+", "-", "*", "/", "%", "**", "==", "!", "=", "+=", "-=", "*=", "/=", "%=", "**=", "->", "<~", "#", "~>", ".", "<*", "*>"];
         private readonly static char[] toks = [';', ',', '?', ':', '.'];
         private readonly static string[] splittingOps = ["!", "."];
         private readonly static char[] bracks = ['(', ')', '[', ']', '{', '}', '\\'];
         private readonly static string[] keywords = ["if", "else", "elseif", "function", "return"];
-        private readonly static string[] keyops = ["in", "out", "binmant", "binexp", "at", "sin", "cos", "tan", "=>", "this", "new", "<<", ">>"];
+        private readonly static string[] keyops = ["in", "out", "binmant", "binexp", "at", "sin", "cos", "tan", "=>", "this", "new", "<<", ">>", "constructor"];
         private readonly static string[] vardecMods = ["imply", "const"];
         private readonly static string[] natives = ["infer", "bool", "int", "float", "string", "complex", "group", "object", "class", "func"];
         private static bool HasOperator(string token, bool needsSplit = false) => needsSplit ? splittingOps.Contains(token) : ops.Contains(token);
@@ -68,16 +68,7 @@ namespace ISLGui
                     }
                     isString = !isString;
                 }
-                else if (c == ';' && !isString)
-                {
-                    if (currentToken != "")
-                    {
-                        tokens.Add(currentToken);
-                        currentToken = "";
-                    }
-                    tokens.Add(new string(c, 1));
-                }
-                else if (c == ',' && !isString)
+                else if (toks.Contains(c) && !isString)
                 {
                     if (currentToken != "")
                     {

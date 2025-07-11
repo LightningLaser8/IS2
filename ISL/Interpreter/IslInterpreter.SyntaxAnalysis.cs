@@ -146,7 +146,7 @@ namespace ISL.Interpreter
                         IslDebugOutput.Debug(" > binary operator " + boe.ToString() + " at " + currentIndex.ToString());
                         //Find next non-null
                         int targetR = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
-                        if (targetR != -1)
+                        if (targetR != -1 && expressions[targetR] is not TokenExpression)
                         {
                             boe.affectedR = expressions[targetR];
                             expressions[targetR] = Expression.Null;
@@ -154,7 +154,7 @@ namespace ISL.Interpreter
                         }
                         //Find last non-null
                         int targetL = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
-                        if (targetL != -1)
+                        if (targetL != -1 && expressions[targetL] is not TokenExpression)
                         {
                             boe.affectedL = expressions[targetL];
                             expressions[targetL] = Expression.Null;
@@ -170,7 +170,7 @@ namespace ISL.Interpreter
                         IslDebugOutput.Debug($" > unary/binary operator {coe} at {currentIndex}, assume binary");
                         //Find next non-null
                         int targetR = FindNextNonNullExpression(currentIndex, EvaluationDirection.Right, expressions);
-                        if (targetR != -1)
+                        if (targetR != -1 && expressions[targetR] is not TokenExpression)
                         {
                             coe.affectedRequired = expressions[targetR];
                             expressions[targetR] = Expression.Null;
@@ -178,7 +178,7 @@ namespace ISL.Interpreter
                         }
                         //Find last non-null
                         int targetL = FindNextNonNullExpression(currentIndex, EvaluationDirection.Left, expressions);
-                        if (targetL != -1)
+                        if (targetL != -1 && expressions[targetL] is not TokenExpression)
                         {
                             coe.affectedOptional = expressions[targetL];
                             expressions[targetL] = Expression.Null;

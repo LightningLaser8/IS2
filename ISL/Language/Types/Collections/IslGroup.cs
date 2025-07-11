@@ -19,21 +19,28 @@ namespace ISL.Language.Types.Collections
 
         public static IslGroup FromString(string isl)
         {
-            return new() { Value = [.. isl.Split(", ", StringSplitOptions.TrimEntries).Select(x => {
+            return new()
+            {
+                Value = [.. isl.Split(", ", StringSplitOptions.TrimEntries).Select(x => {
                 var expr = Expression.From(x);
                 if(expr is ConstantExpression ce) return ce.Eval();
                 return Null;
-            })] };
+            })]
+            };
         }
 
         public IslValue this[int index]
         {
             get
             {
+                if (index >= Count) throw new OverflowError($"Index out of range (index {index} (item {index + 1}) of collection with size {Count})");
+                if (index < 0) throw new OverflowError($"Index out of range (index {index} is negative!)");
                 return Value[index];
             }
             set
             {
+                if (index > Count) throw new OverflowError($"Index out of range (index {index} of collection with size {Count})");
+                if (index < 0) throw new OverflowError($"Index out of range (index {index} is negative!)");
                 Value[index] = value;
             }
         }

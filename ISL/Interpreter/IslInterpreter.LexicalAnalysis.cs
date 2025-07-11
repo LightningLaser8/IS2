@@ -44,25 +44,15 @@ namespace ISL.Interpreter
                     }
                     isString = !isString;
                 }
-                else if (c == ';' && !isString)
+                else if (Tokens.Contains(new string(c, 1)) && !isString)
                 {
                     if (currentToken != "")
                     {
                         tokens.Add(currentToken);
-                        IslDebugOutput.Debug("Split on semicolon: " + currentToken);
+                        IslDebugOutput.Debug("Split on token: " + c);
                         currentToken = "";
                     }
-                    tokens.Add(";");
-                }
-                else if (c == ',' && !isString)
-                {
-                    if (currentToken != "")
-                    {
-                        tokens.Add(currentToken);
-                        IslDebugOutput.Debug("Split on comma: " + currentToken);
-                        currentToken = "";
-                    }
-                    tokens.Add(",");
+                    tokens.Add(new string(c, 1));
                 }
                 else if (HasOperator(currentToken, true) && !isString)
                 {

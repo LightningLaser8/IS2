@@ -1,11 +1,9 @@
-﻿using ISL.Language.Expressions;
-using ISL.Language.Expressions.Combined;
+﻿using ISL.Language.Expressions.Combined;
 using ISL.Language.Keywords;
 using ISL.Language.Types;
 using ISL.Language.Types.Functions;
 using ISL.Language.Variables;
 using ISL.Runtime.Errors;
-using System.Xml.Linq;
 
 namespace ISL.Interpreter
 {
@@ -84,7 +82,7 @@ namespace ISL.Interpreter
                 }, 2, []),
                 //return \return "return"\;
                 new Keyword("return", (self, labels, exprs, program) => {
-                    var ret = program.CurrentScope.GetVariable("return") ?? throw new SyntaxError("'Return' keyword cannot appear outside of a code block."); 
+                    var ret = program.CurrentScope.GetVariable("return") ?? throw new SyntaxError("'Return' keyword cannot appear outside of a code block.");
                     ret.Value = exprs[0].Eval(program);
                 },1, [])
                 ];

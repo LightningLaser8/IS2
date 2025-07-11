@@ -3,11 +3,6 @@ using ISL.Language.Expressions;
 using ISL.Language.Expressions.Combined;
 using ISL.Language.Types.Collections;
 using ISL.Runtime.Errors;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ISL.Language.Types.Functions
 {

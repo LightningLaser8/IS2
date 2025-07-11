@@ -43,10 +43,10 @@ namespace ISL.Language.Expressions.Combined
             expressions.ForEach(x => x.Validate());
         }
         public override string ToString() => $"(Code Block) {{ {string.Join("; ", expressions.Select(x => x.ToString()))} }}";
-        
+
         public override string Stringify() => $"{{{string.Join("; ", expressions.Select(x => x.Stringify()))}}}";
 
         public override bool Equals(Expression? other) => other is CodeBlockExpression ce && expressions.SequenceEqual(ce.expressions);
-        
+
     }
 }

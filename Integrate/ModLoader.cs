@@ -3,7 +3,6 @@ using Integrate.Metadata;
 using Integrate.ModContent;
 using Integrate.ModContent.ISL;
 using Integrate.Registry;
-using Microsoft.Win32;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Reflection;

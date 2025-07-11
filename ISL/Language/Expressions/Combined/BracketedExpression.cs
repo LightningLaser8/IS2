@@ -19,7 +19,7 @@ namespace ISL.Language.Expressions.Combined
             return expression.Simplify();
         }
         public override string ToString() => $"(Bracketed) ( {expression} )";
-        
+
         public override void Validate()
         {
             expression.Validate();

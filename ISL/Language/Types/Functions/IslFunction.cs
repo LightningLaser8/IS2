@@ -18,18 +18,18 @@ namespace ISL.Language.Types.Functions
             Subroutine = subroutine;
         }
 
-        private readonly Expression Subroutine = Expression.Null;
+        internal readonly Expression Subroutine = Expression.Null;
         public override IslType Type => IslType.Function;
         internal IslFunctionSignature Signature { get; private set; } = new([], []);
-        public IslValue Call(IslProgram program, IslValue[] parameters)
+        public virtual IslValue Call(IslProgram program, IslValue[] parameters)
         {
             //Create temporary scope
             IslVariableScope VariableScope = new(program.CurrentScope);
+            var @this = VariableScope.CreateVariable("this", IslType.Object);
+            @this.ReadOnly = true;
+            @this.Initialised = true;
             if (ThisArg is not null)
             {
-                var @this = VariableScope.CreateVariable("this", IslType.Object);
-                @this.ReadOnly = true;
-                @this.Initialised = true;
                 @this.Value = ThisArg;
             }
             if (parameters.Length != Signature.paramTypes.Count()) throw new SyntaxError($"Function expects {Signature.paramTypes.Count()} arguments, got {parameters.Length}.");
@@ -38,7 +38,7 @@ namespace ISL.Language.Types.Functions
                 VariableScope.CreateVariable($"{Signature.paramNames.ElementAt(i)}", Signature.paramTypes.ElementAt(i), parameters[i]);
             }
             program.CurrentScope = VariableScope;
-            
+
             var res = Subroutine.Eval(program);
 
             //Restore the old scope
@@ -50,6 +50,36 @@ namespace ISL.Language.Types.Functions
         public override string ToString() => $"[{string.Join(", ", Signature.paramTypes)}] => {Subroutine}";
         public override object? ToCLR() => (IslProgram context) => Subroutine.Eval(context);
     }
+    /// <summary>
+    /// Special function with no parameters
+    /// </summary>
+    public class IslPropertyFunction : IslFunction
+    {
+        public IslPropertyFunction() { }
+        internal IslPropertyFunction(Expression subroutine) : base(new([], []), subroutine) { }
+        public override IslValue Call(IslProgram program, IslValue[] parameters)
+        {
+            //Create temporary scope
+            IslVariableScope VariableScope = new(program.CurrentScope);
+            var @this = VariableScope.CreateVariable("this", IslType.Object);
+            @this.ReadOnly = true;
+            @this.Initialised = true;
+            if (ThisArg is not null)
+            {
+                @this.Value = ThisArg;
+            }
+            program.CurrentScope = VariableScope;
+
+            var res = Subroutine.Eval(program);
+
+            //Restore the old scope
+            program.CurrentScope = VariableScope.Parent!;
+
+            return res;
+        }
+        public IslValue Call(IslProgram program) => Call(program, []);
+    }
+
     public class IslFunctionSignature
     {
         internal readonly IEnumerable<string> paramNames = [];

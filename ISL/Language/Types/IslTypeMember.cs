@@ -1,6 +1,4 @@
-﻿using ISL.Interpreter;
-
-namespace ISL.Language.Types
+﻿namespace ISL.Language.Types
 {
     public enum Accessibility
     {
@@ -13,7 +11,5 @@ namespace ISL.Language.Types
     {
         public Accessibility Accessibility = Accessibility.Public;
         public string AccessorKey = "";
-        public abstract IslValue Get(IslProgram program, IslObject instance);
-        public abstract IslValue Set(IslProgram program, IslObject instance, IslValue newVal);
     }
 }

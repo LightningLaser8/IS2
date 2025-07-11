@@ -49,6 +49,6 @@ namespace ISL.Language.Expressions.Combined
         }
 
         public override bool Equals(Expression? other) => other is CollectionExpression ce && expressions.SequenceEqual(ce.expressions);
-        
+
     }
 }
