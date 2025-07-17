@@ -11,12 +11,12 @@ namespace ISLGui
 {
     internal partial class Highlighter
     {
-        private readonly static string[] ops = ["+", "-", "*", "/", "%", "**", "==", "!", "=", "+=", "-=", "*=", "/=", "%=", "**=", "->", "<~", "#", "~>", ".", "<*", "*>"];
+        private readonly static string[] ops = ["+", "-", "*", "/", "%", "**", "==", "!", "=", "+=", "-=", "*=", "/=", "%=", "**=", "->", "<~", "#", "~>", ".", "<*", "*>", "<", ">", "=/="];
         private readonly static char[] toks = [';', ',', '?', ':', '.'];
         private readonly static string[] splittingOps = ["!", "."];
         private readonly static char[] bracks = ['(', ')', '[', ']', '{', '}', '\\'];
         private readonly static string[] keywords = ["if", "else", "elseif", "function", "return"];
-        private readonly static string[] keyops = ["in", "out", "binmant", "binexp", "at", "sin", "cos", "tan", "=>", "this", "new", "<<", ">>", "constructor"];
+        private readonly static string[] keyops = ["in", "out", "binmant", "binexp", "at", "sin", "cos", "tan", "asin", "acos", "atan", "re", "im", "mod", "arg", "=>", "this", "new", "<<", ">>", "constructor", "when", "otherwise", "true", "false", "is", "typeof"];
         private readonly static string[] vardecMods = ["imply", "const"];
         private readonly static string[] natives = ["infer", "bool", "int", "float", "string", "complex", "group", "object", "class", "func"];
         private static bool HasOperator(string token, bool needsSplit = false) => needsSplit ? splittingOps.Contains(token) : ops.Contains(token);
@@ -140,7 +140,7 @@ namespace ISLGui
                     }
 
                     else if(prev == "func") type = TokenType.Function;
-                    else if(prev == "class" || prev == "new") type = TokenType.Class;
+                    else if(prev == "class" || prev == "new" || prev == "is") type = TokenType.Class;
 
                     else{
                         type = TokenType.Identifier;

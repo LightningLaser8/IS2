@@ -26,12 +26,12 @@ namespace ISL.Language.Expressions.Combined
                 //Uninitialised value
                 if (x is VariableDeclarationExpr ve)
                 {
-                    createdClass.Members.Add(ve.name, new IslTypeField() { FieldType = ve.varType, readOnly = ve.IsReadOnly, isUninitialised = true });
+                    createdClass.Members.Add(ve.name, new() { FieldType = ve.varType, readOnly = ve.IsReadOnly, isUninitialised = true });
                 }
                 //Initialised variable
                 else if (x is BinaryOperatorExpression bop && bop.affectedL is VariableDeclarationExpr vx && bop.Operation.id == "=")
                 {
-                    createdClass.Members.Add(vx.name, new IslTypeField() { FieldType = vx.varType, Value = (bop.affectedR?.Eval(program) ?? IslValue.Null), readOnly = vx.IsReadOnly });
+                    createdClass.Members.Add(vx.name, new() { FieldType = vx.varType, Value = (bop.affectedR?.Eval(program) ?? IslValue.Null), readOnly = vx.IsReadOnly });
                 }
                 //Methods
                 else if (x is BinaryOperatorExpression bop2 && bop2.affectedL is FunctionCallExpression fcx && bop2.Operation.id == "=>")
@@ -48,12 +48,12 @@ namespace ISL.Language.Expressions.Combined
                     });
                     var func = new IslFunction(new(paramNames, paramTypes), bop2.affectedR ?? Expression.Null);
                     if (fcx.function == "constructor") createdClass.constructor = func;
-                    else createdClass.Members.Add(fcx.function, new IslTypeField() { FieldType = IslType.Function, Value = func, readOnly = true });
+                    else createdClass.Members.Add(fcx.function, new() { FieldType = IslType.Function, Value = func, readOnly = true });
                 }
                 //Properties
                 else if (x is BinaryOperatorExpression bop3 && bop3.affectedL is IdentifierExpression iex && bop3.Operation.id == "=>")
                 {
-                    createdClass.Members.Add(iex.value, new IslTypeField() { FieldType = IslType.Function, Value = new IslPropertyFunction(bop3.affectedR ?? Expression.Null) });
+                    createdClass.Members.Add(iex.value, new() { FieldType = IslType.Function, Value = new IslPropertyFunction(bop3.affectedR ?? Expression.Null) });
                 }
                 else throw new SyntaxError($"Illegal expression in class declaration: {x.Stringify()}");
             });

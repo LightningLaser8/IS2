@@ -10,7 +10,7 @@
 
         public override string ToString()
         {
-            return $"{(readOnly?"readonly ":"")}{FieldType} field (= {Value})";
+            return $"{(readOnly ? "readonly " : "")}{FieldType} field (= {Value})";
         }
     }
 }

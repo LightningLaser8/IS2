@@ -93,6 +93,48 @@ namespace ISL.Interpreter
                     if (targete is not IIslTriggable targetadd) throw new TypeError($"Invalid target type {targete.Type} in trigonometric function.");
                     return targetadd.Tan();
                 }, 3),
+                new UnaryOperator("asin", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
+                    // IslDebugOutput.Debug($"ASining {target.Stringify()}");
+                    if (targete is not IIslTriggable targetadd) throw new TypeError($"Invalid target type {targete.Type} in trigonometric function.");
+                    return targetadd.ASin();
+                }, 3),
+                new UnaryOperator("acos", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
+                    // IslDebugOutput.Debug($"ACosing {target.Stringify()}");
+                    if (targete is not IIslTriggable targetadd) throw new TypeError($"Invalid target type {targete.Type} in trigonometric function.");
+                    return targetadd.ACos();
+                }, 3),
+                new UnaryOperator("atan", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
+                    // IslDebugOutput.Debug($"ATanning {target.Stringify()}");
+                    if (targete is not IIslTriggable targetadd) throw new TypeError($"Invalid target type {targete.Type} in trigonometric function.");
+                    return targetadd.ATan();
+                }, 3),
+                #endregion
+                #region Complex Numbers
+                // vector angle
+                new UnaryOperator("arg", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
+                    if (targete is not IslComplex targetadd) throw new TypeError($"Invalid target type {targete.Type} in complex number function.");
+                    return targetadd.Angle();
+                }, 3),
+                // vector length
+                new UnaryOperator("mod", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
+                    if (targete is not IslComplex targetadd) throw new TypeError($"Invalid target type {targete.Type} in complex number function.");
+                    return targetadd.Magnitude();
+                }, 3),
+                new UnaryOperator("re", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
+                    if (targete is not IslComplex targetadd) throw new TypeError($"Invalid target type {targete.Type} in complex number function.");
+                    return new IslFloat(targetadd.Value.Real);
+                }, 3),
+                new UnaryOperator("im", (target, prog) => {
+                    var targete = GetValueForExpression(target, prog);
+                    if (targete is not IslComplex targetadd) throw new TypeError($"Invalid target type {targete.Type} in complex number function.");
+                    return new IslFloat(targetadd.Value.Imaginary);
+                }, 3),
                 #endregion
                 #region Logical operators
                 new UnaryOperator("!", (target, prog) => {
@@ -105,8 +147,29 @@ namespace ISL.Interpreter
                     var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     // IslDebugOutput.Debug($"Checking equality of ({left.Type}) {left.Stringify()} and ({right.Type}) {right.Stringify()}");
                     bool equal = false;
-                    if(lefte is IIslEquatable lconst && righte is IIslEquatable rconst) equal = lconst.EqualTo(righte);
+                    if(lefte is IIslComparable icomp) equal = icomp.CompareTo(righte) == CompareResult.Equal;
+                    else if(lefte is IIslEquatable lconst) equal = lconst.EqualTo(righte);
                     return equal ? IslBool.True : IslBool.False;
+                }, -1),
+                new BinaryOperator("<", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
+                    bool res = false;
+                    if(lefte is IIslComparable icomp) res = icomp.CompareTo(righte) == CompareResult.LessThan;
+                    return res ? IslBool.True : IslBool.False;
+                }, -1),
+                new BinaryOperator(">", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
+                    bool res = false;
+                    if(lefte is IIslComparable icomp) res = icomp.CompareTo(righte) == CompareResult.GreaterThan;
+                    return res ? IslBool.True : IslBool.False;
+                }, -1),
+                new BinaryOperator("=/=", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
+                    // IslDebugOutput.Debug($"Checking equality of ({left.Type}) {left.Stringify()} and ({right.Type}) {right.Stringify()}");
+                    bool equal = false;
+                    if(lefte is IIslComparable icomp) equal = icomp.CompareTo(righte) == CompareResult.Equal;
+                    else if(lefte is IIslEquatable lconst) equal = lconst.EqualTo(righte);
+                    return equal ? IslBool.False : IslBool.True;
                 }, -1),
                 new NAryOperator("#", ["?", ":"], (exprs, prog) => {
                     var targete = GetValueForExpression(exprs[0], prog);
@@ -114,6 +177,30 @@ namespace ISL.Interpreter
                     if(targete is IslBool) return targete == IslBool.True ? exprs[1].Eval(prog) : exprs[2].Eval(prog);
                     throw new TypeError("Condition in ternary conditional must evaluate to a Boolean, got "+targete.Type);
                 }),
+                new BinaryOperator("and", (left, right, prog) => {
+                    var lefte = GetValueForExpression(left, prog);
+                    if(lefte is not IslBool ib) throw new TypeError($"Invalid left-hand type {lefte.Type} in 'and' operation.");
+                    if(lefte == IslBool.False) return IslBool.False;
+                    var righte = GetValueForExpression(right, prog);
+                    if(righte is not IslBool ib2) throw new TypeError($"Invalid right-hand type {righte.Type} in 'and' operation.");
+                    if(righte == IslBool.False) return IslBool.False;
+                    return IslBool.True;
+                }, -2),
+                new BinaryOperator("or", (left, right, prog) => {
+                    var lefte = GetValueForExpression(left, prog);
+                    if(lefte is not IslBool ib) throw new TypeError($"Invalid left-hand type {lefte.Type} in 'or' operation.");
+                    if(lefte == IslBool.True) return IslBool.True;
+                    var righte = GetValueForExpression(right, prog);
+                    if(righte is not IslBool ib2) throw new TypeError($"Invalid right-hand type {righte.Type} in 'or' operation.");
+                    if(righte == IslBool.True) return IslBool.True;
+                    return IslBool.False;
+                }, -3),
+                new BinaryOperator("xor", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
+                    if(lefte is not IslBool ib) throw new TypeError($"Invalid left-hand type {lefte.Type} in 'xor' operation.");
+                    if(righte is not IslBool ib2) throw new TypeError($"Invalid right-hand type {righte.Type} in 'xor' operation.");
+                    return ib.EqualTo(ib2).Invert();
+                }, -3),
                 #endregion
                 #region Binary manipulation
                 new UnaryOperator("binmant", (target, prog) => {
@@ -338,13 +425,13 @@ namespace ISL.Interpreter
                         targetclass = program.GetVariableImperative(fcx.function).Value;
                     }
                     //If no constructor
-                    else 
-                    { 
+                    else
+                    {
                         targetclass = affected.Eval(program);
                         if(targetclass is IslIdentifier ie) targetclass = program.GetVariableImperative(ie.Value).Value;
                     }
                     if(targetclass is not IslClass ic) throw new TypeError($"Cannot instantiate non-class type {targetclass.Type}");
-                    var obj = ic.Instantiate(program);
+                    var obj = ic.Instantiate();
                     if(affected is FunctionCallExpression fcx2)
                     {
                         var fn = obj.Class.constructor;
@@ -390,6 +477,34 @@ namespace ISL.Interpreter
                     else throw new SyntaxError($"Property names must be identifiers or function calls.");
                     }
                 }, 100) { IsFoldable = true, AutoSplit = true },
+                new BinaryOperator("is", (left, right, prog) => {
+                    ThrowIfProgramNull(prog);
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
+                    if(righte is IslIdentifier ie) righte = prog.GetVariableImperative(ie.Value).Value;
+                    if (righte is not IslClass ic) throw new TypeError($"Right-hand side must return a class, got {righte.Type}.");
+                    if (lefte is not IslObject io) throw new TypeError($"Cannot check class of {lefte.Type}.");
+                    return io.Class.EqualTo(ic);
+                }, -1),
+                new UnaryOperator("typeof", (affected, program) => {
+                    ThrowIfProgramNull(program);
+                    var targetclass = affected.Eval(program);
+                    if(targetclass is not IslObject io) throw new TypeError($"Can only return class of an object (got {targetclass.Type})");
+                    return io.Class;
+                }, 6) { IsFoldable = false },
+                #endregion
+                #region Conditionals
+                // if right is true, return left, else return null
+                new BinaryOperator("when", (left, right, prog) => {
+                    var condition = GetValueForExpression(right, prog);
+                    if (condition is not IslBool rb) throw new TypeError($"Right-hand side (condition) must return a boolean value, got {condition.Type}.");
+                    return rb == IslBool.True ? GetValueForExpression(left, prog) : IslValue.Null;
+                }, -2),
+                // if left is null, return right side
+                new BinaryOperator("otherwise", (left, right, prog) => {
+                    var option = GetValueForExpression(left, prog);
+                    if (option is IslNull) return GetValueForExpression(right, prog);
+                    return option;
+                }, -2),
                 #endregion
             ];
         }
@@ -410,7 +525,7 @@ namespace ISL.Interpreter
                 return (valueL, valueR);
             }
         }
-        private static IslValue GetValueForExpression(Expression expr, IslProgram? program, bool allowVars = false)
+        private static IslValue GetValueForExpression(Expression expr, IslProgram? program)
         {
             if (program is null)
             {
@@ -508,6 +623,7 @@ namespace ISL.Interpreter
                 vari.Value = TryConvert(value, vari.VarType);
                 return;
             }
+            if (value is IslClass ic) ic.Name = vari.Name;
             vari.Value = value;
         }
         #endregion

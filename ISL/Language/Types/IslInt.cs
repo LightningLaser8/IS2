@@ -7,7 +7,7 @@ namespace ISL.Language.Types
     /// <summary>
     /// Represents a 64-bit integral number in ISL.
     /// </summary>
-    public class IslInt : IslValue, ITypedObject<IslInt, long>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslDivisible, IIslInvertable, IIslExponentiable, IIslModulatable, IIslTriggable, IIslConvertible, IIslEquatable
+    public class IslInt : IslValue, ITypedObject<IslInt, long>, IIslAddable, IIslSubtractable, IIslMultiplicable, IIslDivisible, IIslInvertable, IIslExponentiable, IIslModulatable, IIslTriggable, IIslConvertible, IIslEquatable, IIslComparable
     {
         public long Value { get; }
         public override IslType Type => IslType.Int;
@@ -165,6 +165,23 @@ namespace ISL.Language.Types
         public IslBool EqualTo(IslValue other)
         {
             return (other is IslInt iint && iint.Value == Value) || other is IslFloat iflt && iflt.Value == Value;
+        }
+
+        CompareResult IIslComparable.CompareTo(IslValue other)
+        {
+            if (other is IslInt iint)
+            {
+                if(iint.Value == Value) return CompareResult.Equal;
+                if (iint.Value < Value) return CompareResult.GreaterThan;
+                if (iint.Value > Value) return CompareResult.LessThan;
+            }
+            if (other is IslFloat iflt)
+            {
+                if (iflt.Value == Value) return CompareResult.Equal;
+                if (iflt.Value < Value) return CompareResult.GreaterThan;
+                if (iflt.Value > Value) return CompareResult.LessThan;
+            }
+            return CompareResult.GenericNotEqual;
         }
     }
 }

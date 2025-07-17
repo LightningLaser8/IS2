@@ -109,6 +109,16 @@ namespace ISL.Language.Types
             return new IslComplex(Complex.Atan(Value));
         }
 
+        public IslValue Angle()
+        {
+            return new IslFloat(Math.Atan2(Value.Imaginary, Value.Real));
+        }
+
+        public IslValue Magnitude()
+        {
+            return new IslFloat(Math.Sqrt(Value.Imaginary*Value.Imaginary + Value.Real*Value.Real));
+        }
+
         public IslValue Convert(IslType type)
         {
             if (type == IslType.Int) return new IslInt((long)Value.Real);

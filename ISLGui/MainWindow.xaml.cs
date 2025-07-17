@@ -7,11 +7,15 @@ using Microsoft.UI.Text;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage.Pickers;
+using Windows.System;
 using Windows.UI;
 using WinRT.Interop;
 
@@ -29,7 +33,7 @@ namespace ISLGui
 
         private readonly FileManager manager = new();
         private readonly VariableManager varManager = new();
-        private readonly Highlighter islHighlighter = new();
+        private Highlighter islHighlighter;
 
         private ScrollViewer? InputScroller = null;
         public MainWindow(string initFilePath)
@@ -44,19 +48,6 @@ namespace ISLGui
                 AppWindow appWindow = AppWindow.GetFromWindowId(wndId);
                 appWindow.SetIcon(@"Assets\infinity-icon.ico");
             }
-            //Set highlight colors
-            islHighlighter.SetSyntaxColor(TokenType.Numeric, Color.FromArgb(255, 181, 206, 168));
-            islHighlighter.SetSyntaxColor(TokenType.String, Color.FromArgb(255, 206, 145, 120));
-            islHighlighter.SetSyntaxColor(TokenType.Identifier, Color.FromArgb(255, 156, 220, 254));
-            islHighlighter.SetSyntaxColor(TokenType.Getter, Color.FromArgb(255, 214, 157, 235));
-            islHighlighter.SetSyntaxColor(TokenType.Operator, Color.FromArgb(255, 128, 128, 128));
-            islHighlighter.SetSyntaxColor(TokenType.SpecialOperator, Color.FromArgb(255, 71, 141, 210));
-            islHighlighter.SetSyntaxColor(TokenType.NativeType, Color.FromArgb(255, 71, 141, 210));
-            islHighlighter.SetSyntaxColor(TokenType.Class, Color.FromArgb(255, 71, 201, 176));
-            islHighlighter.SetSyntaxColor(TokenType.Keyword, Color.FromArgb(255, 216, 160, 223));
-            islHighlighter.SetSyntaxColor(TokenType.Comment, Color.FromArgb(255, 87, 166, 74));
-            islHighlighter.SetSyntaxColor(TokenType.MetaTag, Color.FromArgb(255, 119, 139, 172));
-            islHighlighter.SetSyntaxColor(TokenType.Function, Color.FromArgb(255, 220, 218, 155));
             //Add events
             manager.FileButtonClicked += Manager_FileButtonClicked;
             manager.FileButtonDeleted += Manager_FileButtonDeleted;
@@ -77,9 +68,77 @@ namespace ISLGui
                 }));
             }
             manager.AddButtonsToListView(Files);
+
+            RestartSyntaxHighlighter();
+
             LoadFileIntoTextbox();
             CodeMode(0, new());
         }
+        void TextInput_Loaded(object sender, RoutedEventArgs e)
+        {
+            TextInput.ContextFlyout.Opening += TextInput_ContextMenuOpening;
+        }
+        private void TextInput_ContextMenuOpening(object? sender, object e)
+        {
+            InjectAdditionalContextMenuItems();
+        }
+        void OpenHighlighterFlyout(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        void InjectAdditionalContextMenuItems()
+        {
+            AddCMSeparator();
+            AddCMItem(
+                "Restart Highlighter",
+                RestartHighlighterTriggered,
+                new() { Key = VirtualKey.R, Modifiers = VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift }
+                );
+
+            if(manager.File.Dirty) AddCMItem(
+                "Discard Changes",
+                (f, e) => LoadFileIntoTextbox()
+                );
+        }
+        void AddCMItem(string label, RoutedEventHandler onclick, KeyboardAccelerator? accel = null)
+        {
+            var mf = (TextCommandBarFlyout)TextInput.ContextFlyout;
+            var resetButton = new AppBarButton()
+            {
+                Label = label
+            };
+            if (accel is not null)
+                resetButton.KeyboardAccelerators.Add(accel);
+            resetButton.Click += onclick;
+            mf.SecondaryCommands.Add(resetButton);
+        }
+        void AddCMSeparator()
+        {
+            var mf = (TextCommandBarFlyout)TextInput.ContextFlyout;
+            mf.SecondaryCommands.Add(new AppBarSeparator());
+        }
+
+        [MemberNotNull(nameof(islHighlighter))]
+        void RestartSyntaxHighlighter()
+        {
+            islHighlighter = new Highlighter();
+            //Set highlight colors
+            islHighlighter.SetSyntaxColor(TokenType.Numeric, Color.FromArgb(255, 181, 206, 168));
+            islHighlighter.SetSyntaxColor(TokenType.String, Color.FromArgb(255, 206, 145, 120));
+            islHighlighter.SetSyntaxColor(TokenType.Identifier, Color.FromArgb(255, 156, 220, 254));
+            islHighlighter.SetSyntaxColor(TokenType.Getter, Color.FromArgb(255, 214, 157, 235));
+            islHighlighter.SetSyntaxColor(TokenType.Operator, Color.FromArgb(255, 128, 128, 128));
+            islHighlighter.SetSyntaxColor(TokenType.SpecialOperator, Color.FromArgb(255, 71, 141, 210));
+            islHighlighter.SetSyntaxColor(TokenType.NativeType, Color.FromArgb(255, 71, 141, 210));
+            islHighlighter.SetSyntaxColor(TokenType.Class, Color.FromArgb(255, 71, 201, 176));
+            islHighlighter.SetSyntaxColor(TokenType.Keyword, Color.FromArgb(255, 216, 160, 223));
+            islHighlighter.SetSyntaxColor(TokenType.Comment, Color.FromArgb(255, 87, 166, 74));
+            islHighlighter.SetSyntaxColor(TokenType.MetaTag, Color.FromArgb(255, 50, 170, 200));
+            islHighlighter.SetSyntaxColor(TokenType.Function, Color.FromArgb(255, 220, 218, 155));
+            SyntaxHighlighting();
+        }
+        private void RestartHighlighterTriggered(object sender, RoutedEventArgs e) => RestartSyntaxHighlighter();
 
         private void InputScroller_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e) => SyncScrolling();
         private void Manager_FileButtonDeleted(int fileIndex) => LoadFileIntoTextbox();

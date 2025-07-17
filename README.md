@@ -3,7 +3,7 @@
 # IS2: ISL Reimagined
 <strong style="color: red; font-size: 120%">⚠️ This project is in development, and this documentation may not provide fully accurate information.<br>The APIs shouldn't change, but don't rely on it too much.</strong>
 
-## Module: ISL
+# Module: ISL
 
 IS2 is primarily a C# implementation of Integrate, but has made some improvements to its scripting language, ISL.  
 Basic Hello World (even though it's fairly useless in a scripting language):
@@ -12,9 +12,10 @@ Basic Hello World (even though it's fairly useless in a scripting language):
 out string hw = "Hello World!";
 ```
 
-### Syntactical Differences
+## Syntactical Differences
 
-The new ISL bears little resemblance to the original, being closer to high-level languages such as JavaScript in syntax.
+The new ISL bears little resemblance to the original, being closer to high-level languages such as JavaScript in syntax.  
+It also has proper(ish) object-orientation.
 
 ---
 
@@ -59,42 +60,71 @@ Much easier to read.
 Instead of using keywords for _everything_, IS2 uses **Expression Trees**. Put simply, it's an abstract way of representing an operation in terms of nested expressions (operators with operands).  
 This makes it possible to inline almost everything in the language, substantially reducing the amount of code required.
 
-### Feature List
+## Feature List
 
-#### Keywords
+### Keywords
 
 `if <condition> <statement>` If \<condition> returns true, evaluate \<statement>.  
 `else <statement>` If the last `if`'s \<condition> was false, evaluate \<statement>.  
-`elseif <condition> <statement>` Combines `if` and `else`.
+`elseif <condition> <statement>` Combines `if` and `else`: If the last `if`'s \<condition> was false, and \<condition> is true, evaluate \<statement>.  
 
-#### Operators
+`return <value>` When used in a function body, sets the function's return value to \<value>.  
+`function <name>[..<parameters>] { <body> }` Creates a function with the specified \<name> and \<body>, taking the specified \<parameters>. Identical to `func <name> = [..<parameters>] => <body>`.  
 
-##### Basic Mathematics
+### Operators
+
+#### Basic Mathematics
 
 `<augend> + <addend>` Returns the result of the addition of \<addend> to \<augend>.  
 `<minuend> - <subtrahend>` Returns the result of the subtraction of \<subtrahend> from \<minuend>.  
 `<multiplicand> * <multiplier>` Returns the result of the multiplication of \<multiplicand> by \<multiplier>.  
 `<dividend> / <divisor>` Returns the result of the division of \<dividend> by \<divisor>.  
-`<dividend> % <divisor>` Returns the remainder of the division of \<dividend> by \<divisor>. The (integer) quotient can be obtained with `(<dividend> / <divisor>) -> Int`.  
-`<base> ** <power>` Returns the result of the exponentiation of \<base> to the power of \<power>.
+`<dividend> % <divisor>` Returns the remainder of the division of \<dividend> by \<divisor>. The (integer) quotient can be obtained with `(<dividend> / <divisor>) -> int`.  
+`<base> ** <power>` Returns the result of the exponentiation of \<base> to the power of \<power>.  
 
-##### Trigonometry:
+#### Trigonometry:
 
 `sin <angle>` Returns the sine of \<angle> (where \<angle> is measured in radians.)  
 `cos <angle>` Returns the cosine of \<angle> (where \<angle> is measured in radians.)  
-`tan <angle>` Returns the tangent of \<angle> (where \<angle> is measured in radians.)
+`tan <angle>` Returns the tangent of \<angle> (where \<angle> is measured in radians.)  
+`asin <angle>` Returns the inverse sine of \<angle> (where \<angle> is measured in radians.)  
+`acos <angle>` Returns the inverse cosine of \<angle> (where \<angle> is measured in radians.)  
+`atan <angle>` Returns the inverse tangent of \<angle> (where \<angle> is measured in radians.)  
 
-##### Logical Operators:
+#### Complex Manipulation:
+
+`re <comp>` Returns the real component of the complex number \<comp>.  
+`im <comp>` Returns the imaginary component of the complex number \<comp>.  
+`arg <comp>` Returns angle the point (Re(\<comp>), Im(\<comp>)) makes with the positive real axis. Can be used to get the argument of the complex number \<comp>.  
+`mod <comp>` Returns the distance of the point (Re(\<comp>), Im(\<comp>)) from the origin. Can be used to get the modulus of the complex number \<comp>.  
+
+#### Logical Operators:
 
 `!<value>` Returns the (bitwise) inverse of \<value>.  
-`<left> == <right>` Returns `true` if \<left> and \<right> have the same value, otherwise `false`.
+`<left> == <right>` Returns `true` if \<left> and \<right> have the same value, otherwise `false`.  
+`<left> =/= <right>` Returns `true` if \<left> and \<right> have different values, otherwise `false`.  
+`<left> < <right>` Returns `true` if \<left> has a smaller value than \<right>, otherwise `false`.  
+`<left> > <right>` Returns `true` if \<left> has a greater value than \<right>, otherwise `false`.  
+**These 3 only take boolean values on both sides:**  
+`<left> or <right>` Returns `true` if either \<left> or \<right> is `true`, and `false` otherwise.  
+`<left> xor <right>` Returns `true` if \<left> and \<right> are different, and `false` otherwise.  
+`<left> and <right>` Returns `true` if both \<left> and \<right> are `true`, and `false` otherwise.  
+**Both `and` and `or` are short-circuiting, i.e. the right-hand operand is not evaluated if the result of the operation can be determined without it.**  
 
-##### Binary Manipulation:
+#### Conditionals:
+
+`# <condition> ? <trueval> : <falseval>` Returns \<trueval> if \<condition> is true, and \<falseval> otherwise.  
+`<value> when <condition>` Returns \<value> if \<condition> is true, and `null` otherwise.  
+`<value> otherwise <replacement>` Returns \<replacement> if \<value> is `null`, and \<value> otherwise. Can be used in conjunction with `.. when ..` to form an alternative conditional `<trueval> when <condition> otherwise <falseval>`.  
+
+#### Binary Manipulation:
 
 `binmant <float>` Returns the binary mantissa of the floating-point number \<float>.  
-`binexp <float>` Returns the binary exponent of the floating-point number \<float>.
+`binexp <float>` Returns the binary exponent of the floating-point number \<float>.  
+`<int> <* <length>` Returns the integral number \<int> shifted left \<length> places.  
+`<int> *> <length>` Returns the integral number \<int> shifted right \<length> places.  
 
-##### Variable Manipulation:
+#### Variable Manipulation:
 
 `<var> = <value>` Sets the value of the variable at \<var> to \<value>.  
 `<var> += <value>` Sets the value of the variable at \<var> to its current value + \<value>.  
@@ -103,33 +133,43 @@ This makes it possible to inline almost everything in the language, substantiall
 `<var> /= <value>` Sets the value of the variable at \<var> to its current value / \<value>.  
 `<var> %= <value>` Sets the value of the variable at \<var> to its current value % \<value>.  
 `<var> **= <value>` Sets the value of the variable at \<var> to its current value \*\* \<value>.  
-`<var> <~ <value>` Appends \<value> to the end of \<var>. Returns the variable's value. (No, this isn't a mistake, the operator's overloaded)
+`<var> <~ <value>` Appends \<value> to the end of \<var>. Returns the variable's value. (No, this isn't a mistake, the operator's overloaded.) Works on groups and strings.  
 
-##### Collection Manipulation:
+#### Collection Manipulation:
 
 **Works on groups and strings.**  
 `<col> <~ <value>` Appends \<value> to the end of \<col>. Returns the collection.  
 `<col> at <index>`, Returns the element at index \<index> of the collection \<col>. Can be used to search strings.
 
-##### Type Conversion:
+#### Type Conversion:
 
 `<value> -> <type>`, Returns \<value> as an instance of type \<type>. \<type> must be a valid type name, such as `string` or `int`. Will throw an error if the conversion is nonsense, such as `12.5 -> group`.  
 `<value> ~> <type>`, The same as `<value> -> <type>`, except invalid operations will not throw errors, and will instead use the default value for a variable of type \<type>. (e.g. `12.5 ~> group` returns `[]`, instead of throwing an error.)  
 
-##### Variables:
+#### Variables:
 
 `out <declaration>` Sets a variable to be output on program end.  
 `in <declaration>` Sets a variable to an input of the same name.
 
-#### Constructs :
+#### Object Manipulation:
+
+`new <class>` Instantiates \<class> with default values.  
+`new <class>[..<parameters>]` Instantiates \<class> and calls its constructor with the specified \<parameters>.  
+`<obj> is <class>` Returns true when \<obj> is an instance of \<class>, and false if not.  
+`typeof <obj>` Returns the class of \<obj>.  
+`<obj>.<property>` Gets the property named \<property> of \<object>.  
+
+### Constructs:
 
 `( ... )` Bracket expression: Encapsulates an expression, causing it to be evaluated first.  
 `[ ... , ... ]` Collection expression: Combines multiple expressions into a group structure.  
 `{ ... }` Code block: Evaluates multiple expressions, and returns the result of the final one. Creates a new scope for variables.  
 `\ ... \` Variable getter: Returns the value of the variable at the result of the contained expression.  
+`<< ... >>` Class declaration: Creates a new class with the specified members.  
 `<modifier?> <type> <name>` Variable declaration. Adds a variable with name \<name> and type \<type> to the current scope, optionally modified by \<modifier>.  
+`<func>[..<parameters>]` Calls the function stored in \<func> with the parameters \<parameters>.  
 
-##### Native Types:
+#### Native Types:
 
 `string` A collection of characters.  
 `int` A 64-bit integral number.  
@@ -137,23 +177,64 @@ This makes it possible to inline almost everything in the language, substantiall
 `complex` A complex number, where the real and imaginary parts are both `float`s.  
 `bool` A Boolean value (`true` or `false`).  
 `group`A generic untyped collection of values.  
-`infer` Nothing, until any value is set, at which point it becomes that type (`infer foo = 3` makes `foo` an `int`, as `3` is an `int`, so has the same effect as `int foo`).
+`infer` Nothing, until any value is set, at which point it becomes that type (`infer foo = 3` makes `foo` an `int`, as `3` is an `int`, so has the same effect as `int foo = 3`).  
+`object` Basically a dictionary of key-value pairs, with a class which can be type-checked.  
+`class` A blueprint for an object, with functions and fields.  
 
-##### Modifiers
+#### Modifiers:
 
 `imply` Modifies a variable to automatically cast values to its type on assignment. Cannot be used with `infer`.  
 `const` Makes a variable read-only. Cannot be used with `infer` or `imply`.  
 
-#### Comments:
+#### Members:
+
+ISL classes need a list of members, to define what properties instances should have.  
+This example class illustrates the three types of member:  
+```is2
+// This is not required for all classes, it's for ID management in this class.
+int currentId = 0;
+// The class here will be named 'Example'.
+// If the class was unassigned, such as by using 'new << ... >>[ .. ]',
+// then it will be named '<anonymous>'.
+class Example = <<
+  int foo = 5; // Integer field, accessed with '<obj>.foo'.
+  string bar; // Empty string field, which must be set at least once.
+  const int id; // Empty read-only integral field. Must be set in the constructor.
+  // Constructor function, called once on instantiation.
+  constructor[string baz] => {
+    this.bar = \baz\; // Initialise 'bar' with the value passed in as 'baz'.
+    this.id = \currentId\;
+    currentId += 1;
+  };
+  // Method, called with '<obj>.clone[]'
+  clone[] => {
+    return new Example[this.bar];
+  };
+  // Could also be written as:
+  clone2[] => new Example[this.bar];
+  // Method with parameters, just like a regular function.
+  setFoo[int newFoo] => {
+    this.foo = \newFoo\;
+  };
+  // Property, basically a method called automatically, so used like a readonly field.
+  str => {
+    return this.bar * this.foo;
+  };
+>>;
+```
+Inside a class method body, the 'keyword' `this` can be used to refer to the current instance of the class, which the method is being called on.
+
+### Comments:
 
 `// ...` Line comment: Stops the whole line after it from being read by the interpreter.  
 `/* ... */` Block comment: Stops its contents from being read by the interpreter.  
 `[tag value1 value2 ... valueN]` Metadata Tag: Provides information about the program to the interpreter, and the surrounding project. Projects can obtain `value1 ...valueN` as an array with `IslProgram.GetMeta(tagName)`.
 
-### Restrictions and Flexibility
+## Restrictions and Flexibility
 
 All operators and keywords must be surrounded by spaces.  
 All statements must be separated by a semicolon.  
+Group values must be separated by a comma.  
 However, **Those are pretty much the only constraints.**
 
 Almost anything can be inlined:
@@ -186,12 +267,12 @@ They all produce the result:
 (Int) newHealth = 99
 ```
 
-## Module: Integrate
+# Module: Integrate
 
 IS2 contains a C# version of Integrate, a JavaScript library for mod loading into serialisable registries.  
 It can be used in conjunction with ISL to perform complex operations using scripts.
 
-### Terminology
+## Terminology
 
 - A _registry_ is a data structure for holding case-insensitive key-value pairs. Simply, it matches names to objects, without caring about capitalisation. They are instances of `Integrate.Registry.Registry`.
 - *Registry name*s or *Registry location*s are strings which are keys in a _registry_. They can be used to refer to a _constructible object_.
@@ -200,7 +281,7 @@ It can be used in conjunction with ISL to perform complex operations using scrip
 - A _mod_ is a directory of files, each one adding _content_.
 - A _content file_ is a JSON file holding a _constructible object_.
 
-#### ISL and Scripts
+### ISL and Scripts
 
 - _ISL_, or _Integrate Scripting Language_ is an interpreted scripting language for use with this modloader, to create complex events.
 - A _script_ is a `.isl` file to be executed when an _event_ is fired. For more info, see the **Script Files** section, under **Example (Mod Structure)**.
@@ -208,7 +289,7 @@ It can be used in conjunction with ISL to perform complex operations using scrip
 
 ---
 
-### Example (C# Implementation)
+## Example (C# Implementation)
 
 _Adding Integrate mods to your project_
 
@@ -250,7 +331,7 @@ On execution, logs:
 
 ---
 
-### Example (Mod Structure)
+## Example (Mod Structure)
 
 _The directory structure for Integrate mods_
 
@@ -263,7 +344,7 @@ _The directory structure for Integrate mods_
  |=> (scripts)
 ```
 
-#### mod.json
+### mod.json
 
 Holds the basic information for the mod:
 
@@ -290,7 +371,7 @@ Holds the basic information for the mod:
 `definitions` gives the path _from the mod.json file_ to the definition file.
 `scripts` gives the path _from the mod.json file_ to the script definition file.
 
-#### Definition File
+### Definition File
 
 This is the most important file in any Integrate mod, defining paths and registry names of _content_.
 
@@ -320,7 +401,7 @@ The `scripts` version is defined similarly, but instead as an array of strings:
 
 where each line is a path to a script file. The path may exclude the `.isl` file extension, in which case one will be appended for you.
 
-#### Content Files
+### Content Files
 
 These describe the actual content itself, not metadata.
 They can be anywhere, even outside the mod directory, as long as the definition file points to them, and the program can reach them.  
@@ -340,7 +421,7 @@ This is to leave organisation up to the mod developer, so you can organise the f
 
 All class properties must be public to be overwritten, and can be either a field or property. Attempting to overwrite any other member type will log an error message, and continue as if the property didn't exist.
 
-#### Script Files
+### Script Files
 
 These are `.isl` files which define complex events.  
 They follow basic IS2 syntax, with some extras for Integrate:
@@ -361,12 +442,12 @@ It's required for the script to fire by itself, but project devs can get the obj
 
 ---
 
-### Interface (Integrate.ModContent.ModLoader)
+## Interface (Integrate.ModContent.ModLoader)
 
 Integrate has several functions to customise modloading, which are documented here.  
 Most are properties of the static class `ModLoader`, in the namespace `Integrate`.
 
-#### ModLoader.Add()
+### ModLoader.Add()
 
 `ModLoader.Add()` loads, constructs and implements a mod all in one go.
 
@@ -376,7 +457,7 @@ public static Integrate.ModContent.Mod Add(string path)
 
 `path` is the relative path from the current window location to the mod's _root directory_, **not** the mod.json.
 
-#### ModLoader.Load()
+### ModLoader.Load()
 
 `ModLoader.Load()` loads a mod from a path, and returns the `Integrate.ModContent.Mod` object.
 
@@ -387,7 +468,7 @@ public static Integrate.ModContent.Mod Load(string path)
 `path` is the relative path from the current window location to the mod's _root directory_, **not** the mod.json.  
 Returns an `Integrate.ModContent.Mod` object, holding all the info about the imported mod. Once loaded, this object is all that's needed.
 
-#### ModLoader.AddModdableRegistry()
+### ModLoader.AddModdableRegistry()
 
 `ModLoader.AddModdableRegistry()` adds a registry to the list of modifiable registries. This list defines which registries mods can add content to.
 
@@ -398,7 +479,7 @@ public static void AddModdableRegistry(Integrate.Registry.Registry reg, string n
 `reg` is the `Integrate.Registry.Registry` (or subclass thereof) to allow modification of.  
 `name` is the string that this registry will be referred to by.
 
-#### ModLoader.SetPrefix()
+### ModLoader.SetPrefix()
 
 `ModLoader.SetPrefix()` changes whether or not mod content's registry names should be prefixed with the mod's `name`.
 
@@ -408,7 +489,7 @@ public static void SetPrefix(bool value)
 
 `value` is the new Boolean value of this flag. `true` means prefixes on, `false` means prefixes off. By default this is `false`.
 
-#### ModLoader.SetInfoOutput()
+### ModLoader.SetInfoOutput()
 
 `ModLoader.SetInfoOutput()` changes the way Integrate shows status messages.
 
@@ -418,7 +499,7 @@ public static void SetInfoOutput(Action\<string> func)
 
 `func` callback for each status message. The parameter `info` contains the message, as a string. By default, Integrate does nothing with the log messages.
 
-#### ModLoader.types
+### ModLoader.types
 
 `ModLoader.types` is an `Integrate.Registry.Registry\<Type>` holding all types mod content can be an instance of.
 
@@ -426,7 +507,7 @@ public static void SetInfoOutput(Action\<string> func)
 public static readonly Registry\<Type> types
 ```
 
-#### ModLoader.Construct()
+### ModLoader.Construct()
 
 `ModLoader.Construct()` is a helpful function that combines `Integrate.Registry.Registry.Create()` and `Integrate.Registry.Registry.Construct()` for mod content. It constructs an object either literally or from any moddable registry, using types from `ModLoader.types`, or using types directly.
 
@@ -448,9 +529,9 @@ public static object Construct(string sourceName, Type type);
 public static T? Construct<T>(string sourceName) where T : class;
 ```
 
-### Classes
+## Classes
 
-#### Integrate.ModContent.ModContent.Content
+### Integrate.ModContent.ModContent.Content
 
 ```c#
 public class Content
@@ -471,7 +552,7 @@ public class Content
 `Implement()` Adds this content to its designated registry.
 `Create()` Returns a constructed instance of this content directly.
 
-#### Integrate.ModContent.ModContent.ISL.Script
+### Integrate.ModContent.ModContent.ISL.Script
 
 ```c#
 public class Script(string source, string location = "<anonymous>")
@@ -488,7 +569,7 @@ public class Script(string source, string location = "<anonymous>")
 `Compile()` Forces the program to be 'compiled' earlier. THis is automatically called if any member other than `Location` is invoked.  
 `Execute()` Executes the script's ISL program. Events will invoke this themelves, and will specify inputs.
 
-#### Integrate.ModContent.Mod
+### Integrate.ModContent.Mod
 
 ```c#
 public class Mod
@@ -514,7 +595,7 @@ public class Mod
 `content` Array of all content in this mod.  
 `scripts` Array of all scripts in this mod.
 
-#### Integrate.Registry.Registry
+### Integrate.Registry.Registry
 
 ```c#
 public class Registry<T> where T : notnull
@@ -544,13 +625,13 @@ public class Registry<T> where T : notnull
 `At()` Returns an item at the Nth index of the Registry.  
 `IsValidName()` Checks if the provided string would be a valid registry name.
 
-##### Not-yet-implemented:
+#### Not-yet-implemented:
 
 `Create()` Constructs an item from this registry. Note that this only works with object entries. The parameter `registry` should be the registry holding all types, such as `ModLoader.types`.  
 `Construct()` Constructs an item using a type from this registry. Note that this only works with object parameters.  
 `NameOf()` Searches the registry for any entries with matching content. Equivalence follows `==` rules.
 
-## Module: ISLTest
+# Module: ISLTest
 
 Targets: **Mod Developers**, **ISL Contributors**  
 A command-line interface for running simple ISL programs. Doesn't allow input customisation, but can load from a file or take input directly.  
@@ -563,14 +644,14 @@ ISLTest -h
 
 for help.
 
-## Module: ISLGui
+# Module: ISLGui
 
 Targets: **Mod Developers**  
 A graphical interface for developing ISL, in the form of an IDE (Integrated Development Environment).  
 It provides multi-file support through a tabbed sidebar, an integrated runtime with an input variable customiser and a rich code editor with syntax highlighing accurate to the interpreter.  
 It's most helpful for mod developers, but it can be helpful to check extension syntax.
 
-## Module: IntegrateTest
+# Module: IntegrateTest
 
 Targets: **Project Developers**, **Integrate Contributors**  
 Simply a CLI tester for the Integrate modloader. Run it, and it provides debug information for one instance of most Integrate operations. Not very useful for mod developers, but may help in developing the projects to mod.

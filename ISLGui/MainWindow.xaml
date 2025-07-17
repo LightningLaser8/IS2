@@ -40,7 +40,7 @@
         </StackPanel>
         <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="1" Margin="10,5,10,0" Padding="10, 5, 10, 0">
             <TextBlock FontFamily="Consolas" x:Name="BottomText" FontSize="12">&lt;No file opened&gt;</TextBlock>
-            <StackPanel Orientation="Horizontal" Margin="10,5,10,0">
+            <StackPanel Orientation="Horizontal" Margin="10,5,10,0" HorizontalAlignment="Stretch">
                 <Button Height="25" FontSize="12" Padding="5,0,5,0" Width="80" Click="CodeMode" x:Name="CodeModeButton">Code</Button>
                 <Button Height="25" FontSize="12" Padding="5,0,5,0" Width="80" Click="SetupMode" x:Name="SetupModeButton">Setup</Button>
                 <Button Height="25" FontSize="12" Padding="5,0,5,0" Width="80" Click="RunMode" x:Name="RunModeButton">Run</Button>
@@ -77,7 +77,7 @@
                 </TextBlock>
             </ScrollViewer>
             <TextBox Text='out string _ = "Hello World"' TextWrapping="Wrap" AcceptsReturn="True" IsSpellCheckEnabled="False"
-    SelectionHighlightColor="#68acacac" TextChanged="SyntaxHighlightingTriggered" x:Name="TextInput" Opacity="0.5" FontFamily="Consolas" Padding="5" Margin="0" EffectiveViewportChanged="TextInput_EffectiveViewportChanged">
+    SelectionHighlightColor="#68acacac" TextChanged="SyntaxHighlightingTriggered" x:Name="TextInput" Opacity="0.5" FontFamily="Consolas" Padding="5" Margin="0" EffectiveViewportChanged="TextInput_EffectiveViewportChanged" Loaded="TextInput_Loaded">
                 <TextBox.Resources>
                     <SolidColorBrush x:Key="TextControlForeground" Color="Transparent" />
                     <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="Transparent" />

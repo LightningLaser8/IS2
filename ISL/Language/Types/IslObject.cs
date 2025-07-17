@@ -1,4 +1,5 @@
 ﻿using ISL.Interpreter;
+using ISL.Language.Operations;
 using ISL.Language.Types.Classes;
 using ISL.Language.Types.Functions;
 using ISL.Language.Variables;
@@ -6,7 +7,7 @@ using ISL.Runtime.Errors;
 
 namespace ISL.Language.Types
 {
-    public class IslObject : IslValue
+    public class IslObject : IslValue, IIslConvertible
     {
         public override IslType Type => IslType.Object;
         public IslClass Class { get; set; } = IslInterpreter.Object;
@@ -21,6 +22,11 @@ namespace ISL.Language.Types
         public override object? ToCLR()
         {
             return this;
+        }
+        public IslValue Convert(IslType type)
+        {
+            if (type == IslType.String) return new IslString(Stringify());
+            throw new TypeConversionError(Type.ToString(), type.ToString());
         }
     }
 }
