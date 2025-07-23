@@ -157,10 +157,28 @@ namespace ISL.Interpreter
                     if(lefte is IIslComparable icomp) res = icomp.CompareTo(righte) == CompareResult.LessThan;
                     return res ? IslBool.True : IslBool.False;
                 }, -1),
+                new BinaryOperator("<=", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
+                    bool res = false;
+                    if(lefte is IIslComparable icomp) {
+                        var c = icomp.CompareTo(righte);
+                        res = c == CompareResult.LessThan || c == CompareResult.Equal; 
+                    }
+                    return res ? IslBool.True : IslBool.False;
+                }, -1),
                 new BinaryOperator(">", (left, right, prog) => {
                     var (lefte, righte) = GetValuesForExpressions(left, right, prog);
                     bool res = false;
                     if(lefte is IIslComparable icomp) res = icomp.CompareTo(righte) == CompareResult.GreaterThan;
+                    return res ? IslBool.True : IslBool.False;
+                }, -1),
+                new BinaryOperator(">=", (left, right, prog) => {
+                    var (lefte, righte) = GetValuesForExpressions(left, right, prog);
+                    bool res = false;
+                    if(lefte is IIslComparable icomp) {
+                        var c = icomp.CompareTo(righte);
+                        res = c == CompareResult.GreaterThan || c == CompareResult.Equal;
+                    }
                     return res ? IslBool.True : IslBool.False;
                 }, -1),
                 new BinaryOperator("=/=", (left, right, prog) => {
@@ -171,12 +189,12 @@ namespace ISL.Interpreter
                     else if(lefte is IIslEquatable lconst) equal = lconst.EqualTo(righte);
                     return equal ? IslBool.False : IslBool.True;
                 }, -1),
-                new NAryOperator("#", ["?", ":"], (exprs, prog) => {
-                    var targete = GetValueForExpression(exprs[0], prog);
-                    ThrowIfProgramNull(prog);
-                    if(targete is IslBool) return targete == IslBool.True ? exprs[1].Eval(prog) : exprs[2].Eval(prog);
-                    throw new TypeError("Condition in ternary conditional must evaluate to a Boolean, got "+targete.Type);
-                }),
+                //new NAryOperator("#", ["?", ":"], (exprs, prog) => {
+                //    var targete = GetValueForExpression(exprs[0], prog);
+                //    ThrowIfProgramNull(prog);
+                //    if(targete is IslBool) return targete == IslBool.True ? exprs[1].Eval(prog) : exprs[2].Eval(prog);
+                //    throw new TypeError("Condition in ternary conditional must evaluate to a Boolean, got "+targete.Type);
+                //}),
                 new BinaryOperator("and", (left, right, prog) => {
                     var lefte = GetValueForExpression(left, prog);
                     if(lefte is not IslBool ib) throw new TypeError($"Invalid left-hand type {lefte.Type} in 'and' operation.");
@@ -505,6 +523,34 @@ namespace ISL.Interpreter
                     if (option is IslNull) return GetValueForExpression(right, prog);
                     return option;
                 }, -2),
+                // if right is true, return left, else return null
+                new BinaryOperator("?", (left, right, prog) => {
+                    var condition = GetValueForExpression(left, prog);
+                    if (condition is not IslBool rb) throw new TypeError($"Right-hand side (condition) must return a boolean value, got {condition.Type}.");
+                    return rb == IslBool.True ? GetValueForExpression(right, prog) : IslValue.Null;
+                }, -2),
+                // if left is null, return right side
+                new BinaryOperator(":", (left, right, prog) => {
+                    var option = GetValueForExpression(left, prog);
+                    if (option is IslNull) return GetValueForExpression(right, prog);
+                    return option;
+                }, -2),
+                #endregion
+                #region Namespacing
+                //Can't use in functions!
+                new BinaryOperator("#", (left, right, prog) => {
+                    ThrowIfProgramNull(prog);
+                    if (left is not IdentifierExpression ie) throw new TypeError($"Namespaces must be indicated by a valid identifier.");
+                    if (right is IdentifierExpression cb) return prog.GetNamespace(ie.value).GetVariableImperative(cb.value);
+                    if (right is FunctionCallExpression fc) {
+                        var fn = prog.GetNamespace(ie.value).GetVariableImperative(fc.function);
+                        if(fn.Value is not IslFunction ifn) throw new TypeError($"Cannot call a non-function type.");
+                        var ps = fc.parameters;
+                        if(ps is not CollectionExpression ce) throw new TypeError($"Parameter list must be a collection expression.");
+                        return ifn.Call(prog, [..ce.expressions.Select(x => x.Eval(prog))]);
+                    }
+                    throw new TypeError($"Right-hand side must be a valid namespace member name.");
+                }, 6) { AutoSplit = true, IsFoldable = false },
                 #endregion
             ];
         }

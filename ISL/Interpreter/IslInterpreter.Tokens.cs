@@ -2,6 +2,6 @@
 {
     internal partial class IslInterpreter
     {
-        public readonly string[] Tokens = [",", ";", ")", "]", "\\", "}", "!", "⟩", "."];
+        public readonly string[] Tokens = [",", ";", ")", "]", "\\", "}", "!", "⟩", ".", "#"];
     }
 }

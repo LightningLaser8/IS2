@@ -11,13 +11,18 @@ namespace ISL.Language.Expressions.Combined
     internal class CodeBlockExpression : Expression
     {
         public List<Expression> expressions = [];
+        public bool CreateScope { get; set; } = true;
         public override IslValue Eval(IslProgram program)
         {
             //Create temporary scope
-            IslVariableScope VariableScope = new(program.CurrentScope);
-            program.CurrentScope = VariableScope;
+            IslVariableScope? VariableScope = null;
+            if (CreateScope)
+            {
+                VariableScope = new(program.CurrentScope);
+                program.CurrentScope = VariableScope;
+            }
             //Create return variable
-            var ret = VariableScope.CreateVariable("return", IslType.Null);
+            var ret = program.CurrentScope.CreateVariable("return", IslType.Null);
             ret.InferType = true;
 
             IslValue finalVal = IslValue.Null;
@@ -28,7 +33,7 @@ namespace ISL.Language.Expressions.Combined
             }
 
             //Restore the old scope
-            program.CurrentScope = VariableScope.Parent!;
+            if (CreateScope) program.CurrentScope = VariableScope!.Parent!;
             //Give return value: either specified or auto
             return ret.Value == IslValue.Null ? finalVal : ret.Value;
         }

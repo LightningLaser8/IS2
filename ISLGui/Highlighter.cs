@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Windows.UI;
@@ -11,11 +12,11 @@ namespace ISLGui
 {
     internal partial class Highlighter
     {
-        private readonly static string[] ops = ["+", "-", "*", "/", "%", "**", "==", "!", "=", "+=", "-=", "*=", "/=", "%=", "**=", "->", "<~", "#", "~>", ".", "<*", "*>", "<", ">", "=/="];
-        private readonly static char[] toks = [';', ',', '?', ':', '.'];
-        private readonly static string[] splittingOps = ["!", "."];
+        private readonly static string[] ops = ["+", "-", "*", "/", "%", "**", "==", "!", "=", "+=", "-=", "*=", "/=", "%=", "**=", "->", "<~", "~>", ".", "#", "<*", "*>", "<", ">", "=/="];
+        private readonly static char[] toks = [';', ',', '?', ':', '.', '#'];
+        private readonly static string[] splittingOps = ["!", ".", "#"];
         private readonly static char[] bracks = ['(', ')', '[', ']', '{', '}', '\\'];
-        private readonly static string[] keywords = ["if", "else", "elseif", "function", "return"];
+        private readonly static string[] keywords = ["if", "else", "elseif", "function", "return", "namespace"];
         private readonly static string[] keyops = ["in", "out", "binmant", "binexp", "at", "sin", "cos", "tan", "asin", "acos", "atan", "re", "im", "mod", "arg", "=>", "this", "new", "<<", ">>", "constructor", "when", "otherwise", "true", "false", "is", "typeof"];
         private readonly static string[] vardecMods = ["imply", "const"];
         private readonly static string[] natives = ["infer", "bool", "int", "float", "string", "complex", "group", "object", "class", "func"];
@@ -108,7 +109,7 @@ namespace ISLGui
             TokenType prevType = TokenType.Other;
             TokenType prevType2 = TokenType.Other;
             return [.. tokens.Select(
-                token =>
+                (token, index) =>
                 {
                     var run = new Run { Text = token };
                     token = token.Trim();
@@ -141,6 +142,7 @@ namespace ISLGui
 
                     else if(prev == "func") type = TokenType.Function;
                     else if(prev == "class" || prev == "new" || prev == "is") type = TokenType.Class;
+                    else if(prev == "namespace" || index < tokens.Count && tokens[index + 1] == "#") type = TokenType.Namespace;
 
                     else{
                         type = TokenType.Identifier;
@@ -201,6 +203,7 @@ namespace ISLGui
         NativeType,
         Function,
         VarModifier,
+        Namespace,
         Other
     }
 }

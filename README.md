@@ -70,6 +70,7 @@ This makes it possible to inline almost everything in the language, substantiall
 
 `return <value>` When used in a function body, sets the function's return value to \<value>.  
 `function <name>[..<parameters>] { <body> }` Creates a function with the specified \<name> and \<body>, taking the specified \<parameters>. Identical to `func <name> = [..<parameters>] => <body>`.  
+`namespace <name>{<body>}` Creates a code block in which declarations behave as if they're at the top level, and can be accessed from anywhere with `<id>#<name>` (you need to use this inside the namespace too, as variables aren't captured yet).  
 
 ### Operators
 
@@ -105,6 +106,8 @@ This makes it possible to inline almost everything in the language, substantiall
 `<left> =/= <right>` Returns `true` if \<left> and \<right> have different values, otherwise `false`.  
 `<left> < <right>` Returns `true` if \<left> has a smaller value than \<right>, otherwise `false`.  
 `<left> > <right>` Returns `true` if \<left> has a greater value than \<right>, otherwise `false`.  
+`<left> <= <right>` Returns `true` if \<left> has a smaller or the same value as \<right>, otherwise `false`.  
+`<left> >= <right>` Returns `true` if \<left> has a greater or the same value as \<right>, otherwise `false`.  
 **These 3 only take boolean values on both sides:**  
 `<left> or <right>` Returns `true` if either \<left> or \<right> is `true`, and `false` otherwise.  
 `<left> xor <right>` Returns `true` if \<left> and \<right> are different, and `false` otherwise.  
@@ -113,9 +116,9 @@ This makes it possible to inline almost everything in the language, substantiall
 
 #### Conditionals:
 
-`# <condition> ? <trueval> : <falseval>` Returns \<trueval> if \<condition> is true, and \<falseval> otherwise.  
+`<condition> ? <trueval> : <falseval>` Returns \<trueval> if \<condition> is true, and \<falseval> otherwise.  
 `<value> when <condition>` Returns \<value> if \<condition> is true, and `null` otherwise.  
-`<value> otherwise <replacement>` Returns \<replacement> if \<value> is `null`, and \<value> otherwise. Can be used in conjunction with `.. when ..` to form an alternative conditional `<trueval> when <condition> otherwise <falseval>`.  
+`<value> otherwise <replacement>` Returns \<replacement> if \<value> is `null`, and \<value> otherwise. Can be used in conjunction with `.. when ..` to form an alternative conditional `<trueval> when <condition> otherwise <falseval>`. Can be abbreviated with `<value> : <replacement>`.  
 
 #### Binary Manipulation:
 
@@ -158,6 +161,8 @@ This makes it possible to inline almost everything in the language, substantiall
 `<obj> is <class>` Returns true when \<obj> is an instance of \<class>, and false if not.  
 `typeof <obj>` Returns the class of \<obj>.  
 `<obj>.<property>` Gets the property named \<property> of \<object>.  
+
+`<namespace>#<name>` Similar to object properties, gets a declared variable from the namespace called \<namespace>.
 
 ### Constructs:
 

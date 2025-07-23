@@ -136,6 +136,7 @@ namespace ISLGui
             islHighlighter.SetSyntaxColor(TokenType.Comment, Color.FromArgb(255, 87, 166, 74));
             islHighlighter.SetSyntaxColor(TokenType.MetaTag, Color.FromArgb(255, 50, 170, 200));
             islHighlighter.SetSyntaxColor(TokenType.Function, Color.FromArgb(255, 220, 218, 155));
+            islHighlighter.SetSyntaxColor(TokenType.Namespace, Color.FromArgb(255, 255, 231, 199));
             SyntaxHighlighting();
         }
         private void RestartHighlighterTriggered(object sender, RoutedEventArgs e) => RestartSyntaxHighlighter();

@@ -1,4 +1,5 @@
-﻿using ISL.Language.Expressions.Combined;
+﻿using ISL.Language.Expressions;
+using ISL.Language.Expressions.Combined;
 using ISL.Language.Keywords;
 using ISL.Language.Types;
 using ISL.Language.Types.Functions;
@@ -84,7 +85,19 @@ namespace ISL.Interpreter
                 new Keyword("return", (self, labels, exprs, program) => {
                     var ret = program.CurrentScope.GetVariable("return") ?? throw new SyntaxError("'Return' keyword cannot appear outside of a code block.");
                     ret.Value = exprs[0].Eval(program);
-                },1, [])
+                },1, []),
+                //maek maemspaece
+                new Keyword("namespace", (self, labels, exprs, program) => {
+                    if(exprs[0] is not IdentifierExpression ie) throw new SyntaxError("Namespace declarations must have a valid name.");
+                    if(exprs[1] is not CodeBlockExpression ce) throw new SyntaxError("Namespace bodies must be code block expressions.");
+                    ce.CreateScope = false;
+                    var scope = new IslVariableScope();
+                    var osc = program.CurrentScope;
+                    program.CurrentScope = scope;
+                    ce.Eval(program);
+                    program.CurrentScope = osc;
+                    program.RegisterNamespace(ie.value, scope);
+                }, 2, []),
                 ];
         }
     }

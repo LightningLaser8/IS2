@@ -52,6 +52,16 @@ namespace ISL.Interpreter
         }
         private readonly List<Expression> codePoints = [];
 
+        readonly Dictionary<string, IslVariableScope> namespaces = [];
+        public void RegisterNamespace(string id, IslVariableScope ns)
+        {
+            if(!namespaces.TryAdd(id, ns)) throw new IslError($"Namespace {id} already declared!");
+        }
+        public IslVariableScope GetNamespace(string id)
+        {
+            return namespaces.TryGetValue(id, out var val) ? val : throw new IslError($"Namespace {id} doesn't exist!");
+        }
+
         public Dictionary<string, IslValue> LastOutputs => outputs;
         public Dictionary<string, object?> LastCLROutputs => new(outputs.Select(kvp => new KeyValuePair<string, object?>(kvp.Key, kvp.Value.ToCLR())));
 
@@ -68,6 +78,7 @@ namespace ISL.Interpreter
         /// <exception cref="OverflowError"/>
         public IslValue Execute()
         {
+            namespaces.Clear();
             foreach (var point in codePoints)
             {
                 result = point.Eval(this);
